@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { CompassMark } from '../components/Icons';
 import { Icon } from '../components/Icons';
 import { DeepBand, WeatherChip, RouteCard, StatusSignal, TravelChips, NumTime, Label } from '../components/Atoms';
@@ -22,7 +22,12 @@ interface HomeScreenProps {
 }
 
 export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins }: HomeScreenProps) {
-  const [dep, nextDep] = nextDepartures(from, to, 2);
+  const [heroIndex, setHeroIndex] = useState(0);
+  useEffect(() => { setHeroIndex(0); }, [from, to]);
+
+  const deps = nextDepartures(from, to, heroIndex + 2);
+  const dep = deps[heroIndex] ?? null;
+  const nextDep = deps[heroIndex + 1] ?? null;
   const prev = prevDeparture(from, to);
   const countdown = dep && dep.dateStr === ymd(getOsloDate()) ? minsUntil(dep.dateStr, dep.startTime) : null;
   const effectiveDrive = driveMins ?? stopTravel[from].drive;
@@ -94,10 +99,13 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
               { trip: nextDep, label: 'Neste avgang',   showCountdown: true  },
             ] as { trip: typeof prev; label: string; showCountdown: boolean }[]).map(({ trip, label, showCountdown }) => {
               const cd = showCountdown && trip && trip.dateStr === ymd(getOsloDate()) ? minsUntil(trip.dateStr, trip.startTime) : null;
+              const handleClick = showCountdown
+                ? () => trip && setHeroIndex(i => i + 1)
+                : () => trip && onOpenTrip(trip);
               return (
                 <button
                   key={label}
-                  onClick={() => trip && onOpenTrip(trip)}
+                  onClick={handleClick}
                   disabled={!trip}
                   style={{ textAlign: 'left', padding: '12px 14px', borderRadius: 'var(--radSm)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', cursor: trip ? 'pointer' : 'default', opacity: !showCountdown ? 0.55 : 1 }}
                 >
