@@ -109,18 +109,19 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
               return (
                 <button
                   key={label}
-                  onClick={handleClick}
-                  disabled={!trip}
-                  style={{ textAlign: 'left', padding: '12px 14px', borderRadius: 'var(--radSm)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', cursor: trip ? 'pointer' : 'default', opacity: isPast ? 0.55 : 1 }}
+                  onClick={trip ? handleClick : undefined}
+                  style={{ textAlign: 'left', padding: '12px 14px', borderRadius: 'var(--radSm)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', cursor: trip ? 'pointer' : 'default', opacity: !trip ? 0.3 : isPast ? 0.6 : 1 }}
                 >
                   <Label color="var(--onDeepDim)" style={{ fontSize: 9 }}>{label}</Label>
                   {trip ? (
-                    <>
-                      <NumTime size={28} color="var(--onDeep)" style={{ display: 'block', marginTop: 4 }}>{trip.startTime}</NumTime>
-                      <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 11, color: 'var(--onDeepDim)', marginTop: 3 }}>
-                        {cd != null ? `om ${fmtCountdown(cd)}` : `${trip.startTime}–${trip.endTime}`}
-                      </div>
-                    </>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 5, gap: 6 }}>
+                      <NumTime size={28} color="var(--onDeep)">{trip.startTime}</NumTime>
+                      {cd != null ? (
+                        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13, color: 'var(--accent)', lineHeight: 1.1, textAlign: 'right' }}>om {fmtCountdown(cd)}</span>
+                      ) : (
+                        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12, color: 'var(--onDeepDim)', lineHeight: 1.1, textAlign: 'right' }}>{trip.endTime}</span>
+                      )}
+                    </div>
                   ) : (
                     <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--onDeepDim)', marginTop: 4 }}>—</div>
                   )}
