@@ -11,10 +11,10 @@ export const stopsMap: Record<StopId, string> = {
 
 export const stopCoords: Record<StopId, {lat: number, lng: number} | null> = {
   buss_tbg: { lat: 59.2675, lng: 10.4076 },
-  tenvik: { lat: 59.1843, lng: 10.3772 },
-  vestgarden: { lat: 59.1578, lng: 10.3456 },
-  engo: { lat: 59.1517, lng: 10.2736 },
-  tangen: { lat: 59.1450, lng: 10.3471 },
+  tenvik: { lat: 59.1744256064253, lng: 10.364987204418728 },
+  vestgarden: { lat: 59.16496191981857, lng: 10.343429236051696 },
+  engo: { lat: 59.147476312611, lng: 10.31832985729631 },
+  tangen: { lat: 59.15344925258157, lng: 10.33775055215706 },
   buss_tenv: { lat: 59.2675, lng: 10.4076 }
 };
 

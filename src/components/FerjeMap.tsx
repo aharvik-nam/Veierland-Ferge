@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Map, AdvancedMarker, Pin, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
 import { StopId, stopsMap, stopCoords } from '../data';
-import { Navigation, Car, Footprints, AlertCircle, Loader2 } from 'lucide-react';
+import { Navigation, Car, Footprints, AlertCircle, Loader2, Ship } from 'lucide-react';
 import { GOOGLE_MAPS_API_KEY } from '../App';
 
 function ShipTracker() {
@@ -20,28 +20,38 @@ function ShipTracker() {
       ws.onopen = () => {
         const subscriptionMessage = {
           APIKey: AISSTREAM_API_KEY,
-          // Bounding box for Veierland/Tenvik area
-          BoundingBoxes: [[[59.13, 10.25], [59.20, 10.42]]]
+          BoundingBoxes: [[[-90, -180], [90, 180]]],
+          FiltersShipMMSI: ["257207800"],
+          FilterMessageTypes: ["PositionReport", "StandardClassBPositionReport", "ShipStaticData"]
         };
         ws.send(JSON.stringify(subscriptionMessage));
       };
 
-      ws.onmessage = (event) => {
+      ws.onmessage = async (event) => {
         if (!isMounted) return;
         try {
-          const aisMessage = JSON.parse(event.data);
+          let messageData = event.data;
+          if (messageData instanceof Blob) {
+            messageData = await messageData.text();
+          }
+          const aisMessage = JSON.parse(messageData);
           
-          if (aisMessage.MessageType === "PositionReport") {
-            const report = aisMessage.Message.PositionReport;
-            setShips(prev => ({
-              ...prev,
-              [report.UserID]: {
-                ...prev[report.UserID],
-                lat: report.Latitude,
-                lng: report.Longitude,
-                heading: report.TrueHeading !== 511 ? report.TrueHeading : undefined
-              }
-            }));
+          if (aisMessage.MessageType === "PositionReport" || aisMessage.MessageType === "StandardClassBPositionReport") {
+            const report = aisMessage.MessageType === "PositionReport" 
+              ? aisMessage.Message.PositionReport 
+              : aisMessage.Message.StandardClassBPositionReport;
+              
+            if (report && report.Latitude && report.Longitude && report.Latitude <= 90 && report.Longitude <= 180) {
+              setShips(prev => ({
+                ...prev,
+                [report.UserID]: {
+                  ...prev[report.UserID],
+                  lat: report.Latitude,
+                  lng: report.Longitude,
+                  heading: report.TrueHeading && report.TrueHeading !== 511 ? report.TrueHeading : undefined
+                }
+              }));
+            }
           } else if (aisMessage.MessageType === "ShipStaticData") {
             const report = aisMessage.Message.ShipStaticData;
             setShips(prev => ({
@@ -77,7 +87,7 @@ function ShipTracker() {
          if (!ship.lat || !ship.lng) return null;
          
          const isJutoyaStr = ship.name?.toUpperCase() || '';
-         const isJutoya = isJutoyaStr.includes('JUT') || isJutoyaStr.includes('FERJE') || !ship.name;
+         const isJutoya = mmsi === '257207800' || isJutoyaStr.includes('JUTØYA') || isJutoyaStr.includes('JUTOYA');
          
          return (
            <AdvancedMarker key={mmsi} position={{ lat: ship.lat, lng: ship.lng }} title={ship.name || `Skip (${mmsi})`} zIndex={isJutoya ? 50 : 10}>
