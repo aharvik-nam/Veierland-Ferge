@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Ship, Info, Calendar, Clock, Phone, MapPin, ArrowRight, Timer } from 'lucide-react';
+import { Ship, Info, Calendar, Clock, Phone, MapPin, ArrowRight, Timer, Car, Footprints } from 'lucide-react';
+import { APIProvider, useMapsLibrary } from '@vis.gl/react-google-maps';
 import {
   stopsMap,
+  stopCoords,
   monFriLoops,
   satLoops,
   sunLoops,
@@ -12,9 +14,16 @@ import {
 
 import FerjeMap from './components/FerjeMap';
 
+export const GOOGLE_MAPS_API_KEY =
+  process.env.GOOGLE_MAPS_PLATFORM_KEY ||
+  (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
+  (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
+  '';
+
 export default function App() {
   return (
-    <div className="min-h-screen bg-[#F5F5F0] text-[#424231] font-sans flex flex-col">
+    <APIProvider apiKey={GOOGLE_MAPS_API_KEY} version="weekly">
+      <div className="min-h-screen bg-[#F5F5F0] text-[#424231] font-sans flex flex-col">
       <header className="flex justify-between items-end p-6 sm:p-8 pb-4 max-w-4xl mx-auto w-full">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-[#E8E8DF] border border-[#D6D6C2] rounded-full text-[#5A5A40] shrink-0">
@@ -44,6 +53,7 @@ export default function App() {
         </div>
       </main>
     </div>
+    </APIProvider>
   );
 }
 
@@ -121,6 +131,82 @@ function getOsloDateString(d: Date) {
 }
 
 function DeparturePlanner() {
+  const routesLib = useMapsLibrary('routes');
+  const [userLoc, setUserLoc] = useState<google.maps.LatLngLiteral | null>(null);
+  const [geoError, setGeoError] = useState<string | null>(null);
+  const [fromStop, setFromStop] = useState<StopId>('tenvik');
+  const [toStop, setToStop] = useState<StopId>('vestgarden');
+  
+  const [driveResponse, setDriveResponse] = useState<google.maps.DirectionsResult | null>(null);
+  const [driveInfo, setDriveInfo] = useState<{distance: string, text: string, value: number} | null>(null);
+  const [walkInfo, setWalkInfo] = useState<{distance: string, text: string, value: number} | null>(null);
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setGeoError('Geolokasjon støttes ikke av nettleseren.');
+      return;
+    }
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setGeoError(null);
+      },
+      (err) => {
+        setGeoError('Kunne ikke hente din posisjon.');
+      },
+      { enableHighAccuracy: true }
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
+
+  useEffect(() => {
+    if (!routesLib || !userLoc) return;
+    const dest = stopCoords[fromStop];
+    if (!dest) return;
+    
+    let isMounted = true;
+    const directionsService = new routesLib.DirectionsService();
+
+    const fetchRoutes = async () => {
+      try {
+        const dRes = await directionsService.route({
+          origin: userLoc,
+          destination: dest,
+          travelMode: google.maps.TravelMode.DRIVING
+        });
+        if (isMounted) {
+          setDriveResponse(dRes);
+          const leg = dRes.routes[0]?.legs[0];
+          if (leg) {
+             setDriveInfo({ text: leg.duration?.text || '', distance: leg.distance?.text || '', value: leg.duration?.value || 0 });
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      
+      try {
+        const wRes = await directionsService.route({
+          origin: userLoc,
+          destination: dest,
+          travelMode: google.maps.TravelMode.WALKING
+        });
+        if (isMounted) {
+          const leg = wRes.routes[0]?.legs[0];
+          if (leg) {
+             setWalkInfo({ text: leg.duration?.text || '', distance: leg.distance?.text || '', value: leg.duration?.value || 0 });
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    
+    fetchRoutes();
+    
+    return () => { isMounted = false; };
+  }, [routesLib, userLoc, fromStop]);
+
   const [currentTime, setCurrentTime] = useState(getOsloDate());
   const todayStr = getOsloDateString(currentTime);
   const [selectedDateStr, setSelectedDateStr] = useState<string>(todayStr);
@@ -143,9 +229,6 @@ function DeparturePlanner() {
   const isToday = selectedDateStr === todayStr;
   const isPast = selectedDateStr < todayStr;
   
-  const [fromStop, setFromStop] = useState<StopId>('tenvik');
-  const [toStop, setToStop] = useState<StopId>('vestgarden');
-
   const getActiveLoops = () => {
     switch (selectedDay) {
       case 'sat': return satLoops;
@@ -303,18 +386,32 @@ function DeparturePlanner() {
           filteredTrips.map((trip, idx) => {
             const isNext = isToday && idx === 0;
             const countdownText = isNext && !trip.isMissedBooking ? formatCountdown(trip.subpath[0].time) : undefined;
-            return <TripResultCard key={`${trip.loop.id}-${idx}`} trip={trip as any} isNext={isNext && !trip.isMissedBooking} countdownText={countdownText} />;
+            return <TripResultCard 
+              key={`${trip.loop.id}-${idx}`} 
+              trip={trip as any} 
+              isNext={isNext && !trip.isMissedBooking} 
+              countdownText={countdownText} 
+              driveInfo={isNext && !trip.isMissedBooking ? driveInfo : undefined}
+              walkInfo={isNext && !trip.isMissedBooking ? walkInfo : undefined}
+            />;
           })
         )}
       </div>
       
       {/* Map Section */}
-      <FerjeMap targetStop={fromStop} />
+      <FerjeMap 
+        targetStop={fromStop} 
+        userLoc={userLoc} 
+        geoError={geoError} 
+        driveResponse={driveResponse}
+        driveInfo={driveInfo}
+        walkInfo={walkInfo}
+      />
     </div>
   );
 }
 
-function TripResultCard({ trip, isNext, countdownText }: { trip: { loop: FerryLoop, subpath: ResolvedEvent[], duration: number, engoText: string|null, requestText: string|null, isMissedBooking: boolean }; isNext?: boolean; countdownText?: string }) {
+function TripResultCard({ trip, isNext, countdownText, driveInfo, walkInfo }: { trip: { loop: FerryLoop, subpath: ResolvedEvent[], duration: number, engoText: string|null, requestText: string|null, isMissedBooking: boolean }; isNext?: boolean; countdownText?: string; driveInfo?: any; walkInfo?: any; }) {
   const [expanded, setExpanded] = useState(false);
   const start = trip.subpath[0];
   const end = trip.subpath[trip.subpath.length - 1];
@@ -324,9 +421,25 @@ function TripResultCard({ trip, isNext, countdownText }: { trip: { loop: FerryLo
   return (
     <div className={`rounded-[24px] overflow-hidden transition-all duration-300 ${expanded ? 'bg-white border border-[#E0E0D6] shadow-md' : 'bg-[#F9F9F7] hover:bg-[#F0F0E8] border border-transparent'} ${isNext ? 'ring-2 ring-offset-2 ring-offset-white ring-[#5A5A40]' : ''}`}>
       {isNext && (
-        <div className="bg-[#5A5A40] text-[#F5F5F0] text-[10px] font-bold uppercase tracking-widest px-5 py-2.5 flex justify-between items-center">
-          <span className="flex items-center gap-1.5"><Timer className="w-3.5 h-3.5" /> Neste Avgang</span>
-          <span className="flex items-center gap-1.5 opacity-90"><Clock className="w-3.5 h-3.5" /> Går om {countdownText}</span>
+        <div className="bg-[#5A5A40] text-[#F5F5F0] text-[10px] font-bold uppercase tracking-widest px-5 py-2.5 flex flex-col sm:flex-row justify-between sm:items-center gap-2.5">
+          <div className="flex w-full items-center justify-between sm:w-auto sm:justify-start gap-4">
+            <span className="flex items-center gap-1.5 shrink-0"><Timer className="w-3.5 h-3.5" /> Neste Avgang</span>
+            <span className="flex items-center gap-1.5 opacity-90 text-[11px]"><Clock className="w-4 h-4" /> Går om {countdownText}</span>
+          </div>
+          {(driveInfo || walkInfo) && (
+             <div className="flex items-center gap-3 text-white opacity-90 bg-black/20 px-3 py-1.5 rounded-lg w-full sm:w-auto justify-between sm:justify-end text-[10px]">
+                {driveInfo && (
+                  <span className="flex items-center gap-1.5">
+                     <Car className="w-4 h-4 text-[#A3A38E]" /> {driveInfo.text} unna
+                  </span>
+                )}
+                {walkInfo && (
+                  <span className="flex items-center gap-1.5">
+                     <Footprints className="w-4 h-4 text-[#A3A38E]" /> {walkInfo.text} unna
+                  </span>
+                )}
+             </div>
+          )}
         </div>
       )}
       {(trip.requestText || trip.engoText) && (

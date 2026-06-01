@@ -1,37 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { APIProvider, Map, AdvancedMarker, Pin, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
+import { Map, AdvancedMarker, Pin, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
 import { StopId, stopsMap, stopCoords } from '../data';
 import { Navigation, Car, Footprints, AlertCircle, Loader2 } from 'lucide-react';
+import { GOOGLE_MAPS_API_KEY } from '../App';
 
-const API_KEY =
-  process.env.GOOGLE_MAPS_PLATFORM_KEY ||
-  (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
-  (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
-  '';
+export default function FerjeMap({ 
+    targetStop, 
+    userLoc, 
+    geoError, 
+    driveResponse,
+    walkInfo,
+    driveInfo
+}: { 
+    targetStop: StopId;
+    userLoc: google.maps.LatLngLiteral | null;
+    geoError: string | null;
+    driveResponse: google.maps.DirectionsResult | null;
+    walkInfo: {distance: string, text: string} | null;
+    driveInfo: {distance: string, text: string} | null;
+}) {
 
-export default function FerjeMap({ targetStop }: { targetStop: StopId }) {
-  const [userLoc, setUserLoc] = useState<google.maps.LatLngLiteral | null>(null);
-  const [geoError, setGeoError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setGeoError('Geolokasjon støttes ikke av nettleseren.');
-      return;
-    }
-    const watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setGeoError(null);
-      },
-      (err) => {
-        setGeoError('Kunne ikke hente din posisjon.');
-      },
-      { enableHighAccuracy: true }
-    );
-    return () => navigator.geolocation.clearWatch(watchId);
-  }, []);
-
-  const hasValidKey = Boolean(API_KEY) && API_KEY !== 'YOUR_API_KEY';
+  const hasValidKey = Boolean(GOOGLE_MAPS_API_KEY) && GOOGLE_MAPS_API_KEY !== 'YOUR_API_KEY';
 
   if (!hasValidKey) {
     return (
@@ -47,7 +36,6 @@ export default function FerjeMap({ targetStop }: { targetStop: StopId }) {
   if (!destination) return null;
 
   return (
-    <APIProvider apiKey={API_KEY} version="weekly">
       <div className="bg-white rounded-[32px] overflow-hidden border border-[#ECECE0] shadow-sm flex flex-col h-[500px] mt-8">
         <div className="p-6 pb-4 flex justify-between items-center z-10 bg-white border-b border-[#ECECE0] shadow-sm">
            <div>
@@ -90,24 +78,32 @@ export default function FerjeMap({ targetStop }: { targetStop: StopId }) {
                <Pin background="#8C4A4A" glyphColor="#fff" borderColor="#5A2E2E" />
              </AdvancedMarker>
              
-             {userLoc && <RouteDisplay origin={userLoc} destination={destination} />}
+             {userLoc && (
+               <RouteDisplay 
+                 origin={userLoc} 
+                 destination={destination} 
+                 driveResponse={driveResponse}
+                 driveInfo={driveInfo}
+                 walkInfo={walkInfo}
+               />
+             )}
            </Map>
         </div>
       </div>
-    </APIProvider>
   );
 }
 
-function RouteDisplay({ origin, destination }: {
+function RouteDisplay({ origin, destination, driveResponse, driveInfo, walkInfo }: {
   origin: google.maps.LatLngLiteral;
   destination: google.maps.LatLngLiteral;
+  driveResponse: google.maps.DirectionsResult | null;
+  walkInfo: {distance: string, text: string} | null;
+  driveInfo: {distance: string, text: string} | null;
 }) {
   const map = useMap();
   const routesLib = useMapsLibrary('routes');
   
   const [directionsRenderer, setDirectionsRenderer] = useState<google.maps.DirectionsRenderer | null>(null);
-  const [driveInfo, setDriveInfo] = useState<{distance: string, text: string} | null>(null);
-  const [walkInfo, setWalkInfo] = useState<{distance: string, text: string} | null>(null);
 
   useEffect(() => {
     if (!routesLib || !map) return;
@@ -128,50 +124,10 @@ function RouteDisplay({ origin, destination }: {
   }, [routesLib, map]);
 
   useEffect(() => {
-    if (!routesLib || !directionsRenderer) return;
-
-    const directionsService = new routesLib.DirectionsService();
-
-    const fetchRoutes = async () => {
-      try {
-        const driveResponse = await directionsService.route({
-          origin,
-          destination,
-          travelMode: google.maps.TravelMode.DRIVING
-        });
-        
-        directionsRenderer.setDirections(driveResponse);
-        const driveLeg = driveResponse.routes[0]?.legs[0];
-        if (driveLeg) {
-          setDriveInfo({
-            text: driveLeg.duration?.text || '',
-            distance: driveLeg.distance?.text || ''
-          });
-        }
-      } catch (e) {
-        console.error("Driving direction failed", e);
-      }
-
-      try {
-        const walkResponse = await directionsService.route({
-          origin,
-          destination,
-          travelMode: google.maps.TravelMode.WALKING
-        });
-        const walkLeg = walkResponse.routes[0]?.legs[0];
-        if (walkLeg) {
-          setWalkInfo({
-            text: walkLeg.duration?.text || '',
-            distance: walkLeg.distance?.text || ''
-          });
-        }
-      } catch (e) {
-        console.error("Walking direction failed", e);
-      }
-    };
-
-    fetchRoutes();
-  }, [routesLib, directionsRenderer, origin, destination]);
+    if (directionsRenderer && driveResponse) {
+       directionsRenderer.setDirections(driveResponse);
+    }
+  }, [directionsRenderer, driveResponse]);
 
   if (!driveInfo && !walkInfo) return null;
 
