@@ -72,9 +72,12 @@ export function StatusSignal({ status }: { status: { level: 'good' | 'warn' | 'b
 }
 
 // ── TravelChips ──────────────────────────────────────────────
-export function TravelChips({ stop, onDeep = false }: { stop: StopId; onDeep?: boolean }) {
+export function TravelChips({ stop, onDeep = false, showCar: showCarProp, showWalk: showWalkProp }: { stop: StopId; onDeep?: boolean; showCar?: boolean; showWalk?: boolean }) {
   const tv = stopTravel[stop];
   if (!tv) return null;
+  const showCar = showCarProp !== undefined ? showCarProp : tv.showCar;
+  const showWalk = showWalkProp !== undefined ? showWalkProp : true;
+  if (!showCar && !showWalk) return null;
   const col = onDeep ? 'var(--onDeep)' : 'var(--ink)';
   const dim = onDeep ? 'var(--onDeepDim)' : 'var(--inkDim)';
 
@@ -90,8 +93,8 @@ export function TravelChips({ stop, onDeep = false }: { stop: StopId; onDeep?: b
 
   return (
     <div style={{ display: 'flex', gap: 10 }}>
-      {tv.showCar && chip('car', `${tv.drive} min`, 'med bil')}
-      {chip('walk', `${tv.walk} min`, 'til fots')}
+      {showCar && chip('car', `${tv.drive} min`, 'med bil')}
+      {showWalk && chip('walk', `${tv.walk} min`, 'til fots')}
     </div>
   );
 }

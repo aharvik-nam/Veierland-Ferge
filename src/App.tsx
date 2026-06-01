@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { THEMES, STYLES, themeVars } from './theme';
 import { ymd, getOsloDate } from './ferryData';
 import { HomeScreen } from './screens/HomeScreen';
@@ -7,6 +7,19 @@ import { DetailScreen } from './screens/DetailScreen';
 import { StopPicker } from './components/Atoms';
 import { Icon } from './components/Icons';
 import type { StopId, ThemeKey, StyleKey, Weather, Trip, Screen } from './types';
+
+function yrSymbolToCode(sym: string): number {
+  if (!sym) return 2;
+  if (sym.startsWith('clearsky')) return 1;
+  if (sym.startsWith('fair')) return 1;
+  if (sym.startsWith('partlycloudy')) return 2;
+  if (sym.startsWith('cloudy')) return 3;
+  if (sym.startsWith('fog')) return 45;
+  if (sym.includes('thunder')) return 95;
+  if (sym.includes('snow') || sym.includes('sleet')) return 71;
+  if (sym.includes('rain') || sym.includes('drizzle') || sym.includes('shower')) return 61;
+  return 2;
+}
 
 function SettingsSheet({ open, theme, style: stylePref, animate, onTheme, onStyle, onAnimate, onClose }: {
   open: boolean;
@@ -83,6 +96,8 @@ export default function App() {
   const [picker, setPicker] = useState<{ open: boolean; which: 'from' | 'to' | null }>({ open: false, which: null });
   const [weather, setWeather] = useState<Weather | null>(null);
   const [tick, setTick] = useState(0);
+  const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
+  const watchIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     const id = setInterval(() => setTick(x => x + 1), 1000);
@@ -90,10 +105,28 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    fetch('https://api.open-meteo.com/v1/forecast?latitude=59.16&longitude=10.35&current=temperature_2m,wind_speed_10m,weather_code&timezone=Europe%2FOslo')
+    if (!navigator.geolocation) return;
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      pos => setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => setUserLoc(null),
+      { enableHighAccuracy: false, maximumAge: 60000, timeout: 10000 }
+    );
+    return () => { if (watchIdRef.current != null) navigator.geolocation.clearWatch(watchIdRef.current); };
+  }, []);
+
+  useEffect(() => {
+    // Tenvik pier: 59.1617, 10.3455 — api.met.no (powers Yr.no)
+    fetch('https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=59.1617&lon=10.3455', {
+      headers: { 'User-Agent': 'VeierlandFerge/1.0 github.com/aharvik-nam/Veierland-Ferge' },
+    })
       .then(r => r.json())
-      .then(j => setWeather({ temp: j.current.temperature_2m, wind: j.current.wind_speed_10m, code: j.current.weather_code }))
-      .catch(() => setWeather({ temp: 12, wind: 4, code: 2 }));
+      .then(j => {
+        const cur = j.properties?.timeseries?.[0]?.data;
+        const inst = cur?.instant?.details;
+        const sym = cur?.next_1_hours?.summary?.symbol_code ?? cur?.next_6_hours?.summary?.symbol_code ?? '';
+        setWeather({ temp: inst.air_temperature, wind: inst.wind_speed, code: yrSymbolToCode(sym) });
+      })
+      .catch(() => setWeather({ temp: 10, wind: 3, code: 2 }));
   }, []);
 
   const theme = THEMES[themeKey];
@@ -127,7 +160,7 @@ export default function App() {
           animate={animate} texture={style.texture}
           onEditFrom={() => openPicker('from')} onEditTo={() => openPicker('to')} onSwap={swap}
           onSeeAll={() => { setSelectedDate(ymd(getOsloDate())); setScreen('results'); }}
-          onOpenTrip={openTrip} tick={tick}
+          onOpenTrip={openTrip} tick={tick} userLoc={userLoc}
         />
       )}
       {screen === 'results' && (
@@ -143,7 +176,7 @@ export default function App() {
         <DetailScreen
           trip={trip} from={from}
           animate={animate} texture={style.texture}
-          onBack={() => setScreen('results')} tick={tick}
+          onBack={() => setScreen('results')} tick={tick} userLoc={userLoc}
         />
       )}
 

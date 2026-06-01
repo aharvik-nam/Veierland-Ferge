@@ -2,7 +2,7 @@ import React from 'react';
 import { CompassMark } from '../components/Icons';
 import { Icon } from '../components/Icons';
 import { DeepBand, WeatherChip, RouteCard, StatusSignal, TravelChips, NumTime, Label } from '../components/Atoms';
-import { nextDeparture, minsUntil, fmtCountdown, rekkerStatus, stopTravel, ymd, getOsloDate, stopsMap } from '../ferryData';
+import { nextDeparture, minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, ymd, getOsloDate, stopsMap } from '../ferryData';
 import type { StopId, Weather, Trip } from '../types';
 
 interface HomeScreenProps {
@@ -17,12 +17,14 @@ interface HomeScreenProps {
   onSeeAll: () => void;
   onOpenTrip: (trip: Trip) => void;
   tick: number;
+  userLoc: { lat: number; lng: number } | null;
 }
 
-export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick }: HomeScreenProps) {
+export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc }: HomeScreenProps) {
   const dep = nextDeparture(from, to);
   const countdown = dep && dep.dateStr === ymd(getOsloDate()) ? minsUntil(dep.dateStr, dep.startTime) : null;
   const status = dep ? rekkerStatus(stopTravel[from].drive, countdown) : null;
+  const tv = travelVisibility(from, userLoc);
 
   return (
     <div style={{ minHeight: '100dvh', background: 'linear-gradient(180deg, var(--deep) 0%, var(--deep2) 55%, var(--deep) 100%)', position: 'relative' }}>
@@ -66,8 +68,8 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
             </DeepBand>
 
             <div style={{ padding: '18px 20px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {status && <StatusSignal status={status} />}
-              <TravelChips stop={from} />
+              {(tv.showCar || tv.showWalk) && status && <StatusSignal status={status} />}
+              <TravelChips stop={from} showCar={tv.showCar} showWalk={tv.showWalk} />
               <button onClick={() => onOpenTrip(dep)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '13px', borderRadius: 'var(--radSm)', background: 'var(--surfaceAlt)', border: '1px solid var(--line)', cursor: 'pointer' }}>
                 <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--ink)' }}>Se reisedetaljer</span>
                 <Icon name="arrowRight" size={17} color="var(--ink)" stroke={2} />

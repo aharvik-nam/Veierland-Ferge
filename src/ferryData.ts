@@ -28,6 +28,41 @@ export const stopKind: Record<StopId, 'buss' | 'fastland' | 'øy'> = {
   buss_tenv: "buss",
 };
 
+export const stopCoords: Record<StopId, { lat: number; lng: number }> = {
+  buss_tbg:   { lat: 59.2676, lng: 10.4078 },
+  tenvik:     { lat: 59.1617, lng: 10.3455 },
+  vestgarden: { lat: 59.1567, lng: 10.3867 },
+  engo:       { lat: 59.1333, lng: 10.3833 },
+  tangen:     { lat: 59.1633, lng: 10.4117 },
+  buss_tenv:  { lat: 59.2676, lng: 10.4078 },
+};
+
+export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+export function travelVisibility(stop: StopId, userLoc: { lat: number; lng: number } | null): { showCar: boolean; showWalk: boolean } {
+  const tv = stopTravel[stop];
+  if (!userLoc) {
+    // No GPS: island stops show nothing contextual; mainland stops show car only
+    if (stop === 'vestgarden' || stop === 'tangen') return { showCar: false, showWalk: false };
+    return { showCar: tv.showCar, showWalk: false };
+  }
+  const coord = stopCoords[stop];
+  const dist = haversineKm(userLoc.lat, userLoc.lng, coord.lat, coord.lng);
+  if (stop === 'vestgarden' || stop === 'tangen') {
+    // Car-free island: only walk, only if within 10 km
+    return { showCar: false, showWalk: dist < 10 };
+  }
+  if (stop === 'tenvik' || stop === 'engo') {
+    // Mainland: car always, walk only if within 2 km
+    return { showCar: true, showWalk: dist < 2 };
+  }
+  return { showCar: tv.showCar, showWalk: true };
+}
+
 export const stopTravel: Record<StopId, { drive: number; walk: number; showCar: boolean }> = {
   buss_tbg:   { drive: 4,  walk: 18, showCar: true  },
   tenvik:     { drive: 14, walk: 54, showCar: true  }, // 11 min + 3 min parkering/gang til kaia

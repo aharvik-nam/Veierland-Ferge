@@ -1,7 +1,7 @@
 import React from 'react';
 import { Icon } from '../components/Icons';
 import { DeepBand, Label, NumTime, StatusSignal, TravelChips, CallButton } from '../components/Atoms';
-import { minsUntil, fmtCountdown, rekkerStatus, stopTravel, stopShort, ymd, getOsloDate } from '../ferryData';
+import { minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, stopShort, ymd, getOsloDate } from '../ferryData';
 import type { Trip, StopId } from '../types';
 
 function RouteTimeline({ trip, animate }: { trip: Trip; animate: boolean }) {
@@ -46,13 +46,15 @@ interface DetailScreenProps {
   texture: boolean;
   onBack: () => void;
   tick: number;
+  userLoc: { lat: number; lng: number } | null;
 }
 
-export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick: _tick }: DetailScreenProps) {
+export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick: _tick, userLoc }: DetailScreenProps) {
   const isToday = trip.dateStr === ymd(getOsloDate());
   const countdown = isToday ? minsUntil(trip.dateStr, trip.startTime) : null;
   const upcoming = countdown == null || countdown >= 0;
   const status = upcoming && isToday ? rekkerStatus(stopTravel[trip.startStop].drive, countdown) : null;
+  const tv = travelVisibility(trip.startStop, userLoc);
   const booking = trip.warnings.find(w => w.type === 'booking');
   const engo = trip.warnings.find(w => w.type === 'engo');
   const endStop = trip.subpath[trip.subpath.length - 1].stopId;
@@ -88,12 +90,12 @@ export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick
       </DeepBand>
 
       <div style={{ padding: '18px 18px calc(env(safe-area-inset-bottom, 0px) + 20px)', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {status && <StatusSignal status={status} />}
+        {(tv.showCar || tv.showWalk) && status && <StatusSignal status={status} />}
 
-        {isToday && upcoming && (
+        {isToday && upcoming && (tv.showCar || tv.showWalk) && (
           <div>
             <Label color="var(--inkDim)" style={{ paddingLeft: 2 }}>Til {stopShort[trip.startStop]}-kaia</Label>
-            <div style={{ marginTop: 8 }}><TravelChips stop={trip.startStop} /></div>
+            <div style={{ marginTop: 8 }}><TravelChips stop={trip.startStop} showCar={tv.showCar} showWalk={tv.showWalk} /></div>
           </div>
         )}
 
