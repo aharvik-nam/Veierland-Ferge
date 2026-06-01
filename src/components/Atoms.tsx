@@ -90,7 +90,7 @@ export function TravelChips({ stop, onDeep = false }: { stop: StopId; onDeep?: b
 
   return (
     <div style={{ display: 'flex', gap: 10 }}>
-      {chip('car', `${tv.drive} min`, 'med bil')}
+      {tv.showCar && chip('car', `${tv.drive} min`, 'med bil')}
       {chip('walk', `${tv.walk} min`, 'til fots')}
     </div>
   );

@@ -28,13 +28,13 @@ export const stopKind: Record<StopId, 'buss' | 'fastland' | 'øy'> = {
   buss_tenv: "buss",
 };
 
-export const stopTravel: Record<StopId, { drive: number; walk: number }> = {
-  buss_tbg: { drive: 4, walk: 18 },
-  tenvik: { drive: 11, walk: 54 },
-  vestgarden: { drive: 15, walk: 71 },
-  engo: { drive: 19, walk: 88 },
-  tangen: { drive: 13, walk: 62 },
-  buss_tenv: { drive: 11, walk: 54 },
+export const stopTravel: Record<StopId, { drive: number; walk: number; showCar: boolean }> = {
+  buss_tbg:   { drive: 4,  walk: 18, showCar: true  },
+  tenvik:     { drive: 14, walk: 54, showCar: true  }, // 11 min + 3 min parkering/gang til kaia
+  vestgarden: { drive: 15, walk: 71, showCar: false }, // bilfri øy
+  engo:       { drive: 19, walk: 88, showCar: false }, // bilfri øy
+  tangen:     { drive: 13, walk: 62, showCar: false }, // bilfri øy
+  buss_tenv:  { drive: 11, walk: 54, showCar: true  },
 };
 
 const sequenceKeys = [
