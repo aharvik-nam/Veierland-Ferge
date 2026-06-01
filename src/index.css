@@ -1,1 +1,37 @@
 @import "tailwindcss";
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: #07313C;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-family: 'Space Grotesk', sans-serif;
+  overscroll-behavior: none;
+}
+#root { min-height: 100vh; min-height: 100dvh; }
+button { font-family: inherit; }
+
+::-webkit-scrollbar { height: 0; width: 0; }
+
+@keyframes ferryWaveSlide {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes ferryGlide {
+  0%   { transform: translateX(-72px); }
+  50%  { transform: translateX(calc(100vw + 20px)); }
+  100% { transform: translateX(-72px); }
+}
+@keyframes ferryBob {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50%      { transform: translateY(-5px) rotate(1.5deg); }
+}
+@keyframes ferryPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.78; }
+}
+@keyframes ferryTrack {
+  0%   { transform: translateY(-44px); }
+  100% { transform: translateY(320px); }
+}
