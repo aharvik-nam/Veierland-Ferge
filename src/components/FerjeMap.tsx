@@ -168,6 +168,31 @@ export default function FerjeMap({
              style={{ width: '100%', height: '100%' }}
              disableDefaultUI={true}
              zoomControl={true}
+             colorScheme={'LIGHT'}
+             options={{
+               styles: [
+                 {
+                   featureType: 'poi',
+                   elementType: 'labels',
+                   stylers: [{ visibility: 'off' }]
+                 },
+                 {
+                   featureType: 'transit',
+                   elementType: 'labels.icon',
+                   stylers: [{ visibility: 'off' }]
+                 },
+                 {
+                   featureType: 'road',
+                   elementType: 'geometry',
+                   stylers: [{ color: '#f8f9fa' }]
+                 },
+                 {
+                   featureType: 'water',
+                   elementType: 'geometry',
+                   stylers: [{ color: '#e9ecef' }]
+                 }
+               ]
+             }}
            >
              {userLoc && (
                <AdvancedMarker position={userLoc} title="Din posisjon">
