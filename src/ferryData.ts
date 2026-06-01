@@ -223,6 +223,14 @@ export function upcomingTrips(from: StopId, to: StopId, fromDateStr: string): Tr
   return trips;
 }
 
+export function prevDeparture(from: StopId, to: StopId): Trip | null {
+  const now = getOsloDate();
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  const trips = findTripsForDay(dayTypeOf(now), now, from, to);
+  const passed = trips.filter(t => parseTime(t.startTime) < nowMins);
+  return passed.length ? passed[passed.length - 1] : null;
+}
+
 export function nextDeparture(from: StopId, to: StopId): Trip | null {
   const now = getOsloDate();
   const nowMins = now.getHours() * 60 + now.getMinutes();

@@ -2,7 +2,7 @@ import React from 'react';
 import { CompassMark } from '../components/Icons';
 import { Icon } from '../components/Icons';
 import { DeepBand, WeatherChip, RouteCard, StatusSignal, TravelChips, NumTime, Label } from '../components/Atoms';
-import { nextDeparture, minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, ymd, getOsloDate, stopsMap } from '../ferryData';
+import { nextDeparture, prevDeparture, minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, ymd, getOsloDate, stopsMap } from '../ferryData';
 import type { StopId, Weather, Trip } from '../types';
 
 interface HomeScreenProps {
@@ -23,6 +23,7 @@ interface HomeScreenProps {
 
 export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins }: HomeScreenProps) {
   const dep = nextDeparture(from, to);
+  const prev = prevDeparture(from, to);
   const countdown = dep && dep.dateStr === ymd(getOsloDate()) ? minsUntil(dep.dateStr, dep.startTime) : null;
   const effectiveDrive = driveMins ?? stopTravel[from].drive;
   const status = dep ? rekkerStatus(effectiveDrive, countdown) : null;
@@ -82,6 +83,33 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
           <div style={{ marginTop: 18, padding: 30, borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.06)', textAlign: 'center' }}>
             <Icon name="anchor" size={30} color="var(--onDeepDim)" />
             <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 14, color: 'var(--onDeep)', marginTop: 10 }}>Ingen avganger funnet for denne ruten</div>
+          </div>
+        )}
+
+        {/* prev / next mini-cards */}
+        {(prev || dep) && (
+          <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {[
+              { trip: prev, label: 'Forrige avgang', dimmed: true },
+              { trip: dep,  label: 'Neste avgang',   dimmed: false },
+            ].map(({ trip, label, dimmed }) => (
+              <button
+                key={label}
+                onClick={() => trip && onOpenTrip(trip)}
+                disabled={!trip}
+                style={{ textAlign: 'left', padding: '12px 14px', borderRadius: 'var(--radSm)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', cursor: trip ? 'pointer' : 'default', opacity: dimmed ? 0.55 : 1 }}
+              >
+                <Label color="var(--onDeepDim)" style={{ fontSize: 9 }}>{label}</Label>
+                {trip ? (
+                  <>
+                    <NumTime size={28} color="var(--onDeep)" style={{ display: 'block', marginTop: 4 }}>{trip.startTime}</NumTime>
+                    <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 11, color: 'var(--onDeepDim)', marginTop: 3 }}>{trip.startTime}–{trip.endTime}</div>
+                  </>
+                ) : (
+                  <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--onDeepDim)', marginTop: 4 }}>—</div>
+                )}
+              </button>
+            ))}
           </div>
         )}
 
