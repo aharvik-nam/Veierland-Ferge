@@ -89,6 +89,7 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const [screen, setScreen] = useState<Screen>('home');
+  const [prevScreen, setPrevScreen] = useState<Screen>('home');
   const [from, setFrom] = useState<StopId>('tenvik');
   const [to, setTo] = useState<StopId>('vestgarden');
   const [selectedDate, setSelectedDate] = useState(ymd(getOsloDate()));
@@ -166,7 +167,7 @@ export default function App() {
     });
   }, [from, to]);
 
-  const openTrip = (t: Trip) => { setTrip(t); setScreen('detail'); };
+  const openTrip = (t: Trip) => { setTrip(t); setPrevScreen(screen); setScreen('detail'); };
 
   return (
     <div style={{ minHeight: '100dvh', ...(vars as React.CSSProperties) }}>
@@ -192,7 +193,7 @@ export default function App() {
         <DetailScreen
           trip={trip} from={from}
           animate={animate} texture={style.texture}
-          onBack={() => setScreen('results')} tick={tick} userLoc={userLoc} driveMins={driveMins}
+          onBack={() => setScreen(prevScreen)} tick={tick} userLoc={userLoc} driveMins={driveMins}
         />
       )}
 
