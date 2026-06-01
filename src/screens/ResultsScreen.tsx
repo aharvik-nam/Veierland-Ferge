@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Icon } from '../components/Icons';
 import { DeepBand, StopDot, Label, TripCard } from '../components/Atoms';
-import { upcomingTrips, minsUntil, ymd, getOsloDate, stopShort, NO_DAYS_EXPORT as NO_DAYS, NO_MONTHS_EXPORT as NO_MONTHS } from '../ferryData';
+import { findTripsForDay, dayTypeOf, parseYmd, parseTime, minsUntil, ymd, getOsloDate, stopShort, NO_DAYS_EXPORT as NO_DAYS, NO_MONTHS_EXPORT as NO_MONTHS } from '../ferryData';
 import type { StopId, Trip } from '../types';
 
 function cap(s: string): string { return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -46,9 +46,17 @@ interface ResultsScreenProps {
 }
 
 export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, texture, onBack, onSwap, onEditFrom, onEditTo, onOpenTrip, tick: _tick }: ResultsScreenProps) {
-  const trips = upcomingTrips(from, to, selectedDate);
   const todayStr = ymd(getOsloDate());
   const isToday = selectedDate === todayStr;
+  const selDate = parseYmd(selectedDate);
+  const trips = findTripsForDay(dayTypeOf(selDate), selDate, from, to);
+  const nowMins = getOsloDate().getHours() * 60 + getOsloDate().getMinutes();
+  const firstUpcomingIndex = isToday ? trips.findIndex(t => parseTime(t.startTime) >= nowMins) : 0;
+  const firstUpcomingRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    firstUpcomingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [selectedDate, from, to]);
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--surfaceAlt)' }}>
@@ -86,9 +94,14 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
             <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--inkDim)', marginTop: 4, opacity: 0.8 }}>Prøv en annen dag eller rute.</div>
           </div>
         ) : trips.map((trip, i) => {
-          const isNext = isToday && i === 0;
+          const isPast = isToday && parseTime(trip.startTime) < nowMins;
+          const isNext = isToday && i === firstUpcomingIndex;
           const cd = isNext ? minsUntil(trip.dateStr, trip.startTime) : null;
-          return <TripCard key={trip.id + i} trip={trip} isNext={isNext} countdown={cd} onClick={() => onOpenTrip(trip)} />;
+          return (
+            <div key={trip.id + i} ref={isNext ? firstUpcomingRef : undefined} style={{ opacity: isPast ? 0.38 : 1, transition: 'opacity 0.2s' }}>
+              <TripCard trip={trip} isNext={isNext} countdown={cd} onClick={() => onOpenTrip(trip)} />
+            </div>
+          );
         })}
       </div>
     </div>
