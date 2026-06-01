@@ -83,9 +83,9 @@ function SettingsSheet({ open, theme, style: stylePref, animate, onTheme, onStyl
 }
 
 export default function App() {
-  const [themeKey, setThemeKey] = useState<ThemeKey>('fjord');
-  const [styleKey, setStyleKey] = useState<StyleKey>('sjokart');
-  const [animate, setAnimate] = useState(true);
+  const [themeKey, setThemeKey] = useState<ThemeKey>(() => (localStorage.getItem('themeKey') as ThemeKey) || 'fjord');
+  const [styleKey, setStyleKey] = useState<StyleKey>(() => (localStorage.getItem('styleKey') as StyleKey) || 'sjokart');
+  const [animate, setAnimate] = useState(() => localStorage.getItem('animate') !== 'false');
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const [screen, setScreen] = useState<Screen>('home');
@@ -201,7 +201,9 @@ export default function App() {
       <SettingsSheet
         open={settingsOpen}
         theme={themeKey} style={styleKey} animate={animate}
-        onTheme={setThemeKey} onStyle={setStyleKey} onAnimate={setAnimate}
+        onTheme={k => { setThemeKey(k); localStorage.setItem('themeKey', k); }}
+        onStyle={s => { setStyleKey(s); localStorage.setItem('styleKey', s); }}
+        onAnimate={v => { setAnimate(v); localStorage.setItem('animate', String(v)); }}
         onClose={() => setSettingsOpen(false)}
       />
     </div>
