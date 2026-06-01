@@ -47,13 +47,15 @@ interface DetailScreenProps {
   onBack: () => void;
   tick: number;
   userLoc: { lat: number; lng: number } | null;
+  driveMins: number | null;
 }
 
-export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick: _tick, userLoc }: DetailScreenProps) {
+export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick: _tick, userLoc, driveMins }: DetailScreenProps) {
   const isToday = trip.dateStr === ymd(getOsloDate());
   const countdown = isToday ? minsUntil(trip.dateStr, trip.startTime) : null;
   const upcoming = countdown == null || countdown >= 0;
-  const status = upcoming && isToday ? rekkerStatus(stopTravel[trip.startStop].drive, countdown) : null;
+  const effectiveDrive = driveMins ?? stopTravel[trip.startStop].drive;
+  const status = upcoming && isToday ? rekkerStatus(effectiveDrive, countdown) : null;
   const tv = travelVisibility(trip.startStop, userLoc);
   const booking = trip.warnings.find(w => w.type === 'booking');
   const engo = trip.warnings.find(w => w.type === 'engo');
@@ -95,7 +97,7 @@ export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick
         {isToday && upcoming && (tv.showCar || tv.showWalk) && (
           <div>
             <Label color="var(--inkDim)" style={{ paddingLeft: 2 }}>Til {stopShort[trip.startStop]}-kaia</Label>
-            <div style={{ marginTop: 8 }}><TravelChips stop={trip.startStop} showCar={tv.showCar} showWalk={tv.showWalk} /></div>
+            <div style={{ marginTop: 8 }}><TravelChips stop={trip.startStop} showCar={tv.showCar} showWalk={tv.showWalk} driveOverride={driveMins} /></div>
           </div>
         )}
 

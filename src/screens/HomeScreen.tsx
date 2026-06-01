@@ -18,12 +18,14 @@ interface HomeScreenProps {
   onOpenTrip: (trip: Trip) => void;
   tick: number;
   userLoc: { lat: number; lng: number } | null;
+  driveMins: number | null;
 }
 
-export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc }: HomeScreenProps) {
+export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins }: HomeScreenProps) {
   const dep = nextDeparture(from, to);
   const countdown = dep && dep.dateStr === ymd(getOsloDate()) ? minsUntil(dep.dateStr, dep.startTime) : null;
-  const status = dep ? rekkerStatus(stopTravel[from].drive, countdown) : null;
+  const effectiveDrive = driveMins ?? stopTravel[from].drive;
+  const status = dep ? rekkerStatus(effectiveDrive, countdown) : null;
   const tv = travelVisibility(from, userLoc);
 
   return (
@@ -69,7 +71,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
 
             <div style={{ padding: '18px 20px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
               {(tv.showCar || tv.showWalk) && status && <StatusSignal status={status} />}
-              <TravelChips stop={from} showCar={tv.showCar} showWalk={tv.showWalk} />
+              <TravelChips stop={from} showCar={tv.showCar} showWalk={tv.showWalk} driveOverride={driveMins} />
               <button onClick={() => onOpenTrip(dep)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '13px', borderRadius: 'var(--radSm)', background: 'var(--surfaceAlt)', border: '1px solid var(--line)', cursor: 'pointer' }}>
                 <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--ink)' }}>Se reisedetaljer</span>
                 <Icon name="arrowRight" size={17} color="var(--ink)" stroke={2} />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { THEMES, STYLES, themeVars } from './theme';
-import { ymd, getOsloDate } from './ferryData';
+import { ymd, getOsloDate, stopCoords } from './ferryData';
 import { HomeScreen } from './screens/HomeScreen';
 import { ResultsScreen } from './screens/ResultsScreen';
 import { DetailScreen } from './screens/DetailScreen';
@@ -97,6 +97,7 @@ export default function App() {
   const [weather, setWeather] = useState<Weather | null>(null);
   const [tick, setTick] = useState(0);
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
+  const [driveMins, setDriveMins] = useState<number | null>(null);
   const watchIdRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -129,6 +130,21 @@ export default function App() {
       .catch(() => setWeather({ temp: 10, wind: 3, code: 2 }));
   }, []);
 
+  useEffect(() => {
+    if (!userLoc || (from !== 'tenvik' && from !== 'engo')) {
+      setDriveMins(null);
+      return;
+    }
+    const dest = stopCoords[from];
+    fetch(`https://router.project-osrm.org/route/v1/driving/${userLoc.lng},${userLoc.lat};${dest.lng},${dest.lat}?overview=false`)
+      .then(r => r.json())
+      .then(j => {
+        const secs = j.routes?.[0]?.duration;
+        if (secs != null) setDriveMins(Math.ceil(secs / 60));
+      })
+      .catch(() => setDriveMins(null));
+  }, [userLoc, from]);
+
   const theme = THEMES[themeKey];
   const style = STYLES[styleKey];
   const vars = themeVars(theme, style);
@@ -160,7 +176,7 @@ export default function App() {
           animate={animate} texture={style.texture}
           onEditFrom={() => openPicker('from')} onEditTo={() => openPicker('to')} onSwap={swap}
           onSeeAll={() => { setSelectedDate(ymd(getOsloDate())); setScreen('results'); }}
-          onOpenTrip={openTrip} tick={tick} userLoc={userLoc}
+          onOpenTrip={openTrip} tick={tick} userLoc={userLoc} driveMins={driveMins}
         />
       )}
       {screen === 'results' && (
@@ -176,7 +192,7 @@ export default function App() {
         <DetailScreen
           trip={trip} from={from}
           animate={animate} texture={style.texture}
-          onBack={() => setScreen('results')} tick={tick} userLoc={userLoc}
+          onBack={() => setScreen('results')} tick={tick} userLoc={userLoc} driveMins={driveMins}
         />
       )}
 
