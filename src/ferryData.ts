@@ -231,17 +231,26 @@ export function prevDeparture(from: StopId, to: StopId): Trip | null {
   return passed.length ? passed[passed.length - 1] : null;
 }
 
-export function nextDeparture(from: StopId, to: StopId): Trip | null {
+export function nextDepartures(from: StopId, to: StopId, count = 1): Trip[] {
   const now = getOsloDate();
   const nowMins = now.getHours() * 60 + now.getMinutes();
-  for (let d = 0; d < 8; d++) {
+  const result: Trip[] = [];
+  for (let d = 0; d < 8 && result.length < count; d++) {
     const day = new Date(now);
     day.setDate(now.getDate() + d);
     let trips = findTripsForDay(dayTypeOf(day), day, from, to);
     if (d === 0) trips = trips.filter(t => parseTime(t.startTime) >= nowMins);
-    if (trips.length) return trips[0];
+    for (const t of trips) {
+      result.push(t);
+      if (result.length >= count) break;
+    }
   }
-  return null;
+  return result;
+}
+
+export function nextDeparture(from: StopId, to: StopId): Trip | null {
+  const results = nextDepartures(from, to, 1);
+  return results[0] ?? null;
 }
 
 export function minsUntil(dateStr: string, hhmm: string): number {
