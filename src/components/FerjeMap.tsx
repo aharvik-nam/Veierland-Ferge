@@ -4,6 +4,96 @@ import { StopId, stopsMap, stopCoords } from '../data';
 import { Navigation, Car, Footprints, AlertCircle, Loader2 } from 'lucide-react';
 import { GOOGLE_MAPS_API_KEY } from '../App';
 
+function ShipTracker() {
+  const [ships, setShips] = useState<Record<string, { lat: number, lng: number, name?: string, heading?: number }>>({});
+  const AISSTREAM_API_KEY = process.env.AISSTREAM_API_KEY || (import.meta as any).env?.VITE_AISSTREAM_API_KEY || (globalThis as any).AISSTREAM_API_KEY || '';
+
+  useEffect(() => {
+    if (!AISSTREAM_API_KEY) return;
+
+    let ws: WebSocket;
+    let isMounted = true;
+    
+    const connect = () => {
+      ws = new WebSocket("wss://stream.aisstream.io/v0/stream");
+      
+      ws.onopen = () => {
+        const subscriptionMessage = {
+          APIKey: AISSTREAM_API_KEY,
+          // Bounding box for Veierland/Tenvik area
+          BoundingBoxes: [[[59.13, 10.25], [59.20, 10.42]]]
+        };
+        ws.send(JSON.stringify(subscriptionMessage));
+      };
+
+      ws.onmessage = (event) => {
+        if (!isMounted) return;
+        try {
+          const aisMessage = JSON.parse(event.data);
+          
+          if (aisMessage.MessageType === "PositionReport") {
+            const report = aisMessage.Message.PositionReport;
+            setShips(prev => ({
+              ...prev,
+              [report.UserID]: {
+                ...prev[report.UserID],
+                lat: report.Latitude,
+                lng: report.Longitude,
+                heading: report.TrueHeading !== 511 ? report.TrueHeading : undefined
+              }
+            }));
+          } else if (aisMessage.MessageType === "ShipStaticData") {
+            const report = aisMessage.Message.ShipStaticData;
+            setShips(prev => ({
+              ...prev,
+              [report.UserID]: {
+                ...prev[report.UserID],
+                name: report.Name.trim()
+              }
+            }));
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      };
+      
+      ws.onerror = (e) => console.error("AIS ws error", e);
+      ws.onclose = () => {
+         if (isMounted) setTimeout(connect, 5000);
+      }
+    };
+
+    connect();
+
+    return () => {
+      isMounted = false;
+      if (ws) ws.close();
+    };
+  }, [AISSTREAM_API_KEY]);
+
+  return (
+    <>
+      {Object.entries(ships).map(([mmsi, ship]) => {
+         if (!ship.lat || !ship.lng) return null;
+         
+         const isJutoyaStr = ship.name?.toUpperCase() || '';
+         const isJutoya = isJutoyaStr.includes('JUT') || isJutoyaStr.includes('FERJE') || !ship.name;
+         
+         return (
+           <AdvancedMarker key={mmsi} position={{ lat: ship.lat, lng: ship.lng }} title={ship.name || `Skip (${mmsi})`} zIndex={isJutoya ? 50 : 10}>
+              <div 
+                className={`rounded-full border-2 border-white shadow-md flex items-center justify-center text-white ${isJutoya ? 'w-8 h-8 bg-[#8C4A4A]' : 'w-4 h-4 bg-[#A3A38E]'}`}
+                style={ship.heading !== undefined ? { transform: `rotate(${ship.heading}deg)` } : undefined}
+              >
+                 {isJutoya ? <Ship className="w-4 h-4" /> : <div className="w-1.5 h-1.5 bg-white rounded-full opacity-50" />}
+              </div>
+           </AdvancedMarker>
+         );
+      })}
+    </>
+  );
+}
+
 export default function FerjeMap({ 
     targetStop, 
     userLoc, 
@@ -87,6 +177,8 @@ export default function FerjeMap({
                  walkInfo={walkInfo}
                />
              )}
+             
+             <ShipTracker />
            </Map>
         </div>
       </div>

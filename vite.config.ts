@@ -7,7 +7,8 @@ export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
     define: {
-      'process.env.GOOGLE_MAPS_PLATFORM_KEY': JSON.stringify(process.env.GOOGLE_MAPS_PLATFORM_KEY || '')
+      'process.env.GOOGLE_MAPS_PLATFORM_KEY': JSON.stringify(process.env.GOOGLE_MAPS_PLATFORM_KEY || ''),
+      'process.env.AISSTREAM_API_KEY': JSON.stringify(process.env.AISSTREAM_API_KEY || '')
     },
     resolve: {
       alias: {

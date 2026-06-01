@@ -6,7 +6,7 @@ export const stopsMap: Record<StopId, string> = {
   vestgarden: "Vestgården",
   engo: "Engø",
   tangen: "Tangen",
-  buss_tenv: "Buss til Tønsberg (fra Tenvik)"
+  buss_tenv: "Buss til Tønsberg"
 };
 
 export const stopCoords: Record<StopId, {lat: number, lng: number} | null> = {
