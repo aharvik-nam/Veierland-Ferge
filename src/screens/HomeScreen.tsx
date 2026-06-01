@@ -94,7 +94,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
         )}
 
         {/* prev / next mini-cards */}
-        {(prev || nextDep) && (
+        {(prevCard || nextDep) && (
           <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {([
               { trip: prevCard, label: 'Forrige avgang', showCountdown: false, isPast: prevIsPast },
