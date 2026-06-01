@@ -172,24 +172,99 @@ export default function FerjeMap({
              options={{
                styles: [
                  {
-                   featureType: 'poi',
-                   elementType: 'labels',
-                   stylers: [{ visibility: 'off' }]
+                   featureType: "all",
+                   elementType: "geometry.stroke",
+                   stylers: [{ color: "#243746" }]
                  },
                  {
-                   featureType: 'transit',
-                   elementType: 'labels.icon',
-                   stylers: [{ visibility: 'off' }]
+                   featureType: "all",
+                   elementType: "labels.text.fill",
+                   stylers: [{ color: "#243746" }]
                  },
                  {
-                   featureType: 'road',
-                   elementType: 'geometry',
-                   stylers: [{ color: '#f8f9fa' }]
+                   featureType: "all",
+                   elementType: "labels.icon",
+                   stylers: [{ visibility: "simplified" }]
                  },
                  {
-                   featureType: 'water',
-                   elementType: 'geometry',
-                   stylers: [{ color: '#e9ecef' }]
+                   featureType: "administrative",
+                   elementType: "labels.text.fill",
+                   stylers: [{ color: "#444444" }]
+                 },
+                 {
+                   featureType: "administrative.country",
+                   elementType: "labels.icon",
+                   stylers: [{ visibility: "off" }]
+                 },
+                 {
+                   featureType: "landscape",
+                   elementType: "all",
+                   stylers: [{ color: "#f2f2f2" }]
+                 },
+                 {
+                   featureType: "landscape.natural.landcover",
+                   elementType: "labels.icon",
+                   stylers: [{ visibility: "off" }, { saturation: "12" }]
+                 },
+                 {
+                   featureType: "poi",
+                   elementType: "all",
+                   stylers: [{ visibility: "off" }]
+                 },
+                 {
+                   featureType: "poi",
+                   elementType: "labels.icon",
+                   stylers: [{ visibility: "off" }]
+                 },
+                 {
+                   featureType: "road",
+                   elementType: "all",
+                   stylers: [{ saturation: -100 }, { lightness: 45 }]
+                 },
+                 {
+                   featureType: "road.highway",
+                   elementType: "all",
+                   stylers: [{ visibility: "simplified" }]
+                 },
+                 {
+                   featureType: "road.highway",
+                   elementType: "geometry.fill",
+                   stylers: [{ visibility: "on" }, { color: "#cf112c" }]
+                 },
+                 {
+                   featureType: "road.highway",
+                   elementType: "labels.text.fill",
+                   stylers: [{ color: "#243746" }]
+                 },
+                 {
+                   featureType: "road.arterial",
+                   elementType: "labels.icon",
+                   stylers: [{ visibility: "off" }]
+                 },
+                 {
+                   featureType: "transit",
+                   elementType: "all",
+                   stylers: [{ visibility: "off" }]
+                 },
+                 {
+                   featureType: "transit.station.airport",
+                   elementType: "labels.icon",
+                   stylers: [{ visibility: "on" }]
+                 },
+                 {
+                   featureType: "transit.station.bus",
+                   elementType: "labels.icon",
+                   stylers: [{ visibility: "on" }]
+                 },
+                 {
+                   featureType: "transit.station.rail",
+                   elementType: "labels.icon",
+                   stylers: [{ visibility: "on" }]
+                 },
+                 {
+                   featureType: "water",
+                   elementType: "all",
+                   stylers: [{ color: "#6fb1c8" }, { visibility: "on" }]
                  }
                ]
              }}
