@@ -1,13 +1,14 @@
 import React, { useRef, useEffect } from 'react';
 import { Icon } from '../components/Icons';
 import { DeepBand, StopDot, Label, TripCard } from '../components/Atoms';
-import { findTripsForDay, dayTypeOf, parseYmd, parseTime, minsUntil, ymd, getOsloDate, stopShort, NO_DAYS_EXPORT as NO_DAYS, NO_MONTHS_EXPORT as NO_MONTHS } from '../ferryData';
+import { findTripsForDay, dayTypeOf, parseYmd, parseTime, minsUntil, ymd, getOsloDate, stopShort, NO_DAYS_EXPORT as NO_DAYS, NO_MONTHS_EXPORT } from '../ferryData';
 import type { StopId, Trip } from '../types';
 
 function cap(s: string): string { return s.charAt(0).toUpperCase() + s.slice(1); }
 
 function DayChips({ selected, onSelect }: { selected: string; onSelect: (ds: string) => void }) {
   const now = getOsloDate();
+  const dateInputRef = useRef<HTMLInputElement>(null);
   const days = [];
   for (let i = 0; i < 7; i++) {
     const d = new Date(now); d.setDate(now.getDate() + i);
@@ -15,6 +16,10 @@ function DayChips({ selected, onSelect }: { selected: string; onSelect: (ds: str
     const label = i === 0 ? 'I dag' : i === 1 ? 'I morgen' : cap(NO_DAYS[d.getDay()]).slice(0, 3);
     days.push({ ds, label, num: d.getDate() });
   }
+  const isCustom = !days.some(d => d.ds === selected);
+  const customDate = isCustom ? parseYmd(selected) : null;
+  const customLabel = customDate ? `${cap(NO_DAYS[customDate.getDay()])} ${customDate.getDate()}. ${NO_MONTHS_EXPORT[customDate.getMonth()]}` : '';
+
   return (
     <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '2px 18px 4px', scrollbarWidth: 'none' }}>
       {days.map(d => {
@@ -26,6 +31,27 @@ function DayChips({ selected, onSelect }: { selected: string; onSelect: (ds: str
           </button>
         );
       })}
+
+      {isCustom && (
+        <button onClick={() => dateInputRef.current?.showPicker()} style={{ flexShrink: 0, padding: '9px 15px', borderRadius: 99, border: '1.5px solid var(--accent)', background: 'var(--accent)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: 'var(--accentInk)', whiteSpace: 'nowrap' }}>{customLabel}</span>
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 10, color: 'var(--accentInk)', opacity: 0.8 }}>{customDate!.getDate()}.</span>
+        </button>
+      )}
+
+      <button onClick={() => dateInputRef.current?.showPicker()} style={{ flexShrink: 0, padding: '9px 15px', borderRadius: 99, border: '1.5px solid var(--line)', background: 'var(--surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <Icon name="calendar" size={13} color="var(--inkDim)" stroke={2} />
+        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: 'var(--ink)', whiteSpace: 'nowrap' }}>Angi dato</span>
+      </button>
+
+      <input
+        ref={dateInputRef}
+        type="date"
+        value={selected}
+        min={ymd(now)}
+        onChange={e => e.target.value && onSelect(e.target.value)}
+        style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }}
+      />
     </div>
   );
 }
@@ -65,7 +91,7 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
           <button onClick={onBack} style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <Icon name="chevronLeft" size={20} color="var(--onDeep)" stroke={2.2} />
           </button>
-          <div style={{ fontFamily: 'var(--num)', fontSize: 26, color: 'var(--onDeep)' }}>Avganger</div>
+          <div style={{ fontFamily: 'var(--num)', fontSize: 26, color: 'var(--onDeep)' }}>Rutetabell</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radSm)', padding: '10px 14px' }}>
           <button onClick={onEditFrom} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>

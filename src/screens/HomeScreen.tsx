@@ -135,7 +135,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
         <button onClick={onSeeAll} style={{ marginTop: 16, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
             <Icon name="calendar" size={19} color="var(--onDeep)" stroke={1.9} />
-            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)' }}>Alle avganger i dag</span>
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)' }}>Rutetabell</span>
           </span>
           <Icon name="chevronRight" size={18} color="var(--onDeepDim)" stroke={2} />
         </button>
