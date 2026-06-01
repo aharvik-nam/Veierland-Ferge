@@ -56,8 +56,8 @@ export function travelVisibility(stop: StopId, userLoc: { lat: number; lng: numb
     return { showCar: false, showWalk: dist < 10 };
   }
   if (stop === 'tenvik' || stop === 'engo') {
-    // Mainland: car if within 30 km, walk if within 2 km
-    return { showCar: dist < 30, showWalk: dist < 2 };
+    // Mainland: car always, walk only if within 2 km
+    return { showCar: true, showWalk: dist < 2 };
   }
   return { showCar: tv.showCar, showWalk: true };
 }
