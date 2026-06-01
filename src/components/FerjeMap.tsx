@@ -104,65 +104,74 @@ function RouteDisplay({ origin, destination }: {
 }) {
   const map = useMap();
   const routesLib = useMapsLibrary('routes');
-  const polylinesRef = useRef<google.maps.Polyline[]>([]);
   
+  const [directionsRenderer, setDirectionsRenderer] = useState<google.maps.DirectionsRenderer | null>(null);
   const [driveInfo, setDriveInfo] = useState<{distance: string, text: string} | null>(null);
   const [walkInfo, setWalkInfo] = useState<{distance: string, text: string} | null>(null);
 
   useEffect(() => {
     if (!routesLib || !map) return;
     
-    // Clear previous
-    polylinesRef.current.forEach(p => p.setMap(null));
-    polylinesRef.current = [];
+    const renderer = new routesLib.DirectionsRenderer({
+      map,
+      suppressMarkers: true,
+      polylineOptions: {
+        strokeColor: '#4285F4',
+        strokeWeight: 5
+      }
+    });
+    setDirectionsRenderer(renderer);
 
-    // Compute Driving
-    routesLib.Route.computeRoutes({
-      origin,
-      destination,
-      travelMode: 'DRIVING',
-      fields: ['path', 'distanceMeters', 'durationMillis', 'viewport', 'localizedValues'],
-    }).then(({ routes }) => {
-      if (routes?.[0]) {
-        const route = routes[0];
-        const newPolylines = route.createPolylines();
-        // Style driving polyline
-        newPolylines.forEach(p => {
-          p.setOptions({ strokeColor: '#4285F4', strokeWeight: 5 });
-          p.setMap(map);
+    return () => {
+      renderer.setMap(null);
+    };
+  }, [routesLib, map]);
+
+  useEffect(() => {
+    if (!routesLib || !directionsRenderer) return;
+
+    const directionsService = new routesLib.DirectionsService();
+
+    const fetchRoutes = async () => {
+      try {
+        const driveResponse = await directionsService.route({
+          origin,
+          destination,
+          travelMode: google.maps.TravelMode.DRIVING
         });
-        polylinesRef.current.push(...newPolylines);
-        if (route.viewport) map.fitBounds(route.viewport);
         
-        if (route.localizedValues?.duration?.text) {
+        directionsRenderer.setDirections(driveResponse);
+        const driveLeg = driveResponse.routes[0]?.legs[0];
+        if (driveLeg) {
           setDriveInfo({
-             text: route.localizedValues.duration.text,
-             distance: route.localizedValues.distance?.text || ''
+            text: driveLeg.duration?.text || '',
+            distance: driveLeg.distance?.text || ''
           });
         }
+      } catch (e) {
+        console.error("Driving direction failed", e);
       }
-    });
 
-    // Compute Walking (just for times, don't necessarily draw on map unless close)
-    routesLib.Route.computeRoutes({
-      origin,
-      destination,
-      travelMode: 'WALKING',
-      fields: ['distanceMeters', 'durationMillis', 'localizedValues'],
-    }).then(({ routes }) => {
-      if (routes?.[0]) {
-         const route = routes[0];
-         if (route.localizedValues?.duration?.text) {
-           setWalkInfo({
-             text: route.localizedValues.duration.text,
-             distance: route.localizedValues.distance?.text || ''
-           });
-         }
+      try {
+        const walkResponse = await directionsService.route({
+          origin,
+          destination,
+          travelMode: google.maps.TravelMode.WALKING
+        });
+        const walkLeg = walkResponse.routes[0]?.legs[0];
+        if (walkLeg) {
+          setWalkInfo({
+            text: walkLeg.duration?.text || '',
+            distance: walkLeg.distance?.text || ''
+          });
+        }
+      } catch (e) {
+        console.error("Walking direction failed", e);
       }
-    });
+    };
 
-    return () => polylinesRef.current.forEach(p => p.setMap(null));
-  }, [routesLib, map, origin, destination]);
+    fetchRoutes();
+  }, [routesLib, directionsRenderer, origin, destination]);
 
   if (!driveInfo && !walkInfo) return null;
 
