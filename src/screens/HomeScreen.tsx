@@ -28,7 +28,9 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
   const deps = nextDepartures(from, to, heroIndex + 2);
   const dep = deps[heroIndex] ?? null;
   const nextDep = deps[heroIndex + 1] ?? null;
-  const prev = prevDeparture(from, to);
+  const prevActual = prevDeparture(from, to);
+  const prevCard = heroIndex > 0 ? (deps[heroIndex - 1] ?? null) : prevActual;
+  const prevIsPast = heroIndex === 0;
   const countdown = dep && dep.dateStr === ymd(getOsloDate()) ? minsUntil(dep.dateStr, dep.startTime) : null;
   const effectiveDrive = driveMins ?? stopTravel[from].drive;
   const status = dep ? rekkerStatus(effectiveDrive, countdown) : null;
@@ -95,19 +97,21 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
         {(prev || nextDep) && (
           <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {([
-              { trip: prev,    label: 'Forrige avgang', showCountdown: false },
-              { trip: nextDep, label: 'Neste avgang',   showCountdown: true  },
-            ] as { trip: typeof prev; label: string; showCountdown: boolean }[]).map(({ trip, label, showCountdown }) => {
+              { trip: prevCard, label: 'Forrige avgang', showCountdown: false, isPast: prevIsPast },
+              { trip: nextDep, label: 'Neste avgang',   showCountdown: true,  isPast: false },
+            ] as { trip: typeof prevCard; label: string; showCountdown: boolean; isPast: boolean }[]).map(({ trip, label, showCountdown, isPast }) => {
               const cd = showCountdown && trip && trip.dateStr === ymd(getOsloDate()) ? minsUntil(trip.dateStr, trip.startTime) : null;
               const handleClick = showCountdown
                 ? () => trip && setHeroIndex(i => i + 1)
-                : () => trip && onOpenTrip(trip);
+                : isPast
+                  ? () => trip && onOpenTrip(trip)
+                  : () => trip && setHeroIndex(i => i - 1);
               return (
                 <button
                   key={label}
                   onClick={handleClick}
                   disabled={!trip}
-                  style={{ textAlign: 'left', padding: '12px 14px', borderRadius: 'var(--radSm)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', cursor: trip ? 'pointer' : 'default', opacity: !showCountdown ? 0.55 : 1 }}
+                  style={{ textAlign: 'left', padding: '12px 14px', borderRadius: 'var(--radSm)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', cursor: trip ? 'pointer' : 'default', opacity: isPast ? 0.55 : 1 }}
                 >
                   <Label color="var(--onDeepDim)" style={{ fontSize: 9 }}>{label}</Label>
                   {trip ? (
