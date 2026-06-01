@@ -160,6 +160,7 @@ export default function App() {
         title={picker.which === 'from' ? 'Reise fra' : 'Reise til'}
         selected={picker.which === 'from' ? from : to}
         exclude={picker.which === 'from' ? to : from}
+        which={picker.which}
         onPick={pick}
         onClose={() => setPicker({ open: false, which: null })}
       />

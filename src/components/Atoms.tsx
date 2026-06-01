@@ -122,15 +122,22 @@ export function DeepBand({ children, animate, texture, style = {}, waves = true,
 }
 
 // ── StopPicker ───────────────────────────────────────────────
-export function StopPicker({ open, title, selected, exclude, onPick, onClose }: {
+export function StopPicker({ open, title, selected, exclude, which, onPick, onClose }: {
   open: boolean;
   title: string;
   selected: StopId;
   exclude: StopId;
+  which: 'from' | 'to' | null;
   onPick: (s: StopId) => void;
   onClose: () => void;
 }) {
-  const stops: StopId[] = ['buss_tbg', 'tenvik', 'vestgarden', 'engo', 'tangen', 'buss_tenv'];
+  const allStops: StopId[] = ['buss_tbg', 'tenvik', 'vestgarden', 'engo', 'tangen', 'buss_tenv'];
+  // Only show the relevant bus stop based on direction
+  const stops = allStops.filter(s => {
+    if (which === 'from' && s === 'buss_tenv') return false;
+    if (which === 'to' && s === 'buss_tbg') return false;
+    return true;
+  });
   const kindLabel = { buss: 'Bussforbindelse', fastland: 'Fastland', øy: 'På Veierland' };
 
   return (
