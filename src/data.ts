@@ -9,6 +9,15 @@ export const stopsMap: Record<StopId, string> = {
   buss_tenv: "Buss til Tønsberg (fra Tenvik)"
 };
 
+export const stopCoords: Record<StopId, {lat: number, lng: number} | null> = {
+  buss_tbg: { lat: 59.2675, lng: 10.4076 },
+  tenvik: { lat: 59.1843, lng: 10.3772 },
+  vestgarden: { lat: 59.1578, lng: 10.3456 },
+  engo: { lat: 59.1517, lng: 10.2736 },
+  tangen: { lat: 59.1450, lng: 10.3471 },
+  buss_tenv: { lat: 59.2675, lng: 10.4076 }
+};
+
 export interface FerryLoop {
    id: string;
    bussTbg: string | null;

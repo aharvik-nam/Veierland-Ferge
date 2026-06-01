@@ -10,6 +10,8 @@ import {
   rules
 } from './data';
 
+import FerjeMap from './components/FerjeMap';
+
 export default function App() {
   return (
     <div className="min-h-screen bg-[#F5F5F0] text-[#424231] font-sans flex flex-col">
@@ -305,6 +307,9 @@ function DeparturePlanner() {
           })
         )}
       </div>
+      
+      {/* Map Section */}
+      <FerjeMap targetStop={fromStop} />
     </div>
   );
 }
