@@ -171,7 +171,8 @@ export default function App() {
   const openTrip = (t: Trip) => { setTrip(t); setPrevScreen(screen); setScreen('detail'); };
 
   return (
-    <div style={{ minHeight: '100dvh', ...(vars as React.CSSProperties) }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--deep)', display: 'flex', justifyContent: 'center', ...(vars as React.CSSProperties) }}>
+    <div style={{ width: '100%', maxWidth: 430, minHeight: '100dvh', position: 'relative', boxShadow: '0 0 80px rgba(0,0,0,0.5)' }}>
       {screen === 'home' && (
         <HomeScreen
           from={from} to={to} weather={weather}
@@ -202,7 +203,7 @@ export default function App() {
       {/* Settings FAB */}
       <button
         onClick={() => setSettingsOpen(true)}
-        style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)', right: 20, width: 48, height: 48, borderRadius: 99, background: 'var(--deep)', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 24px rgba(0,0,0,0.35)', zIndex: 70 }}
+        style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)', right: 'calc(max(0px, (100vw - 430px) / 2) + 20px)', width: 48, height: 48, borderRadius: 99, background: 'var(--deep)', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 24px rgba(0,0,0,0.35)', zIndex: 70 }}
       >
         <Icon name="settings" size={20} color="var(--onDeep)" stroke={1.8} />
       </button>
@@ -225,6 +226,7 @@ export default function App() {
         onAnimate={v => { setAnimate(v); localStorage.setItem('animate', String(v)); }}
         onClose={() => setSettingsOpen(false)}
       />
+    </div>
     </div>
   );
 }
