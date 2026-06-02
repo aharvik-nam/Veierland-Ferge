@@ -54,14 +54,16 @@ export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick
   const isToday = trip.dateStr === ymd(getOsloDate());
   const countdown = isToday ? minsUntil(trip.dateStr, trip.startTime) : null;
   const upcoming = countdown == null || countdown >= 0;
-  const effectiveDrive = driveMins ?? stopTravel[trip.startStop].drive;
+  const isIsland = trip.startStop === 'vestgarden' || trip.startStop === 'tangen';
+  const travelMode: 'drive' | 'walk' = isIsland ? 'walk' : 'drive';
+  const effectiveDrive = isIsland ? stopTravel[trip.startStop].walk : (driveMins ?? stopTravel[trip.startStop].drive);
   const nextTrip = (() => {
     if (!isToday) return null;
     const nowMins = getOsloDate().getHours() * 60 + getOsloDate().getMinutes();
     const todayTrips = findTripsForDay(dayTypeOf(parseYmd(trip.dateStr)), parseYmd(trip.dateStr), trip.startStop, trip.subpath[trip.subpath.length - 1].stopId);
     return todayTrips.find(t => parseTime(t.startTime) > parseTime(trip.startTime) && parseTime(t.startTime) > nowMins) ?? null;
   })();
-  const status = upcoming && isToday ? rekkerStatus(effectiveDrive, countdown, nextTrip) : null;
+  const status = upcoming && isToday ? rekkerStatus(effectiveDrive, countdown, travelMode, nextTrip) : null;
   const tv = travelVisibility(trip.startStop, userLoc);
   const booking = trip.warnings.find(w => w.type === 'booking');
   const engo = trip.warnings.find(w => w.type === 'engo');

@@ -273,81 +273,250 @@ function pick<T>(arr: T[], seed: number): T {
 }
 
 export function rekkerStatus(
-  driveMins: number,
+  travelMins: number,
   countdownMins: number | null,
+  mode: 'drive' | 'walk',
   nextTrip?: { startTime: string; dateStr: string } | null
 ): { level: 'good' | 'warn' | 'bad'; label: string; sub: string } | null {
   if (countdownMins == null) return null;
-  const margin = countdownMins - driveMins;
-  const seed = driveMins + Math.abs(margin);
+  const margin = countdownMins - travelMins;
+  const seed = travelMins + Math.abs(margin) * 3;
 
-  if (margin >= 30) {
-    const labels = ['Du rekker fergen', 'Ingen stress', 'God tid', 'Slapp av'];
-    const subs = [
-      `${fmtCountdown(countdownMins)} til avgang — kjøretid ${driveMins} min`,
-      `Du har ${margin} min å gå på. Ta deg god tid.`,
-      `Kjøretid ${driveMins} min, ${fmtCountdown(countdownMins)} til avgang. Nesten for tidlig ute.`,
-      `${margin} min slingringsmonn — du rekker kanskje en kaffe på veien.`,
-    ];
-    return { level: 'good', label: pick(labels, seed), sub: pick(subs, seed + 1) };
+  function nextHint(): string {
+    if (!nextTrip) return '';
+    const m = minsUntil(nextTrip.dateStr, nextTrip.startTime);
+    return m > 0
+      ? ` Neste avgang går om ${fmtCountdown(m)} (kl. ${nextTrip.startTime}).`
+      : ` Neste avgang går kl. ${nextTrip.startTime}.`;
   }
 
-  if (margin >= 10) {
-    const labels = ['Du rekker fergen', 'Det holder fint', 'Du rekker det'];
-    const subs = [
-      `Kjøretid ${driveMins} min, ${fmtCountdown(countdownMins)} igjen — ${margin} min margin`,
-      `${margin} min å gå på. Ikke stresset, men ikke stopp for å ta bilder heller.`,
-      `Kjøretid ${driveMins} min og ${fmtCountdown(countdownMins)} til avgang. Litt snug, men ok.`,
-    ];
-    return { level: 'good', label: pick(labels, seed), sub: pick(subs, seed + 1) };
+  if (mode === 'walk') {
+    // Walk mode — thresholds are tighter, friction = terrain + boarding queue
+    if (margin >= 20) {
+      return { level: 'good', label: pick([
+        'Rolig gange holder',
+        'God tid til fots',
+        'Ingen stress',
+        'Behagelig tur til kaia',
+        'Du har god tid',
+      ], seed), sub: pick([
+        'Du kan gå i normalt tempo og er i rute. Kø ved fergen er allerede med i beregningen.',
+        'Komfortabel margin. Hold direkte rute til kaia og ta det med ro.',
+        'God tid. Normal ganghastighet, ingen omveier — og du er der i god tid.',
+        'Du trenger ikke skynde deg. Gå direkte og nyt turen.',
+        'Dette er trygg margin til fots. Ingenting å stresse med.',
+      ], seed + 1) };
+    }
+
+    if (margin >= 10) {
+      return { level: 'good', label: pick([
+        'Normal gange holder',
+        'Du rekker det til fots',
+        'Greit med normalt tempo',
+        'Du er i rute',
+        'Grei tid',
+      ], seed), sub: pick([
+        'Hold normalt gangtempo og gå direkte til kaia. Ikke ta omveier.',
+        'Gangavstanden er overkommelig med normal fart — men ikke stans underveis.',
+        'Gåtid undervurderes lett. Hold direkte rute og du er i god tid.',
+        'Greit slingringsmonn til fots. Gå nå og hold tempo.',
+        'Normal gange holder — men ikke stopp for å se på kart eller sjekke mobilen.',
+      ], seed + 1) };
+    }
+
+    if (margin >= 5) {
+      return { level: 'warn', label: pick([
+        'Rask gange nødvendig',
+        'Det krever tempo',
+        'Knapt, men mulig',
+        'Rask tur til kaia',
+        'Litt press til fots',
+      ], seed), sub: pick([
+        'Du trenger rask gange hele veien. Direkte rute til kaia — ingen omveier eller stans.',
+        'Dette er ikke rolig spasertur. Hold tempo og gå direkte — gåtid undervurderes lett.',
+        'Brisk gange nødvendig. Fergekøen ved kai spiser de siste minuttene — regn med det.',
+        'Rask, målrettet gange er det som trengs. Ikke ta sjanser med ruten.',
+        'Du rekker det med god fart, men marginen er skjør. Direkte rute, ingen pauser.',
+      ], seed + 1) };
+    }
+
+    if (margin >= 1) {
+      return { level: 'warn', label: pick([
+        'Ekstremt knapt til fots',
+        'Powerwalk hele veien',
+        'Svært lite å gå på',
+        'Alt på gange nå',
+      ], seed), sub: pick([
+        'Dette krever rask, målrettet gange uten et sekund å miste. Neste avgang er tryggere.' + nextHint(),
+        'Teknisk mulig, men bare med maksimalt tempo og perfekt rute. Fergekøen teller ikke med her.' + nextHint(),
+        'Du er på grensen. Raskeste vei, ingen pauser — og håp på at det ikke er kø ved fergen.' + nextHint(),
+        'Marginen er reell bare hvis alt klaffer. En omvei eller en stopp og du ser fergen gå.' + nextHint(),
+      ], seed + 1) };
+    }
+
+    if (margin >= 0) {
+      return { level: 'warn', label: pick([
+        'Teoretisk mulig — knapt',
+        'Neste er tryggere',
+        'Umulig uten løping',
+      ], seed), sub: pick([
+        'Gangtiden er akkurat på grensen — og kø ved fergen er ikke med i beregningen. Ta neste.' + nextHint(),
+        'Du ville måttet løpe og håpe på ingen kø. Det er ikke verdt det.' + nextHint(),
+        'Dette holder bare i teorien. Kø, orientering og boarding spiser resten. Neste er bedre.' + nextHint(),
+      ], seed + 1) };
+    }
+
+    // Missed — walk
+    const shortage = Math.abs(margin);
+    if (shortage >= 20) {
+      return { level: 'bad', label: pick([
+        'Denne rekker du ikke til fots',
+        'For langt unna',
+        'Sikt på neste',
+        'Fergen er allerede på vei',
+      ], seed), sub: pick([
+        'Gangavstanden er for stor til å rekke denne. Kjør nå, eller vent på neste.' + nextHint(),
+        'For langt til å gå i tide. Ta neste avgang og gå uten stress.' + nextHint(),
+        'Det er ingen vits å haste. Neste avgang er det realistiske alternativet.' + nextHint(),
+      ], seed + 1) };
+    }
+
+    return { level: 'bad', label: pick([
+      'Denne rekker du ikke',
+      'For sent ute til fots',
+      'Ikke denne gangen',
+      'Ta neste',
+    ], seed), sub: pick([
+      'Gangtiden overstiger tiden til avgang. Ta neste — det er det rolige valget.' + nextHint(),
+      'Du mangler noen minutter. Verken tempo eller optimisme endrer det nå.' + nextHint(),
+      'Neste avgang er det realistiske valget. Gå uten stress.' + nextHint(),
+      'Fergen stikker uansett. Sikt på neste og spar beina.' + nextHint(),
+    ], seed + 1) };
+  }
+
+  // === DRIVE MODE ===
+
+  if (margin >= 45) {
+    return { level: 'good', label: pick([
+      'Du har god tid',
+      'Ingen grunn til å stresse',
+      'Behagelig margin',
+      'Mer enn nok tid',
+      'Avslappet situasjon',
+      'Du kan senke skuldrene',
+    ], seed), sub: pick([
+      'Du kan kjøre normalt og har fortsatt tid til parkering og gange til kaia.',
+      'Parkering, kø og gange er allerede med i beregningen. Du er godt ute.',
+      'God tid — du kan til og med stoppe for å fylle bensin og fortsatt rekke fergen.',
+      'Dette er trygg margin. Ingenting å endre på.',
+      'Du er tidlig ute. Kjør normalt, parkér uten stress.',
+      'Fergen rekker du uansett. Bare kjør normalt.',
+    ], seed + 1) };
+  }
+
+  if (margin >= 25) {
+    return { level: 'good', label: pick([
+      'Du rekker fergen',
+      'Greit slingringsmonn',
+      'Trygg buffer',
+      'God sjanse',
+      'Dette går bra',
+      'Komfortabel margin',
+    ], seed), sub: pick([
+      'Normalt kjøretempo holder. Husk litt ekstra tid til parkering og gange til kaia.',
+      'Komfortabel buffer — ikke naiv, men heller ikke masete.',
+      'Kjør normalt, parkér uten å lete for lenge, og du er i rute.',
+      'Fergekø kan spise litt av marginen, men det holder likevel.',
+      'God tid. Parkering og gange til kai er allerede dekket — kjør nå.',
+      'Du har nok tid til å parkere rolig og gå direkte til kaia.',
+    ], seed + 1) };
+  }
+
+  if (margin >= 12) {
+    return { level: 'good', label: pick([
+      'Du rekker det',
+      'Litt snug, men greit',
+      'Hold tempo',
+      'Greit hvis du kjører nå',
+      'Realistisk, men stramt',
+    ], seed), sub: pick([
+      'Dette krever at du kjører nå og parkerer uten lang leting. Marginen er skjør.',
+      'Normalt tempo holder — men ikke gjør stans underveis.',
+      'Parkering er jokeren her. Finn plass raskt og gå direkte til kaia.',
+      'Du rekker det, men dette forutsetter at alt går riktig. Kjør nå.',
+      'Snug, men realistisk. Direkte kjøring og rask parkering.',
+      'Skjør buffer — kjør direkte og ikke bruk tid på å lete etter parkering.',
+    ], seed + 1) };
+  }
+
+  if (margin >= 5) {
+    return { level: 'warn', label: pick([
+      'Det haster',
+      'Tidspress',
+      'Kjør nå',
+      'Lite å gå på',
+      'Knapt, men mulig',
+      'Skjær gjennom',
+    ], seed), sub: pick([
+      'Dette er teoretisk mulig, men forutsetter null forsinkelser. Parkering kan avgjøre det.',
+      'Kjør nå, parkér på første ledige plass og gå fort. Ikke tid for å lete.',
+      'Marginen holder bare hvis alt klaffer. Et rødt lys for mye og du ser fergen fra land.',
+      'Du trenger flyt hele veien — direkte kjøring, rask parkering, direkte til kai.',
+      'Dette er 50/50. En dårlig parkering og du ser fergen stikke.',
+      'Ikke stopp underveis — ikke for mat, drikke eller mobilsjekk. Direkte til kai.',
+      'Parkering + gange spiser marginen. Bruk nærmeste plass og gå fort.',
+    ], seed + 1) };
   }
 
   if (margin >= 0) {
-    const labels = ['Kjør nå!', 'Det haster!', 'Gass på!', 'Ingen pauser nå'];
-    const subs = [
-      `Kjøretid ${driveMins} min og bare ${margin} min margin — alt må gå perfekt.`,
-      `${margin === 0 ? 'Akkurat nok tid' : `${margin} min å gå på`} — tråkk til og håp på grønne lys.`,
-      `Du har teoretisk ${margin} min margin. Praktisk talt null.`,
-    ];
-    return { level: 'warn', label: pick(labels, seed), sub: pick(subs, seed + 1) };
+    return { level: 'warn', label: pick([
+      'Ekstremt knapt',
+      'Alt må klaffe nå',
+      'Kritisk margin',
+      'Sprint-territorium',
+      'Nesten for sent',
+      'Optimistisk plan',
+    ], seed), sub: pick([
+      'Dette er på papiret mulig. Null feilmargin — perfekt parkering, ingen kø, direkte til kai.',
+      'Du er på grensen. En trafikklys eller saktegående lastebil — og det er over.' + (nextHint() || ' Neste avgang er tryggere.'),
+      'Teorien sier du rekker det. Praksis sier det er svært knapt. Parkeringen teller ikke med her.' + nextHint(),
+      'Dette holder bare hvis alt går riktig. Ambisiøst.' + (nextHint() || ''),
+      'Kjøretiden er akkurat nok — men det er ikke dør-til-dør. Parkering og gange teller.' + nextHint(),
+      'Marginen er reell bare i teorien. Én forsinkelse og du ser fergen gå.' + nextHint(),
+    ], seed + 1) };
   }
 
-  // Missed — build next-ferry hint
+  // Missed — drive
   const shortage = Math.abs(margin);
-  let nextHint = '';
-  if (nextTrip) {
-    const minsToNext = minsUntil(nextTrip.dateStr, nextTrip.startTime);
-    nextHint = minsToNext > 0
-      ? ` Neste ferge går om ${fmtCountdown(minsToNext)} (kl. ${nextTrip.startTime}) — den rekker du.`
-      : ` Neste ferge går ${nextTrip.startTime}.`;
+
+  if (shortage >= 45) {
+    return { level: 'bad', label: pick([
+      'Denne rekker du ikke',
+      'Fergen er allerede borte',
+      'God tid til neste',
+      'Sikt på neste avgang',
+      'Ikke denne gangen',
+    ], seed), sub: pick([
+      'Kjøretiden er for lang til å rekke denne. Ta neste og kjør uten stress.' + nextHint(),
+      'Det er ingen vits å haste. Neste avgang er det realistiske alternativet.' + nextHint(),
+      'Fergen er enten i gang eller allerede borte. Ta neste og kjør rolig.' + nextHint(),
+      'Du ville trengt for mye tid. Ta neste — det er det fornuftige valget.' + nextHint(),
+    ], seed + 1) };
   }
 
-  if (shortage >= 60) {
-    const labels = [
-      'Fergen er for lengst borte',
-      'Du er litt... sent ute',
-      'Fergen venter ikke på GPS',
-      'Dessverre — ikke denne gangen',
-    ];
-    const subs = [
-      `${driveMins} min kjøring, ${shortage} min for sent — noen ganger er det bare slik.${nextHint}`,
-      `Med ${driveMins} min kjøretid og ${shortage} min for lite ville selv Schumacher slitt.${nextHint}`,
-      `${driveMins} min unna og fergen gikk for ${shortage} min siden. Fergen bryr seg lite om det.${nextHint}`,
-    ];
-    return { level: 'bad', label: pick(labels, seed), sub: pick(subs, seed + 1) };
-  }
-
-  const labels = [
-    'Du rekker neppe denne',
-    'Litt for sent ute',
-    'Fergen bryr seg ikke om trafikken din',
-    'Nesten — men nesten er ikke nok',
-  ];
-  const subs = [
-    `Kjøretid ${driveMins} min, mangler ${shortage} min. Neste gang!${nextHint}`,
-    `${shortage} min for sent. Fergen stikker uansett.${nextHint}`,
-    `Du trenger ${shortage} min til — kanskje sett opp varsling neste gang?${nextHint}`,
-    `${driveMins} min kjøring og du er ${shortage} min bak skjema.${nextHint}`,
-  ];
-  return { level: 'bad', label: pick(labels, seed), sub: pick(subs, seed + 1) };
+  return { level: 'bad', label: pick([
+    'Du rekker ikke denne',
+    'For sent ute',
+    'Denne gikk',
+    'Ikke denne gangen',
+    'Mangler noen minutter',
+    'Knapt for sent',
+  ], seed), sub: pick([
+    'Kjøretiden overstiger tiden til avgang. Ta neste — det er det rolige valget.' + nextHint(),
+    'Du mangler noen minutter. Hverken tempo eller optimisme endrer det nå.' + nextHint(),
+    'Fergen stikker uansett. Sikt på neste avgang og kjør uten hast.' + nextHint(),
+    'Dette er klassisk "burde dratt litt før". Ta neste ferge og kjør rolig.' + nextHint(),
+    'Litt for knapt. Ingen grunn til å stresse — neste avgang er ikke langt unna.' + nextHint(),
+    'Du er noen minutter bak. Kjør normalt og ta neste.' + nextHint(),
+  ], seed + 1) };
 }
