@@ -6,6 +6,7 @@ import { ResultsScreen } from './screens/ResultsScreen';
 import { DetailScreen } from './screens/DetailScreen';
 import { StopPicker } from './components/Atoms';
 import { Icon } from './components/Icons';
+import { Tour } from './components/Tour';
 import type { StopId, ThemeKey, StyleKey, Weather, Trip, Screen } from './types';
 
 function yrSymbolToCode(sym: string): number {
@@ -88,6 +89,7 @@ export default function App() {
   const [styleKey, setStyleKey] = useState<StyleKey>(() => (localStorage.getItem('styleKey') as StyleKey) || 'sjokart');
   const [animate, setAnimate] = useState(() => localStorage.getItem('animate') !== 'false');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
 
   const [screen, setScreen] = useState<Screen>('home');
   const [prevScreen, setPrevScreen] = useState<Screen>('home');
@@ -201,13 +203,21 @@ export default function App() {
         />
       )}
 
-      {/* Settings FAB */}
-      <button
-        onClick={() => setSettingsOpen(true)}
-        style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)', right: 'calc(max(0px, (100vw - 430px) / 2) + 20px)', width: 48, height: 48, borderRadius: 99, background: 'var(--deep)', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 24px rgba(0,0,0,0.35)', zIndex: 70 }}
-      >
-        <Icon name="settings" size={20} color="var(--onDeep)" stroke={1.8} />
-      </button>
+      {/* FABs */}
+      <div style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)', right: 'calc(max(0px, (100vw - 430px) / 2) + 20px)', display: 'flex', gap: 10, zIndex: 70 }}>
+        <button
+          onClick={() => setTourOpen(true)}
+          style={{ width: 48, height: 48, borderRadius: 99, background: 'var(--deep)', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 24px rgba(0,0,0,0.35)' }}
+        >
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 20, color: 'var(--onDeep)', lineHeight: 1 }}>?</span>
+        </button>
+        <button
+          onClick={() => setSettingsOpen(true)}
+          style={{ width: 48, height: 48, borderRadius: 99, background: 'var(--deep)', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 24px rgba(0,0,0,0.35)' }}
+        >
+          <Icon name="settings" size={20} color="var(--onDeep)" stroke={1.8} />
+        </button>
+      </div>
 
       <StopPicker
         open={picker.open}
@@ -218,6 +228,8 @@ export default function App() {
         onPick={pick}
         onClose={() => setPicker({ open: false, which: null })}
       />
+
+      {tourOpen && <Tour onClose={() => setTourOpen(false)} />}
 
       <SettingsSheet
         open={settingsOpen}
