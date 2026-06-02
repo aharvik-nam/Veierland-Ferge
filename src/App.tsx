@@ -9,6 +9,44 @@ import { Icon } from './components/Icons';
 import { Tour } from './components/Tour';
 import type { StopId, ThemeKey, StyleKey, Weather, Trip, Screen } from './types';
 
+// Norwegian public holidays (MM-DD) and summer peak weeks
+const NO_HOLIDAYS = new Set([
+  '01-01','04-17','04-18','04-20','04-21','05-01','05-17',
+  '05-29','06-08','06-09','12-25','12-26',
+]);
+
+function trafficMultiplier(): number {
+  const now = getOsloDate();
+  const dow = now.getDay();       // 0=sun, 5=fri, 6=sat
+  const hour = now.getHours();
+  const mmdd = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const week = Math.ceil((now.getDate() - now.getDay() + 10) / 7); // approx ISO week
+  const month = now.getMonth() + 1; // 1–12
+
+  // Public holidays — treat like Sunday, no rush
+  if (NO_HOLIDAYS.has(mmdd)) return 1.0;
+
+  // Summer peak: week 26–32 (late June – early August) Friday afternoons and Sundays
+  const isSummerPeak = month >= 6 && month <= 8 && week >= 26 && week <= 32;
+
+  // Friday afternoon outbound rush (E18 sørover) 14:00–19:00
+  if (dow === 5 && hour >= 14 && hour < 19) return isSummerPeak ? 1.55 : 1.35;
+
+  // Friday morning / evening light traffic
+  if (dow === 5) return 1.1;
+
+  // Sunday evening return rush 15:00–20:00 (summer) — people heading back to Oslo
+  if (dow === 0 && hour >= 15 && hour < 20 && isSummerPeak) return 1.4;
+
+  // Weekday morning rush 07:00–09:00 and afternoon rush 15:00–18:00
+  if (dow >= 1 && dow <= 4) {
+    if (hour >= 7 && hour < 9) return 1.2;
+    if (hour >= 15 && hour < 18) return 1.25;
+  }
+
+  return 1.0;
+}
+
 function yrSymbolToCode(sym: string): number {
   if (!sym) return 2;
   if (sym.startsWith('clearsky')) return 1;
@@ -144,7 +182,7 @@ export default function App() {
       .then(r => r.json())
       .then(j => {
         const secs = j.routes?.[0]?.duration;
-        if (secs != null) setDriveMins(Math.ceil(secs / 60));
+        if (secs != null) setDriveMins(Math.ceil(secs / 60 * trafficMultiplier()));
       })
       .catch(() => setDriveMins(null));
   }, [userLoc, from]);
