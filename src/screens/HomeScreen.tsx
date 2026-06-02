@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CompassMark } from '../components/Icons';
 import { Icon } from '../components/Icons';
 import { DeepBand, WeatherChip, RouteCard, StatusSignal, TravelChips, NumTime, Label } from '../components/Atoms';
-import { nextDepartures, prevDeparture, minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, ymd, getOsloDate, stopsMap } from '../ferryData';
+import { nextDepartures, prevDeparture, minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, ymd, getOsloDate, stopsMap, bookingStatus } from '../ferryData';
 import type { StopId, Weather, Trip } from '../types';
 
 interface HomeScreenProps {
@@ -123,6 +123,29 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
               </div>
             </DeepBand>
 
+            {(() => {
+              const bs = bookingStatus(dep);
+              if (!bs.required) return null;
+              return (
+                <div style={{ background: bs.passed ? 'color-mix(in srgb, var(--bad) 14%, var(--surface))' : 'color-mix(in srgb, var(--bad) 10%, var(--surface))', borderBottom: '1px solid color-mix(in srgb, var(--bad) 22%, transparent)', padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Icon name="alert" size={16} color="var(--bad)" stroke={2.2} style={{ flexShrink: 0 }} />
+                    <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13, color: 'var(--bad)' }}>
+                      {bs.passed ? 'Bestillingsfrist er passert' : 'Forhåndsbestilling kreves'}
+                    </span>
+                  </div>
+                  <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12.5, color: 'var(--inkDim)', paddingLeft: 24, lineHeight: 1.4 }}>
+                    {bs.passed ? 'Du kan ikke lenger bestille denne avgangen per telefon.' : bs.label}
+                  </div>
+                  {!bs.passed && (
+                    <a href="tel:91888219" style={{ marginTop: 4, marginLeft: 24, display: 'inline-flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 'var(--radSm)', background: 'var(--bad)', textDecoration: 'none', alignSelf: 'flex-start' }}>
+                      <Icon name="phone" size={14} color="#fff" stroke={2} />
+                      <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13, color: '#fff' }}>Ring · 918 88 219</span>
+                    </a>
+                  )}
+                </div>
+              );
+            })()}
             <div style={{ padding: '18px 20px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
               {(tv.showCar || tv.showWalk) && status && <div data-tour="status-signal"><StatusSignal status={status} /></div>}
               <TravelChips stop={from} showCar={tv.showCar} showWalk={tv.showWalk} driveOverride={driveMins} />
@@ -156,18 +179,26 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
                 <button
                   key={label}
                   onClick={trip ? handleClick : undefined}
-                  style={{ textAlign: 'left', padding: '12px 14px', borderRadius: 'var(--radSm)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', cursor: trip ? 'pointer' : 'default', opacity: !trip ? 0.3 : isPast ? 0.6 : 1 }}
+                  style={{ textAlign: 'left', padding: '12px 14px', borderRadius: 'var(--radSm)', background: 'rgba(255,255,255,0.06)', border: trip && bookingStatus(trip).required ? '1px solid color-mix(in srgb, var(--bad) 50%, transparent)' : '1px solid rgba(255,255,255,0.10)', cursor: trip ? 'pointer' : 'default', opacity: !trip ? 0.3 : isPast ? 0.6 : 1 }}
                 >
                   <Label color="var(--onDeepDim)" style={{ fontSize: 9 }}>{label}</Label>
                   {trip ? (
-                    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 5, gap: 6 }}>
-                      <NumTime size={28} color="var(--onDeep)">{trip.startTime}</NumTime>
-                      {cd != null ? (
-                        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13, color: 'var(--accent)', lineHeight: 1.1, textAlign: 'right' }}>om {fmtCountdown(cd)}</span>
-                      ) : (
-                        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12, color: 'var(--onDeepDim)', lineHeight: 1.1, textAlign: 'right' }}>{trip.endTime}</span>
+                    <>
+                      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 5, gap: 6 }}>
+                        <NumTime size={28} color="var(--onDeep)">{trip.startTime}</NumTime>
+                        {cd != null ? (
+                          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13, color: 'var(--accent)', lineHeight: 1.1, textAlign: 'right' }}>om {fmtCountdown(cd)}</span>
+                        ) : (
+                          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12, color: 'var(--onDeepDim)', lineHeight: 1.1, textAlign: 'right' }}>{trip.endTime}</span>
+                        )}
+                      </div>
+                      {bookingStatus(trip).required && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 6 }}>
+                          <Icon name="phone" size={10} color="var(--bad)" stroke={2} />
+                          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 10, color: 'var(--bad)', lineHeight: 1 }}>Må bestilles</span>
+                        </div>
                       )}
-                    </div>
+                    </>
                   ) : (
                     <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--onDeepDim)', marginTop: 4 }}>—</div>
                   )}

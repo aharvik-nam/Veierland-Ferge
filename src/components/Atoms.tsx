@@ -1,6 +1,6 @@
 import React from 'react';
 import { Icon, weatherProps, FerryGlyph, WaveField, ChartTexture } from './Icons';
-import { stopsMap, stopShort, stopKind, stopTravel, fmtCountdown } from '../ferryData';
+import { stopsMap, stopShort, stopKind, stopTravel, fmtCountdown, bookingStatus } from '../ferryData';
 import type { StopId, Weather, Trip } from '../types';
 
 // ── Label ────────────────────────────────────────────────────
@@ -205,14 +205,27 @@ export function RouteCard({ from, to, onEditFrom, onEditTo, onSwap }: { from: St
 
 // ── TripCard ─────────────────────────────────────────────────
 export function TripCard({ trip, isNext, countdown, onClick }: { trip: Trip; isNext: boolean; countdown: number | null; onClick: () => void }) {
-  const booking = trip.warnings.find(w => w.type === 'booking');
+  const bs = bookingStatus(trip);
   const engo = trip.warnings.find(w => w.type === 'engo');
   return (
-    <button onClick={onClick} style={{ width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: 'var(--rad)', overflow: 'hidden', border: isNext ? '1.5px solid var(--accent)' : '1px solid var(--line)', background: 'var(--surface)', padding: 0, boxShadow: isNext ? '0 10px 30px -12px color-mix(in srgb, var(--accent) 50%, transparent)' : '0 1px 2px rgba(0,0,0,0.03)' }}>
-      {isNext && (
+    <button onClick={onClick} style={{ width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: 'var(--rad)', overflow: 'hidden', border: bs.required ? '1.5px solid color-mix(in srgb, var(--bad) 45%, transparent)' : isNext ? '1.5px solid var(--accent)' : '1px solid var(--line)', background: 'var(--surface)', padding: 0, boxShadow: isNext ? '0 10px 30px -12px color-mix(in srgb, var(--accent) 50%, transparent)' : '0 1px 2px rgba(0,0,0,0.03)' }}>
+      {isNext && !bs.required && (
         <div style={{ background: 'var(--accent)', padding: '7px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
           <Label color="var(--accentInk)" style={{ fontSize: 10, whiteSpace: 'nowrap' }}>Neste avgang</Label>
           {countdown != null && <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12, color: 'var(--accentInk)', whiteSpace: 'nowrap' }}>om {fmtCountdown(countdown)}</span>}
+        </div>
+      )}
+      {bs.required && (
+        <div style={{ background: bs.passed ? 'color-mix(in srgb, var(--bad) 18%, var(--surface))' : 'color-mix(in srgb, var(--bad) 12%, var(--surface))', padding: '9px 16px', borderBottom: '1px solid color-mix(in srgb, var(--bad) 25%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+            <Icon name="alert" size={14} color="var(--bad)" stroke={2.2} style={{ flexShrink: 0 }} />
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 11.5, color: 'var(--bad)', lineHeight: 1.3 }}>
+              {bs.passed ? 'Bestillingsfrist passert' : 'Forhåndsbestilling kreves'}
+            </span>
+          </div>
+          {!bs.passed && (
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 11, color: 'var(--bad)', whiteSpace: 'nowrap', opacity: 0.85 }}>{bs.label.match(/\(.+\)/)?.[0]?.replace(/[()]/g, '') ?? ''}</span>
+          )}
         </div>
       )}
       <div style={{ padding: '15px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -235,10 +248,16 @@ export function TripCard({ trip, isNext, countdown, onClick }: { trip: Trip; isN
         </div>
         <Icon name="chevronRight" size={18} color="var(--inkDim)" stroke={2} style={{ opacity: 0.5 }} />
       </div>
-      {(booking || engo) && (
-        <div style={{ padding: '8px 16px', background: 'color-mix(in srgb, var(--bad) 8%, var(--surface))', borderTop: '1px solid color-mix(in srgb, var(--bad) 20%, transparent)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Icon name="info" size={14} color="var(--bad)" stroke={2} />
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 11, color: 'var(--bad)' }}>{booking ? 'Krever forhåndsbestilling' : 'Rød avgang via Engø'}</span>
+      {bs.required && !bs.passed && (
+        <a href="tel:91888219" onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '10px 16px', background: 'var(--bad)', textDecoration: 'none', borderTop: '1px solid color-mix(in srgb, var(--bad) 40%, transparent)' }}>
+          <Icon name="phone" size={15} color="#fff" stroke={2} />
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13, color: '#fff' }}>Ring fergen · 918 88 219</span>
+        </a>
+      )}
+      {engo && !bs.required && (
+        <div style={{ padding: '8px 16px', background: 'color-mix(in srgb, var(--accent) 8%, var(--surface))', borderTop: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Icon name="info" size={14} color="var(--accent)" stroke={2} />
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 11, color: 'var(--accent)' }}>Rød avgang via Engø</span>
         </div>
       )}
     </button>

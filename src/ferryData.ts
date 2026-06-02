@@ -269,6 +269,53 @@ export function fmtCountdown(mins: number): string {
   return `${m} min`;
 }
 
+export function bookingStatus(trip: { warnings: import('./types').TripWarning[]; dateStr: string }): {
+  required: boolean;
+  passed: boolean;
+  minsLeft: number | null;  // null = deadline is not today/tonight
+  label: string;            // human-readable urgency summary
+} {
+  const booking = trip.warnings.find(w => w.type === 'booking');
+  if (!booking) return { required: false, passed: false, minsLeft: null, label: '' };
+
+  const now = getOsloDate();
+  const todayStr = ymd(now);
+  const tripDate = parseYmd(trip.dateStr);
+  const dayBefore = new Date(tripDate); dayBefore.setDate(tripDate.getDate() - 1);
+  const dayBeforeStr = ymd(dayBefore);
+
+  const sameDay = booking.deadline === '18:00';
+
+  if (sameDay) {
+    // Deadline: trip date at 18:00
+    if (trip.dateStr === todayStr) {
+      const mins = minsUntil(todayStr, '18:00');
+      if (mins <= 0) return { required: true, passed: true, minsLeft: null, label: 'Bestillingsfristen er passert' };
+      return { required: true, passed: false, minsLeft: mins, label: `${fmtCountdown(mins)} igjen til fristen (kl. 18:00)` };
+    }
+    if (trip.dateStr === ymd(new Date(now.getTime() + 86400000))) {
+      // Tomorrow — deadline is today at 18:00
+      const mins = minsUntil(todayStr, '18:00');
+      if (mins <= 0) return { required: true, passed: true, minsLeft: null, label: 'Bestillingsfristen er passert' };
+      return { required: true, passed: false, minsLeft: mins, label: `Ring i dag — frist kl. 18:00 (${fmtCountdown(mins)} igjen)` };
+    }
+    return { required: true, passed: false, minsLeft: null, label: 'Må bestilles innen kl. 18:00 på avreisedagen' };
+  } else {
+    // Deadline: evening before at 20:00
+    if (trip.dateStr === todayStr) {
+      // Deadline was yesterday — always passed
+      return { required: true, passed: true, minsLeft: null, label: 'Bestillingsfristen er passert' };
+    }
+    if (dayBeforeStr === todayStr) {
+      // Deadline is tonight at 20:00
+      const mins = minsUntil(todayStr, '20:00');
+      if (mins <= 0) return { required: true, passed: true, minsLeft: null, label: 'Bestillingsfristen er passert' };
+      return { required: true, passed: false, minsLeft: mins, label: `Ring i kveld — frist kl. 20:00 (${fmtCountdown(mins)} igjen)` };
+    }
+    return { required: true, passed: false, minsLeft: null, label: 'Må bestilles kvelden før innen kl. 20:00' };
+  }
+}
+
 function pick<T>(arr: T[], seed: number): T {
   return arr[Math.abs(seed) % arr.length];
 }
