@@ -181,6 +181,7 @@ export default function App() {
           onSeeAll={() => { setSelectedDate(ymd(getOsloDate())); setScreen('results'); }}
           onOpenTrip={openTrip} tick={tick} userLoc={userLoc} driveMins={driveMins}
           onboarded={onboarded} onSetOnboarded={() => { setOnboarded(true); localStorage.setItem('onboarded', 'true'); }}
+          onReset={() => { setOnboarded(false); localStorage.removeItem('onboarded'); }}
         />
       )}
       {screen === 'results' && (

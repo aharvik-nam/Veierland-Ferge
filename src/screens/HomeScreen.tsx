@@ -21,9 +21,10 @@ interface HomeScreenProps {
   driveMins: number | null;
   onboarded: boolean;
   onSetOnboarded: () => void;
+  onReset: () => void;
 }
 
-export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, onboarded, onSetOnboarded }: HomeScreenProps) {
+export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, onboarded, onSetOnboarded, onReset }: HomeScreenProps) {
   const [heroIndex, setHeroIndex] = useState(0);
   useEffect(() => { setHeroIndex(0); }, [from, to]);
 
@@ -77,13 +78,13 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
       <div style={{ position: 'relative', padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 18px 30px' }}>
         {/* header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 22 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+          <button onClick={onReset} style={{ display: 'flex', alignItems: 'center', gap: 11, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
             <CompassMark size={34} color="var(--onDeep)" opacity={0.85} />
-            <div>
+            <div style={{ textAlign: 'left' }}>
               <div style={{ fontFamily: 'var(--num)', fontSize: 25, color: 'var(--onDeep)', lineHeight: 0.9 }}>Veierland</div>
               <Label color="var(--onDeepDim)" style={{ fontSize: 9.5 }}>M/F Jutøya · Ferge</Label>
             </div>
-          </div>
+          </button>
           <WeatherChip weather={weather} onDeep />
         </div>
 
