@@ -268,10 +268,86 @@ export function fmtCountdown(mins: number): string {
   return `${m} min`;
 }
 
-export function rekkerStatus(driveMins: number, countdownMins: number | null): { level: 'good' | 'warn' | 'bad'; label: string; sub: string } | null {
+function pick<T>(arr: T[], seed: number): T {
+  return arr[Math.abs(seed) % arr.length];
+}
+
+export function rekkerStatus(
+  driveMins: number,
+  countdownMins: number | null,
+  nextTrip?: { startTime: string; dateStr: string } | null
+): { level: 'good' | 'warn' | 'bad'; label: string; sub: string } | null {
   if (countdownMins == null) return null;
   const margin = countdownMins - driveMins;
-  if (margin >= 10) return { level: 'good', label: 'Du rekker fergen', sub: `God margin — kjøretid ${driveMins} min, ${fmtCountdown(countdownMins)} igjen` };
-  if (margin >= 0) return { level: 'warn', label: 'Det haster — kjør nå', sub: `Kjøretid ${driveMins} min, bare ${margin} min margin` };
-  return { level: 'bad', label: 'Du rekker neppe denne', sub: `Kjøretid ${driveMins} min — mangler ${Math.abs(margin)} min` };
+  const seed = driveMins + Math.abs(margin);
+
+  if (margin >= 30) {
+    const labels = ['Du rekker fergen', 'Ingen stress', 'God tid', 'Slapp av'];
+    const subs = [
+      `${fmtCountdown(countdownMins)} til avgang — kjøretid ${driveMins} min`,
+      `Du har ${margin} min å gå på. Ta deg god tid.`,
+      `Kjøretid ${driveMins} min, ${fmtCountdown(countdownMins)} til avgang. Nesten for tidlig ute.`,
+      `${margin} min slingringsmonn — du rekker kanskje en kaffe på veien.`,
+    ];
+    return { level: 'good', label: pick(labels, seed), sub: pick(subs, seed + 1) };
+  }
+
+  if (margin >= 10) {
+    const labels = ['Du rekker fergen', 'Det holder fint', 'Du rekker det'];
+    const subs = [
+      `Kjøretid ${driveMins} min, ${fmtCountdown(countdownMins)} igjen — ${margin} min margin`,
+      `${margin} min å gå på. Ikke stresset, men ikke stopp for å ta bilder heller.`,
+      `Kjøretid ${driveMins} min og ${fmtCountdown(countdownMins)} til avgang. Litt snug, men ok.`,
+    ];
+    return { level: 'good', label: pick(labels, seed), sub: pick(subs, seed + 1) };
+  }
+
+  if (margin >= 0) {
+    const labels = ['Kjør nå!', 'Det haster!', 'Gass på!', 'Ingen pauser nå'];
+    const subs = [
+      `Kjøretid ${driveMins} min og bare ${margin} min margin — alt må gå perfekt.`,
+      `${margin === 0 ? 'Akkurat nok tid' : `${margin} min å gå på`} — tråkk til og håp på grønne lys.`,
+      `Du har teoretisk ${margin} min margin. Praktisk talt null.`,
+    ];
+    return { level: 'warn', label: pick(labels, seed), sub: pick(subs, seed + 1) };
+  }
+
+  // Missed — build next-ferry hint
+  const shortage = Math.abs(margin);
+  let nextHint = '';
+  if (nextTrip) {
+    const minsToNext = minsUntil(nextTrip.dateStr, nextTrip.startTime);
+    nextHint = minsToNext > 0
+      ? ` Neste ferge går om ${fmtCountdown(minsToNext)} (kl. ${nextTrip.startTime}) — den rekker du.`
+      : ` Neste ferge går ${nextTrip.startTime}.`;
+  }
+
+  if (shortage >= 60) {
+    const labels = [
+      'Fergen er for lengst borte',
+      'Du er litt... sent ute',
+      'Fergen venter ikke på GPS',
+      'Dessverre — ikke denne gangen',
+    ];
+    const subs = [
+      `${driveMins} min kjøring, ${shortage} min for sent — noen ganger er det bare slik.${nextHint}`,
+      `Med ${driveMins} min kjøretid og ${shortage} min for lite ville selv Schumacher slitt.${nextHint}`,
+      `${driveMins} min unna og fergen gikk for ${shortage} min siden. Fergen bryr seg lite om det.${nextHint}`,
+    ];
+    return { level: 'bad', label: pick(labels, seed), sub: pick(subs, seed + 1) };
+  }
+
+  const labels = [
+    'Du rekker neppe denne',
+    'Litt for sent ute',
+    'Fergen bryr seg ikke om trafikken din',
+    'Nesten — men nesten er ikke nok',
+  ];
+  const subs = [
+    `Kjøretid ${driveMins} min, mangler ${shortage} min. Neste gang!${nextHint}`,
+    `${shortage} min for sent. Fergen stikker uansett.${nextHint}`,
+    `Du trenger ${shortage} min til — kanskje sett opp varsling neste gang?${nextHint}`,
+    `${driveMins} min kjøring og du er ${shortage} min bak skjema.${nextHint}`,
+  ];
+  return { level: 'bad', label: pick(labels, seed), sub: pick(subs, seed + 1) };
 }

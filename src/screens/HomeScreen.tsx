@@ -36,7 +36,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
   const prevIsPast = heroIndex === 0;
   const countdown = dep && dep.dateStr === ymd(getOsloDate()) ? minsUntil(dep.dateStr, dep.startTime) : null;
   const effectiveDrive = driveMins ?? stopTravel[from].drive;
-  const status = dep ? rekkerStatus(effectiveDrive, countdown) : null;
+  const status = dep ? rekkerStatus(effectiveDrive, countdown, nextDep) : null;
   const tv = travelVisibility(from, userLoc);
 
   if (!onboarded) {

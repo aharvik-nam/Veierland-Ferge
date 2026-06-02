@@ -1,7 +1,7 @@
 import React from 'react';
 import { Icon } from '../components/Icons';
 import { DeepBand, Label, NumTime, StatusSignal, TravelChips, CallButton } from '../components/Atoms';
-import { minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, stopShort, ymd, getOsloDate } from '../ferryData';
+import { minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, stopShort, ymd, getOsloDate, findTripsForDay, dayTypeOf, parseYmd, parseTime } from '../ferryData';
 import type { Trip, StopId } from '../types';
 
 function RouteTimeline({ trip, animate }: { trip: Trip; animate: boolean }) {
@@ -55,7 +55,13 @@ export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick
   const countdown = isToday ? minsUntil(trip.dateStr, trip.startTime) : null;
   const upcoming = countdown == null || countdown >= 0;
   const effectiveDrive = driveMins ?? stopTravel[trip.startStop].drive;
-  const status = upcoming && isToday ? rekkerStatus(effectiveDrive, countdown) : null;
+  const nextTrip = (() => {
+    if (!isToday) return null;
+    const nowMins = getOsloDate().getHours() * 60 + getOsloDate().getMinutes();
+    const todayTrips = findTripsForDay(dayTypeOf(parseYmd(trip.dateStr)), parseYmd(trip.dateStr), trip.startStop, trip.subpath[trip.subpath.length - 1].stopId);
+    return todayTrips.find(t => parseTime(t.startTime) > parseTime(trip.startTime) && parseTime(t.startTime) > nowMins) ?? null;
+  })();
+  const status = upcoming && isToday ? rekkerStatus(effectiveDrive, countdown, nextTrip) : null;
   const tv = travelVisibility(trip.startStop, userLoc);
   const booking = trip.warnings.find(w => w.type === 'booking');
   const engo = trip.warnings.find(w => w.type === 'engo');
