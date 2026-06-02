@@ -19,9 +19,11 @@ interface HomeScreenProps {
   tick: number;
   userLoc: { lat: number; lng: number } | null;
   driveMins: number | null;
+  onboarded: boolean;
+  onSetOnboarded: () => void;
 }
 
-export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins }: HomeScreenProps) {
+export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, onboarded, onSetOnboarded }: HomeScreenProps) {
   const [heroIndex, setHeroIndex] = useState(0);
   useEffect(() => { setHeroIndex(0); }, [from, to]);
 
@@ -35,6 +37,40 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
   const effectiveDrive = driveMins ?? stopTravel[from].drive;
   const status = dep ? rekkerStatus(effectiveDrive, countdown) : null;
   const tv = travelVisibility(from, userLoc);
+
+  if (!onboarded) {
+    return (
+      <div style={{ minHeight: '100dvh', background: 'linear-gradient(180deg, var(--deep) 0%, var(--deep2) 55%, var(--deep) 100%)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 28px) 22px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+            <CompassMark size={34} color="var(--onDeep)" opacity={0.85} />
+            <div>
+              <div style={{ fontFamily: 'var(--num)', fontSize: 25, color: 'var(--onDeep)', lineHeight: 0.9 }}>Veierland</div>
+              <Label color="var(--onDeepDim)" style={{ fontSize: 9.5 }}>M/F Jutøya · Ferge</Label>
+            </div>
+          </div>
+          <WeatherChip weather={weather} onDeep />
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 22px calc(env(safe-area-inset-bottom, 0px) + 40px)', gap: 14 }}>
+          <RouteCard from={from} to={to} onEditFrom={onEditFrom} onEditTo={onEditTo} onSwap={onSwap} />
+
+          <button onClick={onSetOnboarded} style={{ width: '100%', padding: '16px', borderRadius: 'var(--rad)', background: 'var(--accent)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 16, color: 'var(--accentInk)' }}>Finn neste avgang</span>
+            <Icon name="arrowRight" size={18} color="var(--accentInk)" stroke={2.2} />
+          </button>
+
+          <button onClick={onSeeAll} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+              <Icon name="calendar" size={18} color="var(--onDeep)" stroke={1.9} />
+              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)' }}>Rutetabell</span>
+            </span>
+            <Icon name="chevronRight" size={17} color="var(--onDeepDim)" stroke={2} />
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100dvh', background: 'linear-gradient(180deg, var(--deep) 0%, var(--deep2) 55%, var(--deep) 100%)', position: 'relative' }}>
@@ -51,8 +87,15 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
           <WeatherChip weather={weather} onDeep />
         </div>
 
-        {/* route picker */}
-        <RouteCard from={from} to={to} onEditFrom={onEditFrom} onEditTo={onEditTo} onSwap={onSwap} />
+        {/* compact route bar */}
+        <button onClick={onEditFrom} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radSm)', padding: '10px 14px', cursor: 'pointer' }}>
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>{stopsMap[from]}</span>
+          <Icon name="arrowRight" size={14} color="var(--onDeepDim)" stroke={2} style={{ flexShrink: 0 }} />
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--onDeep)', whiteSpace: 'nowrap', flex: 1, textAlign: 'right' }}>{stopsMap[to]}</span>
+          <button onClick={e => { e.stopPropagation(); onSwap(); }} style={{ marginLeft: 6, width: 28, height: 28, borderRadius: 99, background: 'var(--accent)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+            <Icon name="swap" size={13} color="var(--accentInk)" stroke={2.2} />
+          </button>
+        </button>
 
         {/* next departure hero */}
         {dep ? (

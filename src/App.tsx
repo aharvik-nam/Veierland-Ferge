@@ -83,6 +83,7 @@ function SettingsSheet({ open, theme, style: stylePref, animate, onTheme, onStyl
 }
 
 export default function App() {
+  const [onboarded, setOnboarded] = useState(() => localStorage.getItem('onboarded') === 'true');
   const [themeKey, setThemeKey] = useState<ThemeKey>(() => (localStorage.getItem('themeKey') as ThemeKey) || 'fjord');
   const [styleKey, setStyleKey] = useState<StyleKey>(() => (localStorage.getItem('styleKey') as StyleKey) || 'sjokart');
   const [animate, setAnimate] = useState(() => localStorage.getItem('animate') !== 'false');
@@ -178,6 +179,7 @@ export default function App() {
           onEditFrom={() => openPicker('from')} onEditTo={() => openPicker('to')} onSwap={swap}
           onSeeAll={() => { setSelectedDate(ymd(getOsloDate())); setScreen('results'); }}
           onOpenTrip={openTrip} tick={tick} userLoc={userLoc} driveMins={driveMins}
+          onboarded={onboarded} onSetOnboarded={() => { setOnboarded(true); localStorage.setItem('onboarded', 'true'); }}
         />
       )}
       {screen === 'results' && (
