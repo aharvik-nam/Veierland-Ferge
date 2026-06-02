@@ -382,7 +382,7 @@ export function rekkerStatus(
       ], seed), sub: pick([
         'Du trenger rask gange hele veien. Direkte rute til kaia — ingen omveier eller stans.',
         'Dette er ikke rolig spasertur. Hold tempo og gå direkte — gåtid undervurderes lett.',
-        'Brisk gange nødvendig. Fergekøen ved kai spiser de siste minuttene — regn med det.',
+        'Brisk gange nødvendig. Hold direkte rute og ikke ta sjanser med omveier.',
         'Rask, målrettet gange er det som trengs. Ikke ta sjanser med ruten.',
         'Du rekker det med god fart, men marginen er skjør. Direkte rute, ingen pauser.',
       ], seed + 1) };
@@ -396,8 +396,8 @@ export function rekkerStatus(
         'Alt på gange nå',
       ], seed), sub: pick([
         'Dette krever rask, målrettet gange uten et sekund å miste. Neste avgang er tryggere.' + nextHint(),
-        'Teknisk mulig, men bare med maksimalt tempo og perfekt rute. Fergekøen teller ikke med her.' + nextHint(),
-        'Du er på grensen. Raskeste vei, ingen pauser — og håp på at det ikke er kø ved fergen.' + nextHint(),
+        'Teknisk mulig, men bare med maksimalt tempo og perfekt rute. Ingen rom for feil.' + nextHint(),
+        'Du er på grensen. Raskeste vei, ingen pauser.' + nextHint(),
         'Marginen er reell bare hvis alt klaffer. En omvei eller en stopp og du ser fergen gå.' + nextHint(),
       ], seed + 1) };
     }
@@ -408,8 +408,8 @@ export function rekkerStatus(
         'Neste er tryggere',
         'Umulig uten løping',
       ], seed), sub: pick([
-        'Gangtiden er akkurat på grensen — og kø ved fergen er ikke med i beregningen. Ta neste.' + nextHint(),
-        'Du ville måttet løpe og håpe på ingen kø. Det er ikke verdt det.' + nextHint(),
+        'Gangtiden er akkurat på grensen. Ta neste — det er det trygge valget.' + nextHint(),
+        'Du ville måttet løpe hele veien. Det er ikke verdt det.' + nextHint(),
         'Dette holder bare i teorien. Kø, orientering og boarding spiser resten. Neste er bedre.' + nextHint(),
       ], seed + 1) };
     }
@@ -454,7 +454,7 @@ export function rekkerStatus(
       'Du kan senke skuldrene',
     ], seed), sub: pick([
       'Du kan kjøre normalt og har fortsatt tid til parkering og gange til kaia.',
-      'Parkering, kø og gange er allerede med i beregningen. Du er godt ute.',
+      'Parkering og gange er allerede med i beregningen. Du er godt ute.',
       'God tid — du kan til og med stoppe for å fylle bensin og fortsatt rekke fergen.',
       'Dette er trygg margin. Ingenting å endre på.',
       'Du er tidlig ute. Kjør normalt, parkér uten stress.',
@@ -474,7 +474,7 @@ export function rekkerStatus(
       'Normalt kjøretempo holder. Husk litt ekstra tid til parkering og gange til kaia.',
       'Komfortabel buffer — ikke naiv, men heller ikke masete.',
       'Kjør normalt, parkér uten å lete for lenge, og du er i rute.',
-      'Fergekø kan spise litt av marginen, men det holder likevel.',
+      'Parkering og gange til kai er dekket med god margin.',
       'God tid. Parkering og gange til kai er allerede dekket — kjør nå.',
       'Du har nok tid til å parkere rolig og gå direkte til kaia.',
     ], seed + 1) };
@@ -525,7 +525,7 @@ export function rekkerStatus(
       'Nesten for sent',
       'Optimistisk plan',
     ], seed), sub: pick([
-      'Dette er på papiret mulig. Null feilmargin — perfekt parkering, ingen kø, direkte til kai.',
+      'Dette er på papiret mulig. Null feilmargin — perfekt parkering, direkte til kai.',
       'Du er på grensen. En trafikklys eller saktegående lastebil — og det er over.' + (nextHint() || ' Neste avgang er tryggere.'),
       'Teorien sier du rekker det. Praksis sier det er svært knapt. Parkeringen teller ikke med her.' + nextHint(),
       'Dette holder bare hvis alt går riktig. Ambisiøst.' + (nextHint() || ''),
