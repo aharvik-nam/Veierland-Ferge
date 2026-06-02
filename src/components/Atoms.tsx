@@ -78,7 +78,8 @@ export function TravelChips({ stop, onDeep = false, showCar: showCarProp, showWa
   const showCar = showCarProp !== undefined ? showCarProp : tv.showCar;
   const showWalk = showWalkProp !== undefined ? showWalkProp : true;
   if (!showCar && !showWalk) return null;
-  const driveDisplay = driveOverride != null ? driveOverride : tv.drive;
+  const driveDisplay = fmtCountdown(driveOverride != null ? driveOverride : tv.drive);
+  const walkDisplay = fmtCountdown(tv.walk);
   const col = onDeep ? 'var(--onDeep)' : 'var(--ink)';
   const dim = onDeep ? 'var(--onDeepDim)' : 'var(--inkDim)';
 
@@ -94,8 +95,8 @@ export function TravelChips({ stop, onDeep = false, showCar: showCarProp, showWa
 
   return (
     <div style={{ display: 'flex', gap: 10 }}>
-      {showCar && chip('car', `${driveDisplay} min`, 'med bil')}
-      {showWalk && chip('walk', `${tv.walk} min`, 'til fots')}
+      {showCar && chip('car', driveDisplay, 'med bil')}
+      {showWalk && chip('walk', walkDisplay, 'til fots')}
     </div>
   );
 }

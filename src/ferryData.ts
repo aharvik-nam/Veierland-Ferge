@@ -44,13 +44,14 @@ export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: numb
 }
 
 export function travelVisibility(stop: StopId, userLoc: { lat: number; lng: number } | null): { showCar: boolean; showWalk: boolean } {
-  const tv = stopTravel[stop];
-  if (!userLoc) {
-    // No GPS: hide all contextual travel times
-    return { showCar: false, showWalk: false };
-  }
+  // Bus stops: user is already on transit, no travel time relevant
+  if (stop === 'buss_tbg' || stop === 'buss_tenv') return { showCar: false, showWalk: false };
+
+  if (!userLoc) return { showCar: false, showWalk: false };
+
   const coord = stopCoords[stop];
   const dist = haversineKm(userLoc.lat, userLoc.lng, coord.lat, coord.lng);
+
   if (stop === 'vestgarden' || stop === 'tangen') {
     // Car-free island: only walk, only if within 10 km
     return { showCar: false, showWalk: dist < 10 };
@@ -59,7 +60,7 @@ export function travelVisibility(stop: StopId, userLoc: { lat: number; lng: numb
     // Mainland: car always, walk only if within 2 km
     return { showCar: true, showWalk: dist < 2 };
   }
-  return { showCar: tv.showCar, showWalk: true };
+  return { showCar: false, showWalk: false };
 }
 
 export const stopTravel: Record<StopId, { drive: number; walk: number; showCar: boolean }> = {

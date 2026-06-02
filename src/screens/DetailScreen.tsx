@@ -54,7 +54,7 @@ export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick
   const isToday = trip.dateStr === ymd(getOsloDate());
   const countdown = isToday ? minsUntil(trip.dateStr, trip.startTime) : null;
   const upcoming = countdown == null || countdown >= 0;
-  const isIsland = trip.startStop === 'vestgarden' || trip.startStop === 'tangen';
+  const isIsland = trip.startStop === 'vestgarden' || trip.startStop === 'tangen'; // engo is mainland
   const travelMode: 'drive' | 'walk' = isIsland ? 'walk' : 'drive';
   const effectiveDrive = isIsland ? stopTravel[trip.startStop].walk : (driveMins ?? stopTravel[trip.startStop].drive);
   const nextTrip = (() => {

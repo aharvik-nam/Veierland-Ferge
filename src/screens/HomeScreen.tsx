@@ -35,7 +35,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
   const prevCard = heroIndex > 0 ? (deps[heroIndex - 1] ?? null) : prevActual;
   const prevIsPast = heroIndex === 0;
   const countdown = dep && dep.dateStr === ymd(getOsloDate()) ? minsUntil(dep.dateStr, dep.startTime) : null;
-  const isIsland = from === 'vestgarden' || from === 'tangen';
+  const isIsland = from === 'vestgarden' || from === 'tangen'; // engo is mainland
   const travelMode: 'drive' | 'walk' = isIsland ? 'walk' : 'drive';
   const effectiveTravel = isIsland ? stopTravel[from].walk : (driveMins ?? stopTravel[from].drive);
   const status = dep ? rekkerStatus(effectiveTravel, countdown, travelMode, nextDep) : null;
