@@ -93,7 +93,7 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
           </button>
           <div style={{ fontFamily: 'var(--num)', fontSize: 26, color: 'var(--onDeep)' }}>Rutetabell</div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radSm)', padding: '10px 14px' }}>
+        <div data-tour="results-route-bar" style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radSm)', padding: '10px 14px' }}>
           <button onClick={onEditFrom} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
             <StopDot role="from" size={9} />
             <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>{stopShort[from]}</span>
@@ -108,11 +108,11 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
         </div>
       </DeepBand>
 
-      <div style={{ paddingTop: 14 }}>
+      <div data-tour="day-chips" style={{ paddingTop: 14 }}>
         <DayChips selected={selectedDate} onSelect={onSelectDate} />
       </div>
 
-      <div style={{ padding: '14px 18px calc(env(safe-area-inset-bottom, 0px) + 20px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div data-tour="trip-list" style={{ padding: '14px 18px calc(env(safe-area-inset-bottom, 0px) + 20px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {trips.length === 0 ? (
           <div style={{ marginTop: 30, padding: 36, borderRadius: 'var(--rad)', background: 'var(--surface)', border: '1px dashed var(--line)', textAlign: 'center' }}>
             <Icon name="anchor" size={32} color="var(--inkDim)" />

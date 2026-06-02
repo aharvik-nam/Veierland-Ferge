@@ -54,14 +54,14 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
         </div>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 22px calc(env(safe-area-inset-bottom, 0px) + 40px)', gap: 14 }}>
-          <RouteCard from={from} to={to} onEditFrom={onEditFrom} onEditTo={onEditTo} onSwap={onSwap} />
+          <div data-tour="route-picker"><RouteCard from={from} to={to} onEditFrom={onEditFrom} onEditTo={onEditTo} onSwap={onSwap} /></div>
 
-          <button onClick={onSetOnboarded} style={{ width: '100%', padding: '16px', borderRadius: 'var(--rad)', background: 'var(--accent)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
+          <button data-tour="find-next-btn" onClick={onSetOnboarded} style={{ width: '100%', padding: '16px', borderRadius: 'var(--rad)', background: 'var(--accent)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
             <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 16, color: 'var(--accentInk)' }}>Finn neste avgang</span>
             <Icon name="arrowRight" size={18} color="var(--accentInk)" stroke={2.2} />
           </button>
 
-          <button onClick={onSeeAll} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer' }}>
+          <button data-tour="timetable-btn-onboard" onClick={onSeeAll} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
               <Icon name="calendar" size={18} color="var(--onDeep)" stroke={1.9} />
               <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)' }}>Rutetabell</span>
@@ -89,7 +89,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
         </div>
 
         {/* compact route bar */}
-        <button onClick={onEditFrom} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radSm)', padding: '10px 14px', cursor: 'pointer' }}>
+        <button data-tour="compact-route-bar" onClick={onEditFrom} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radSm)', padding: '10px 14px', cursor: 'pointer' }}>
           <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>{stopsMap[from]}</span>
           <Icon name="arrowRight" size={14} color="var(--onDeepDim)" stroke={2} style={{ flexShrink: 0 }} />
           <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--onDeep)', whiteSpace: 'nowrap', flex: 1, textAlign: 'right' }}>{stopsMap[to]}</span>
@@ -100,7 +100,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
 
         {/* next departure hero */}
         {dep ? (
-          <div style={{ marginTop: 18, borderRadius: 'var(--rad)', overflow: 'hidden', background: 'var(--surface)', boxShadow: '0 24px 50px -24px rgba(0,0,0,0.6)' }}>
+          <div data-tour="hero-card" style={{ marginTop: 18, borderRadius: 'var(--rad)', overflow: 'hidden', background: 'var(--surface)', boxShadow: '0 24px 50px -24px rgba(0,0,0,0.6)' }}>
             <DeepBand animate={animate} texture={texture} ferry waves style={{ padding: '18px 20px 30px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 2 }}>
                 <Label color="var(--onDeepDim)">Neste avgang</Label>
@@ -122,7 +122,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
             </DeepBand>
 
             <div style={{ padding: '18px 20px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {(tv.showCar || tv.showWalk) && status && <StatusSignal status={status} />}
+              {(tv.showCar || tv.showWalk) && status && <div data-tour="status-signal"><StatusSignal status={status} /></div>}
               <TravelChips stop={from} showCar={tv.showCar} showWalk={tv.showWalk} driveOverride={driveMins} />
               <button onClick={() => onOpenTrip(dep)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '13px', borderRadius: 'var(--radSm)', background: 'var(--surfaceAlt)', border: '1px solid var(--line)', cursor: 'pointer' }}>
                 <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--ink)' }}>Se reisedetaljer</span>
@@ -139,7 +139,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
 
         {/* prev / next mini-cards */}
         {(prevCard || nextDep) && (
-          <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div data-tour="mini-cards" style={{ marginTop: 12, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {([
               { trip: prevCard, label: 'Forrige avgang', showCountdown: false, isPast: prevIsPast },
               { trip: nextDep, label: 'Neste avgang',   showCountdown: true,  isPast: false },
@@ -176,7 +176,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
         )}
 
         {/* see all */}
-        <button onClick={onSeeAll} style={{ marginTop: 16, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer' }}>
+        <button data-tour="rutetabell-btn" onClick={onSeeAll} style={{ marginTop: 16, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
             <Icon name="calendar" size={19} color="var(--onDeep)" stroke={1.9} />
             <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)' }}>Rutetabell</span>

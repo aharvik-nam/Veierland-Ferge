@@ -229,7 +229,7 @@ export default function App() {
         onClose={() => setPicker({ open: false, which: null })}
       />
 
-      {tourOpen && <Tour onClose={() => setTourOpen(false)} />}
+      {tourOpen && <Tour screen={!onboarded ? 'onboarding' : screen === 'results' ? 'results' : 'home'} onClose={() => setTourOpen(false)} />}
 
       <SettingsSheet
         open={settingsOpen}
