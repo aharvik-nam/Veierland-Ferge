@@ -85,34 +85,38 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
   }, [selectedDate, from, to]);
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'var(--surfaceAlt)' }}>
-      <DeepBand animate={animate} texture={texture} waves={false} style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 18px 20px', borderBottomLeftRadius: 26, borderBottomRightRadius: 26 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-          <button onClick={onBack} style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <Icon name="chevronLeft" size={20} color="var(--onDeep)" stroke={2.2} />
-          </button>
-          <div style={{ fontFamily: 'var(--num)', fontSize: 26, color: 'var(--onDeep)' }}>Rutetabell</div>
-        </div>
-        <div data-tour="results-route-bar" style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radSm)', padding: '10px 14px' }}>
-          <button onClick={onEditFrom} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
-            <StopDot role="from" size={9} />
-            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>{stopShort[from]}</span>
-          </button>
-          <button onClick={onSwap} style={{ width: 30, height: 30, borderRadius: 99, background: 'var(--accent)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-            <Icon name="swap" size={15} color="var(--accentInk)" stroke={2.2} />
-          </button>
-          <button onClick={onEditTo} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
-            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>{stopShort[to]}</span>
-            <StopDot role="to" size={9} />
-          </button>
-        </div>
-      </DeepBand>
+    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: 'var(--surfaceAlt)', overflow: 'hidden' }}>
+      {/* sticky header */}
+      <div style={{ flexShrink: 0 }}>
+        <DeepBand animate={animate} texture={texture} waves={false} style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 18px 20px', borderBottomLeftRadius: 26, borderBottomRightRadius: 26 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+            <button onClick={onBack} style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <Icon name="chevronLeft" size={20} color="var(--onDeep)" stroke={2.2} />
+            </button>
+            <div style={{ fontFamily: 'var(--num)', fontSize: 26, color: 'var(--onDeep)' }}>Rutetabell</div>
+          </div>
+          <div data-tour="results-route-bar" style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radSm)', padding: '10px 14px' }}>
+            <button onClick={onEditFrom} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
+              <StopDot role="from" size={9} />
+              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>{stopShort[from]}</span>
+            </button>
+            <button onClick={onSwap} style={{ width: 30, height: 30, borderRadius: 99, background: 'var(--accent)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+              <Icon name="swap" size={15} color="var(--accentInk)" stroke={2.2} />
+            </button>
+            <button onClick={onEditTo} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
+              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>{stopShort[to]}</span>
+              <StopDot role="to" size={9} />
+            </button>
+          </div>
+        </DeepBand>
 
-      <div data-tour="day-chips" style={{ paddingTop: 14 }}>
-        <DayChips selected={selectedDate} onSelect={onSelectDate} />
+        <div data-tour="day-chips" style={{ paddingTop: 14, paddingBottom: 2 }}>
+          <DayChips selected={selectedDate} onSelect={onSelectDate} />
+        </div>
       </div>
 
-      <div data-tour="trip-list" style={{ padding: '14px 18px calc(env(safe-area-inset-bottom, 0px) + 20px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* scrollable trip list */}
+      <div data-tour="trip-list" style={{ flex: 1, overflowY: 'auto', padding: '12px 18px calc(env(safe-area-inset-bottom, 0px) + 20px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {trips.length === 0 ? (
           <div style={{ marginTop: 30, padding: 36, borderRadius: 'var(--rad)', background: 'var(--surface)', border: '1px dashed var(--line)', textAlign: 'center' }}>
             <Icon name="anchor" size={32} color="var(--inkDim)" />
