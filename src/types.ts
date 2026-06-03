@@ -62,3 +62,4 @@ export interface Weather {
 }
 
 export type Screen = 'home' | 'results' | 'detail';
+export type TransportMode = 'drive' | 'bus' | 'walk';

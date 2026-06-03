@@ -7,7 +7,7 @@ import { DetailScreen } from './screens/DetailScreen';
 import { StopPicker } from './components/Atoms';
 import { Icon } from './components/Icons';
 import { Tour } from './components/Tour';
-import type { StopId, ThemeKey, StyleKey, Weather, Trip, Screen } from './types';
+import type { StopId, ThemeKey, StyleKey, Weather, Trip, Screen, TransportMode } from './types';
 
 // Norwegian public holidays (MM-DD) and summer peak weeks
 const NO_HOLIDAYS = new Set([
@@ -126,6 +126,9 @@ export default function App() {
   const [themeKey, setThemeKey] = useState<ThemeKey>(() => (localStorage.getItem('themeKey') as ThemeKey) || 'fjord');
   const [styleKey, setStyleKey] = useState<StyleKey>(() => (localStorage.getItem('styleKey') as StyleKey) || 'sjokart');
   const [animate, setAnimate] = useState(() => localStorage.getItem('animate') !== 'false');
+  const [transportModes, setTransportModes] = useState<Partial<Record<StopId, TransportMode>>>(() => {
+    try { return JSON.parse(localStorage.getItem('transportModes') || '{}'); } catch { return {}; }
+  });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
 
@@ -208,6 +211,14 @@ export default function App() {
     });
   }, [from, to]);
 
+  const setTransportMode = useCallback((stop: StopId, mode: TransportMode) => {
+    setTransportModes(prev => {
+      const next = { ...prev, [stop]: mode };
+      localStorage.setItem('transportModes', JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   const openTrip = (t: Trip) => { setTrip(t); setPrevScreen(screen); setScreen('detail'); };
 
   return (
@@ -220,6 +231,7 @@ export default function App() {
           onEditFrom={() => openPicker('from')} onEditTo={() => openPicker('to')} onSwap={swap}
           onSeeAll={() => { setSelectedDate(ymd(getOsloDate())); setScreen('results'); }}
           onOpenTrip={openTrip} tick={tick} userLoc={userLoc} driveMins={driveMins}
+          transportMode={transportModes[from]} onSetTransportMode={(m) => setTransportMode(from, m)}
           onboarded={onboarded} onSetOnboarded={() => { setOnboarded(true); localStorage.setItem('onboarded', 'true'); }}
           onReset={() => { setOnboarded(false); localStorage.removeItem('onboarded'); }}
         />
@@ -238,6 +250,7 @@ export default function App() {
           trip={trip} from={from}
           animate={animate} texture={style.texture}
           onBack={() => setScreen(prevScreen)} tick={tick} userLoc={userLoc} driveMins={driveMins}
+          transportMode={transportModes[from]}
         />
       )}
 

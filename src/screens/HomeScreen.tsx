@@ -3,7 +3,7 @@ import { CompassMark } from '../components/Icons';
 import { Icon } from '../components/Icons';
 import { DeepBand, WeatherChip, RouteCard, StatusSignal, TravelChips, NumTime, Label } from '../components/Atoms';
 import { nextDepartures, prevDeparture, minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, ymd, getOsloDate, stopsMap, bookingStatus } from '../ferryData';
-import type { StopId, Weather, Trip } from '../types';
+import type { StopId, Weather, Trip, TransportMode } from '../types';
 
 interface HomeScreenProps {
   from: StopId;
@@ -19,12 +19,14 @@ interface HomeScreenProps {
   tick: number;
   userLoc: { lat: number; lng: number } | null;
   driveMins: number | null;
+  transportMode: TransportMode | undefined;
+  onSetTransportMode: (m: TransportMode) => void;
   onboarded: boolean;
   onSetOnboarded: () => void;
   onReset: () => void;
 }
 
-export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, onboarded, onSetOnboarded, onReset }: HomeScreenProps) {
+export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, transportMode, onSetTransportMode, onboarded, onSetOnboarded, onReset }: HomeScreenProps) {
   const [heroIndex, setHeroIndex] = useState(0);
   useEffect(() => { setHeroIndex(0); }, [from, to]);
 
@@ -35,11 +37,30 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
   const prevCard = heroIndex > 0 ? (deps[heroIndex - 1] ?? null) : prevActual;
   const prevIsPast = heroIndex === 0;
   const countdown = dep && dep.dateStr === ymd(getOsloDate()) ? minsUntil(dep.dateStr, dep.startTime) : null;
-  const isIsland = from === 'vestgarden' || from === 'tangen'; // engo is mainland
-  const travelMode: 'drive' | 'walk' = isIsland ? 'walk' : 'drive';
-  const effectiveTravel = isIsland ? stopTravel[from].walk : (driveMins ?? stopTravel[from].drive);
-  const status = dep ? rekkerStatus(effectiveTravel, countdown, travelMode, nextDep) : null;
-  const tv = travelVisibility(from, userLoc);
+
+  // Transport mode — island stops are always walk, bus stops never show travel info
+  const isIsland = from === 'vestgarden' || from === 'tangen';
+  const isBusStop = from === 'buss_tbg' || from === 'buss_tenv';
+  const defaultMode: TransportMode = isIsland ? 'walk' : 'drive';
+  const effectiveMode: TransportMode = isBusStop ? 'bus' : (transportMode ?? defaultMode);
+  const showModePicker = !isIsland && !isBusStop;
+
+  // Resolve travel time and mode for status signal
+  const travelMode: 'drive' | 'walk' = effectiveMode === 'walk' ? 'walk' : 'drive';
+  const effectiveTravel = effectiveMode === 'walk'
+    ? stopTravel[from].walk
+    : (driveMins ?? stopTravel[from].drive);
+
+  // Override visibility based on chosen mode
+  const tvBase = travelVisibility(from, userLoc);
+  const tv = effectiveMode === 'bus'
+    ? { showCar: false, showWalk: false }
+    : effectiveMode === 'walk'
+    ? { showCar: false, showWalk: tvBase.showWalk }
+    : { showCar: tvBase.showCar, showWalk: false };
+
+  const showStatus = effectiveMode !== 'bus' && (tv.showCar || tv.showWalk);
+  const status = dep && showStatus ? rekkerStatus(effectiveTravel, countdown, travelMode, nextDep) : null;
 
   if (!onboarded) {
     return (
@@ -147,7 +168,24 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
               );
             })()}
             <div style={{ padding: '18px 20px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {(tv.showCar || tv.showWalk) && status && <div data-tour="status-signal"><StatusSignal status={status} /></div>}
+              {showModePicker && (
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {([
+                    { mode: 'drive' as TransportMode, label: 'Kjører', icon: '🚗' },
+                    { mode: 'bus'   as TransportMode, label: 'Buss/Tog', icon: '🚌' },
+                    { mode: 'walk'  as TransportMode, label: 'Går', icon: '🚶' },
+                  ]).map(({ mode, label, icon }) => {
+                    const on = effectiveMode === mode;
+                    return (
+                      <button key={mode} onClick={() => onSetTransportMode(mode)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 4px', borderRadius: 'var(--radSm)', border: on ? '1.5px solid var(--accent)' : '1px solid var(--line)', background: on ? 'color-mix(in srgb, var(--accent) 10%, var(--surface))' : 'var(--surfaceAlt)', cursor: 'pointer', transition: 'all 0.15s' }}>
+                        <span style={{ fontSize: 14 }}>{icon}</span>
+                        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: on ? 700 : 600, fontSize: 12, color: on ? 'var(--accent)' : 'var(--inkDim)', whiteSpace: 'nowrap' }}>{label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {status && <div data-tour="status-signal"><StatusSignal status={status} /></div>}
               <TravelChips stop={from} showCar={tv.showCar} showWalk={tv.showWalk} driveOverride={driveMins} />
               <button onClick={() => onOpenTrip(dep)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '13px', borderRadius: 'var(--radSm)', background: 'var(--surfaceAlt)', border: '1px solid var(--line)', cursor: 'pointer' }}>
                 <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--ink)' }}>Se reisedetaljer</span>

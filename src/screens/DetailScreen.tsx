@@ -2,7 +2,7 @@ import React from 'react';
 import { Icon } from '../components/Icons';
 import { DeepBand, Label, NumTime, StatusSignal, TravelChips, CallButton } from '../components/Atoms';
 import { minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, stopShort, ymd, getOsloDate, findTripsForDay, dayTypeOf, parseYmd, parseTime } from '../ferryData';
-import type { Trip, StopId } from '../types';
+import type { Trip, StopId, TransportMode } from '../types';
 
 function RouteTimeline({ trip, animate }: { trip: Trip; animate: boolean }) {
   const n = trip.subpath.length;
@@ -48,23 +48,35 @@ interface DetailScreenProps {
   tick: number;
   userLoc: { lat: number; lng: number } | null;
   driveMins: number | null;
+  transportMode: TransportMode | undefined;
 }
 
-export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick: _tick, userLoc, driveMins }: DetailScreenProps) {
+export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick: _tick, userLoc, driveMins, transportMode }: DetailScreenProps) {
   const isToday = trip.dateStr === ymd(getOsloDate());
   const countdown = isToday ? minsUntil(trip.dateStr, trip.startTime) : null;
   const upcoming = countdown == null || countdown >= 0;
-  const isIsland = trip.startStop === 'vestgarden' || trip.startStop === 'tangen'; // engo is mainland
-  const travelMode: 'drive' | 'walk' = isIsland ? 'walk' : 'drive';
-  const effectiveDrive = isIsland ? stopTravel[trip.startStop].walk : (driveMins ?? stopTravel[trip.startStop].drive);
+  const isIsland = trip.startStop === 'vestgarden' || trip.startStop === 'tangen';
+  const defaultMode: TransportMode = isIsland ? 'walk' : 'drive';
+  const effectiveMode: TransportMode = transportMode ?? defaultMode;
+  const travelMode: 'drive' | 'walk' = effectiveMode === 'walk' ? 'walk' : 'drive';
+  const effectiveDrive = effectiveMode === 'walk'
+    ? stopTravel[trip.startStop].walk
+    : (driveMins ?? stopTravel[trip.startStop].drive);
   const nextTrip = (() => {
     if (!isToday) return null;
     const nowMins = getOsloDate().getHours() * 60 + getOsloDate().getMinutes();
     const todayTrips = findTripsForDay(dayTypeOf(parseYmd(trip.dateStr)), parseYmd(trip.dateStr), trip.startStop, trip.subpath[trip.subpath.length - 1].stopId);
     return todayTrips.find(t => parseTime(t.startTime) > parseTime(trip.startTime) && parseTime(t.startTime) > nowMins) ?? null;
   })();
-  const status = upcoming && isToday ? rekkerStatus(effectiveDrive, countdown, travelMode, nextTrip) : null;
-  const tv = travelVisibility(trip.startStop, userLoc);
+  const tvBase = travelVisibility(trip.startStop, userLoc);
+  const tv = effectiveMode === 'bus'
+    ? { showCar: false, showWalk: false }
+    : effectiveMode === 'walk'
+    ? { showCar: false, showWalk: tvBase.showWalk }
+    : { showCar: tvBase.showCar, showWalk: false };
+  const status = upcoming && isToday && effectiveMode !== 'bus' && (tv.showCar || tv.showWalk)
+    ? rekkerStatus(effectiveDrive, countdown, travelMode, nextTrip)
+    : null;
   const booking = trip.warnings.find(w => w.type === 'booking');
   const engo = trip.warnings.find(w => w.type === 'engo');
   const endStop = trip.subpath[trip.subpath.length - 1].stopId;
