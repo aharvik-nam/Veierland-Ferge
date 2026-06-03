@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CompassMark } from '../components/Icons';
 import { Icon } from '../components/Icons';
 import { DeepBand, WeatherChip, RouteCard, StatusSignal, TravelChips, NumTime, Label } from '../components/Atoms';
+import { EnturTransit } from '../components/EnturTransit';
 import { nextDepartures, prevDeparture, minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, ymd, getOsloDate, stopsMap, bookingStatus } from '../ferryData';
 import type { StopId, Weather, Trip, TransportMode } from '../types';
 
@@ -186,7 +187,8 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
                 </div>
               )}
               {status && <div data-tour="status-signal"><StatusSignal status={status} /></div>}
-              <TravelChips stop={from} showCar={tv.showCar} showWalk={tv.showWalk} driveOverride={driveMins} />
+              {effectiveMode !== 'bus' && <TravelChips stop={from} showCar={tv.showCar} showWalk={tv.showWalk} driveOverride={driveMins} />}
+              {effectiveMode === 'bus' && <EnturTransit userLoc={userLoc} stop={from} ferries={deps} />}
               <button onClick={() => onOpenTrip(dep)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '13px', borderRadius: 'var(--radSm)', background: 'var(--surfaceAlt)', border: '1px solid var(--line)', cursor: 'pointer' }}>
                 <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--ink)' }}>Se reisedetaljer</span>
                 <Icon name="arrowRight" size={17} color="var(--ink)" stroke={2} />
