@@ -210,7 +210,7 @@ function TransitCard({ pattern, ferries }: { pattern: TripPattern; ferries: Trip
       )}
 
       {/* Ferry connection row */}
-      {conn ? (
+      {conn && (
         <div style={{
           display: 'flex', alignItems: 'center', gap: 7,
           padding: '7px 14px',
@@ -224,13 +224,6 @@ function TransitCard({ pattern, ferries }: { pattern: TripPattern; ferries: Trip
           <Icon name="arrowRight" size={13} color={conn.urgent ? 'var(--warn)' : 'var(--good)'} stroke={2.2} />
           <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12, color: conn.urgent ? 'var(--warn)' : 'var(--good)', lineHeight: 1.3 }}>
             {conn.label}
-          </span>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 14px', background: 'color-mix(in srgb, var(--bad) 8%, var(--surface))', borderTop: '1px solid color-mix(in srgb, var(--bad) 18%, transparent)' }}>
-          <Icon name="info" size={13} color="var(--bad)" stroke={2} />
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12, color: 'var(--bad)' }}>
-            Rekker ikke fergen
           </span>
         </div>
       )}
@@ -308,9 +301,24 @@ export function EnturTransit({ userLoc, stop, ferries }: EnturTransitProps) {
     );
   }
 
+  // Keep only patterns that connect to a ferry
+  const reachablePatterns = (patterns as TripPattern[]).filter(p => transitConnection(p.expectedEndTime, ferries) !== null);
+
+  // If none connect, show a simple message instead of listing useless options
+  if (reachablePatterns.length === 0) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 14px', borderRadius: 'var(--radSm)', background: 'color-mix(in srgb, var(--bad) 8%, var(--surface))', border: '1px solid color-mix(in srgb, var(--bad) 18%, transparent)' }}>
+        <Icon name="info" size={14} color="var(--bad)" stroke={2} />
+        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, color: 'var(--bad)' }}>
+          Rekker ikke fergen
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {(patterns as TripPattern[]).map((p, i) => (
+      {reachablePatterns.map((p, i) => (
         <React.Fragment key={i}>
           <TransitCard pattern={p} ferries={ferries} />
         </React.Fragment>
