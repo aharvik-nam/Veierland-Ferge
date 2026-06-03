@@ -540,30 +540,25 @@ export function rekkerStatus(
   if (shortage >= 45) {
     return { level: 'bad', label: pick([
       'Denne rekker du ikke',
-      'Fergen er allerede borte',
-      'God tid til neste',
+      'For lite tid til denne',
       'Sikt på neste avgang',
       'Ikke denne gangen',
     ], seed), sub: pick([
       'Kjøretiden er for lang til å rekke denne. Ta neste og kjør uten stress.' + nextHint(),
       'Det er ingen vits å haste. Neste avgang er det realistiske alternativet.' + nextHint(),
-      'Fergen er enten i gang eller allerede borte. Ta neste og kjør rolig.' + nextHint(),
       'Du ville trengt for mye tid. Ta neste — det er det fornuftige valget.' + nextHint(),
     ], seed + 1) };
   }
 
   return { level: 'bad', label: pick([
-    'Du rekker ikke denne',
-    'For sent ute',
-    'Denne gikk',
-    'Ikke denne gangen',
-    'Mangler noen minutter',
-    'Knapt for sent',
+    'Denne rekker du ikke',
+    'For lite tid',
+    'Ikke denne avgangen',
+    'Sikt på neste',
   ], seed), sub: pick([
     'Kjøretiden overstiger tiden til avgang. Ta neste — det er det rolige valget.' + nextHint(),
     'Du mangler noen minutter. Hverken tempo eller optimisme endrer det nå.' + nextHint(),
-    'Fergen stikker uansett. Sikt på neste avgang og kjør uten hast.' + nextHint(),
-    'Dette er klassisk "burde dratt litt før". Ta neste ferge og kjør rolig.' + nextHint(),
+    'Ta neste avgang og kjør uten hast.' + nextHint(),
     'Litt for knapt. Ingen grunn til å stresse — neste avgang er ikke langt unna.' + nextHint(),
     'Du er noen minutter bak. Kjør normalt og ta neste.' + nextHint(),
   ], seed + 1) };
