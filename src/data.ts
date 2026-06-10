@@ -78,6 +78,52 @@ export const sunLoops: FerryLoop[] = [
   { id: "su-11", bussTbg: null, tenvikUt: "21:30", vestgardenUt: "21:40", engoUt: null, tangenUt: null, tangenInn: null, engoInn: null, vestgardenInn: null, tenvikInn: null, bussTenvik: null }
 ];
 
+// ── SOMMERRUTER: gjelder fom. 22. juni tom. 16. august ──────────────
+
+export const summerMonFriLoops: FerryLoop[] = [
+  { id: "smf-0", bussTbg: null, tenvikUt: null, vestgardenUt: null, engoUt: null, tangenUt: null, tangenInn: null, engoInn: null, vestgardenInn: "06:00", tenvikInn: "06:10", bussTenvik: "06:13" },
+  { id: "smf-1", bussTbg: null, tenvikUt: "06:10", vestgardenUt: "06:20", engoUt: null, tangenUt: "06:30", tangenInn: "06:30", engoInn: null, vestgardenInn: "06:40", tenvikInn: "06:50", bussTenvik: "07:13" },
+  { id: "smf-2", bussTbg: "06:30", tenvikUt: "07:00", vestgardenUt: "07:10", engoUt: "07:20", tangenUt: "07:30", tangenInn: "07:30", engoInn: null, vestgardenInn: "07:40", tenvikInn: "07:50", bussTenvik: "07:58" },
+  { id: "smf-3", bussTbg: "07:30", tenvikUt: "08:00", vestgardenUt: "08:10", engoUt: null, tangenUt: "08:20", tangenInn: "08:30", engoInn: null, vestgardenInn: "08:40", tenvikInn: "08:50", bussTenvik: "08:58" },
+  { id: "smf-4", bussTbg: "08:30", tenvikUt: "09:00", vestgardenUt: "09:10", engoUt: "09:20", tangenUt: "09:30", tangenInn: "09:30", engoInn: null, vestgardenInn: "09:40", tenvikInn: "09:50", bussTenvik: "09:58" },
+  { id: "smf-5", bussTbg: null, tenvikUt: "09:50", vestgardenUt: "10:00", engoUt: "10:20", tangenUt: "10:30", tangenInn: "10:30", engoInn: null, vestgardenInn: "10:40", tenvikInn: "10:50", bussTenvik: "10:58" },
+  { id: "smf-6", bussTbg: "10:30", tenvikUt: "11:00", vestgardenUt: "11:10", engoUt: null, tangenUt: null, tangenInn: null, engoInn: null, vestgardenInn: "11:10", tenvikInn: "11:20", bussTenvik: "11:58" },
+  { id: "smf-7", bussTbg: "12:30", tenvikUt: "13:00", vestgardenUt: "13:10", engoUt: "13:20", tangenUt: "13:30", tangenInn: "13:30", engoInn: null, vestgardenInn: "13:40", tenvikInn: "13:50", bussTenvik: "13:58" },
+  { id: "smf-8", bussTbg: "13:30", tenvikUt: "14:00", vestgardenUt: "14:10", engoUt: "14:20", tangenUt: "14:30", tangenInn: "14:30", engoInn: null, vestgardenInn: "14:40", tenvikInn: "14:50", bussTenvik: "15:13" },
+  { id: "smf-9", bussTbg: "14:45", tenvikUt: "15:30", vestgardenUt: "15:40", engoUt: null, tangenUt: null, tangenInn: null, engoInn: null, vestgardenInn: "15:40", tenvikInn: "15:50", bussTenvik: "16:13" },
+  { id: "smf-10", bussTbg: "15:15", tenvikUt: "16:00", vestgardenUt: "16:10", engoUt: "16:20", tangenUt: "16:30", tangenInn: "16:30", engoInn: null, vestgardenInn: "16:40", tenvikInn: "16:50", bussTenvik: "16:58" },
+  { id: "smf-11", bussTbg: "16:15", tenvikUt: "17:00", vestgardenUt: "17:10", engoUt: "17:20", tangenUt: "17:30", tangenInn: "17:30", engoInn: null, vestgardenInn: "17:40", tenvikInn: "17:50", bussTenvik: "17:58" },
+  { id: "smf-12", bussTbg: "18:30", tenvikUt: "19:00", vestgardenUt: "19:10", engoUt: "19:20", tangenUt: "19:30", tangenInn: "19:30", engoInn: null, vestgardenInn: "19:40", tenvikInn: "19:50", bussTenvik: "19:58" },
+  { id: "smf-13", bussTbg: "19:30", tenvikUt: "20:00", vestgardenUt: "20:10", engoUt: null, tangenUt: "20:20", tangenInn: "20:30", engoInn: null, vestgardenInn: "20:40", tenvikInn: "20:50", bussTenvik: "20:58" },
+  { id: "smf-14", bussTbg: "20:30", tenvikUt: "21:25", vestgardenUt: "21:35", engoUt: "21:45", tangenUt: null, tangenInn: null, engoInn: null, vestgardenInn: "21:55", tenvikInn: "22:05", bussTenvik: null }
+];
+
+export const summerSatLoops: FerryLoop[] = [
+  { id: "ssa-0", bussTbg: null, tenvikUt: null, vestgardenUt: null, engoUt: null, tangenUt: null, tangenInn: "07:30", engoInn: null, vestgardenInn: "07:40", tenvikInn: "07:50", bussTenvik: "07:58" },
+  { id: "ssa-1", bussTbg: null, tenvikUt: "08:10", vestgardenUt: "08:20", engoUt: null, tangenUt: "08:30", tangenInn: "08:30", engoInn: null, vestgardenInn: "08:40", tenvikInn: "08:50", bussTenvik: "08:58" },
+  { id: "ssa-2", bussTbg: "08:30", tenvikUt: "09:00", vestgardenUt: "09:10", engoUt: "09:20", tangenUt: "09:30", tangenInn: "09:30", engoInn: null, vestgardenInn: "09:40", tenvikInn: "09:50", bussTenvik: "09:58" },
+  { id: "ssa-3", bussTbg: "09:30", tenvikUt: "10:30", vestgardenUt: "10:40", engoUt: null, tangenUt: null, tangenInn: null, engoInn: null, vestgardenInn: "10:40", tenvikInn: "10:50", bussTenvik: "10:58" },
+  { id: "ssa-4", bussTbg: "10:30", tenvikUt: "11:00", vestgardenUt: "11:10", engoUt: "11:20", tangenUt: "11:30", tangenInn: "11:30", engoInn: null, vestgardenInn: "11:40", tenvikInn: "11:50", bussTenvik: "11:58" },
+  { id: "ssa-5", bussTbg: "11:30", tenvikUt: "12:00", vestgardenUt: "12:10", engoUt: "12:20", tangenUt: "12:30", tangenInn: "12:30", engoInn: null, vestgardenInn: "12:40", tenvikInn: "12:50", bussTenvik: "12:58" },
+  { id: "ssa-6", bussTbg: "12:30", tenvikUt: "13:00", vestgardenUt: "13:10", engoUt: "13:20", tangenUt: "13:30", tangenInn: "14:30", engoInn: null, vestgardenInn: "14:40", tenvikInn: "14:50", bussTenvik: "14:58" },
+  { id: "ssa-7", bussTbg: "14:30", tenvikUt: "15:00", vestgardenUt: "15:10", engoUt: "15:20", tangenUt: "15:30", tangenInn: "16:30", engoInn: null, vestgardenInn: "16:40", tenvikInn: "16:50", bussTenvik: "16:58" },
+  { id: "ssa-8", bussTbg: "16:30", tenvikUt: "17:00", vestgardenUt: "17:10", engoUt: "17:20", tangenUt: "17:30", tangenInn: "17:30", engoInn: null, vestgardenInn: "17:40", tenvikInn: "17:50", bussTenvik: "17:58" },
+  { id: "ssa-9", bussTbg: "17:30", tenvikUt: "18:30", vestgardenUt: "18:40", engoUt: null, tangenUt: null, tangenInn: null, engoInn: null, vestgardenInn: "18:40", tenvikInn: "18:50", bussTenvik: "18:58" }
+];
+
+export const summerSunLoops: FerryLoop[] = [
+  { id: "ssu-0", bussTbg: null, tenvikUt: "10:30", vestgardenUt: "10:40", engoUt: "10:50", tangenUt: "11:00", tangenInn: "11:00", engoInn: null, vestgardenInn: "11:10", tenvikInn: "11:20", bussTenvik: null },
+  { id: "ssu-1", bussTbg: null, tenvikUt: "11:30", vestgardenUt: "11:40", engoUt: null, tangenUt: null, tangenInn: null, engoInn: null, vestgardenInn: "11:40", tenvikInn: "11:50", bussTenvik: null },
+  { id: "ssu-2", bussTbg: null, tenvikUt: "12:00", vestgardenUt: "12:10", engoUt: "12:20", tangenUt: "12:30", tangenInn: "12:30", engoInn: null, vestgardenInn: "12:40", tenvikInn: "12:50", bussTenvik: "12:58" },
+  { id: "ssu-3", bussTbg: "12:30", tenvikUt: "13:00", vestgardenUt: "13:10", engoUt: "13:20", tangenUt: "13:30", tangenInn: "13:30", engoInn: null, vestgardenInn: "13:40", tenvikInn: "13:50", bussTenvik: null },
+  { id: "ssu-4", bussTbg: null, tenvikUt: "14:00", vestgardenUt: "14:10", engoUt: "14:20", tangenUt: "14:30", tangenInn: "15:30", engoInn: null, vestgardenInn: "15:40", tenvikInn: "15:50", bussTenvik: null },
+  { id: "ssu-5", bussTbg: null, tenvikUt: "16:00", vestgardenUt: "16:10", engoUt: "16:20", tangenUt: "16:30", tangenInn: "16:30", engoInn: null, vestgardenInn: "16:40", tenvikInn: "16:50", bussTenvik: "16:58" },
+  { id: "ssu-6", bussTbg: "16:30", tenvikUt: "17:00", vestgardenUt: "17:10", engoUt: "17:20", tangenUt: "17:30", tangenInn: "17:30", engoInn: null, vestgardenInn: "17:40", tenvikInn: "17:50", bussTenvik: null },
+  { id: "ssu-7", bussTbg: "18:30", tenvikUt: "19:00", vestgardenUt: "19:10", engoUt: "19:20", tangenUt: "19:30", tangenInn: "19:30", engoInn: null, vestgardenInn: "19:40", tenvikInn: "19:50", bussTenvik: null },
+  { id: "ssu-8", bussTbg: null, tenvikUt: "20:00", vestgardenUt: "20:10", engoUt: "20:20", tangenUt: "20:30", tangenInn: "20:30", engoInn: null, vestgardenInn: "20:40", tenvikInn: "20:50", bussTenvik: "20:58" },
+  { id: "ssu-9", bussTbg: "20:30", tenvikUt: "21:30", vestgardenUt: "21:40", engoUt: null, tangenUt: null, tangenInn: null, engoInn: null, vestgardenInn: "21:40", tenvikInn: "21:50", bussTenvik: null }
+];
+
 export const rules = [
   { text: "Røde avganger til/fra Engø kjøres kun i perioden 1. april – 28. september. Enkeltavganger kan forhåndsbestilles hele året ved å ringe fergen." },
   { text: "ALL RETUR TIL ENGØ GÅR FRA VESTGÅRDEN!", alert: true },

@@ -1,5 +1,5 @@
 import type { StopId, Trip, TripEvent, TripWarning } from './types';
-import { monFriLoops, satLoops, sunLoops } from './data';
+import { monFriLoops, satLoops, sunLoops, summerMonFriLoops, summerSatLoops, summerSunLoops } from './data';
 
 export const stopsMap: Record<StopId, string> = {
   buss_tbg: "Buss fra Tønsberg",
@@ -131,15 +131,25 @@ export function dayLabelFor(d: Date): string {
 export const NO_DAYS_EXPORT = NO_DAYS;
 export const NO_MONTHS_EXPORT = NO_MONTHS;
 
+// Sommerruter gjelder fom. 22. juni tom. 16. august
+export function isSummerSeason(dateObj: Date): boolean {
+  const m = dateObj.getMonth() + 1, d = dateObj.getDate();
+  if (m === 7) return true;
+  if (m === 6) return d >= 22;
+  if (m === 8) return d <= 16;
+  return false;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function loopsFor(dayType: string): any[] {
-  if (dayType === 'sat') return satLoops;
-  if (dayType === 'sun') return sunLoops;
-  return monFriLoops;
+function loopsFor(dayType: string, dateObj: Date): any[] {
+  const summer = isSummerSeason(dateObj);
+  if (dayType === 'sat') return summer ? summerSatLoops : satLoops;
+  if (dayType === 'sun') return summer ? summerSunLoops : sunLoops;
+  return summer ? summerMonFriLoops : monFriLoops;
 }
 
 export function findTripsForDay(dayType: 'monfri' | 'sat' | 'sun', dateObj: Date, from: StopId, to: StopId): Trip[] {
-  const loops = loopsFor(dayType);
+  const loops = loopsFor(dayType, dateObj);
   const month = dateObj.getMonth() + 1;
   const dayNum = dateObj.getDate();
   const isEngoSeason = (month > 4 && month < 9) || (month === 4) || (month === 9 && dayNum <= 28);
@@ -179,15 +189,18 @@ export function findTripsForDay(dayType: 'monfri' | 'sat' | 'sun', dateObj: Date
     if (hasEngo && !isEngoSeason) {
       warnings.push({ type: 'engo', text: 'Rød avgang via Engø — kjøres normalt kun 1. april–28. sep. Ring fergen for å forhåndsbestille.' });
     }
-    if (dayType === 'monfri' || dayType === 'sun') {
-      if ((startStop === 'tangen' && startTime >= '20:30') ||
-          (startStop === 'vestgarden' && startTime >= '20:40') ||
-          (startStop === 'tenvik' && startTime >= '21:30')) {
-        warnings.push({ type: 'booking', deadline: '18:00', text: 'Må forhåndsbestilles senest kl. 18:00 på avreisedagen.' });
-      }
-    } else if (dayType === 'sat') {
-      if (startStop === 'vestgarden' && startTime <= '07:50') {
-        warnings.push({ type: 'booking', deadline: 'kvelden før, 20:00', text: 'Må forhåndsbestilles kvelden før, innen kl. 20:00.' });
+    // Bestillingskrav gjelder kun ordinære ruter — sommerrutene har ingen avganger som krever forhåndsbestilling
+    if (!isSummerSeason(dateObj)) {
+      if (dayType === 'monfri' || dayType === 'sun') {
+        if ((startStop === 'tangen' && startTime >= '20:30') ||
+            (startStop === 'vestgarden' && startTime >= '20:40') ||
+            (startStop === 'tenvik' && startTime >= '21:30')) {
+          warnings.push({ type: 'booking', deadline: '18:00', text: 'Må forhåndsbestilles senest kl. 18:00 på avreisedagen.' });
+        }
+      } else if (dayType === 'sat') {
+        if (startStop === 'vestgarden' && startTime <= '07:50') {
+          warnings.push({ type: 'booking', deadline: 'kvelden før, 20:00', text: 'Må forhåndsbestilles kvelden før, innen kl. 20:00.' });
+        }
       }
     }
 
@@ -423,7 +436,7 @@ export function rekkerStatus(
         'Sikt på neste',
         'Fergen er allerede på vei',
       ], seed), sub: pick([
-        'Gangavstanden er for stor til å rekke denne. Kjør nå, eller vent på neste.' + nextHint(),
+        'Gangavstanden er for stor til å rekke denne. Vent på neste avgang.' + nextHint(),
         'For langt til å gå i tide. Ta neste avgang og gå uten stress.' + nextHint(),
         'Det er ingen vits å haste. Neste avgang er det realistiske alternativet.' + nextHint(),
       ], seed + 1) };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { THEMES, STYLES, themeVars } from './theme';
-import { ymd, getOsloDate, stopCoords } from './ferryData';
+import { ymd, getOsloDate, stopCoords, isSummerSeason } from './ferryData';
 import { HomeScreen } from './screens/HomeScreen';
 import { ResultsScreen } from './screens/ResultsScreen';
 import { DetailScreen } from './screens/DetailScreen';
@@ -20,14 +20,12 @@ function trafficMultiplier(): number {
   const dow = now.getDay();       // 0=sun, 5=fri, 6=sat
   const hour = now.getHours();
   const mmdd = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const week = Math.ceil((now.getDate() - now.getDay() + 10) / 7); // approx ISO week
-  const month = now.getMonth() + 1; // 1–12
 
   // Public holidays — treat like Sunday, no rush
   if (NO_HOLIDAYS.has(mmdd)) return 1.0;
 
-  // Summer peak: week 26–32 (late June – early August) Friday afternoons and Sundays
-  const isSummerPeak = month >= 6 && month <= 8 && week >= 26 && week <= 32;
+  // Summer peak follows the summer timetable period (22 Jun – 16 Aug)
+  const isSummerPeak = isSummerSeason(now);
 
   // Friday afternoon outbound rush (E18 sørover) 14:00–19:00
   if (dow === 5 && hour >= 14 && hour < 19) return isSummerPeak ? 1.55 : 1.35;
@@ -154,7 +152,10 @@ export default function App() {
     if (!navigator.geolocation) return;
     watchIdRef.current = navigator.geolocation.watchPosition(
       pos => setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => setUserLoc(null),
+      err => {
+        // Keep last known position on transient errors; clear only if access is denied
+        if (err.code === err.PERMISSION_DENIED) setUserLoc(null);
+      },
       { enableHighAccuracy: false, maximumAge: 60000, timeout: 10000 }
     );
     return () => { if (watchIdRef.current != null) navigator.geolocation.clearWatch(watchIdRef.current); };
@@ -170,16 +171,24 @@ export default function App() {
         const cur = j.properties?.timeseries?.[0]?.data;
         const inst = cur?.instant?.details;
         const sym = cur?.next_1_hours?.summary?.symbol_code ?? cur?.next_6_hours?.summary?.symbol_code ?? '';
-        setWeather({ temp: inst.air_temperature, wind: inst.wind_speed, code: yrSymbolToCode(sym) });
+        if (inst?.air_temperature != null) {
+          setWeather({ temp: inst.air_temperature, wind: inst.wind_speed, code: yrSymbolToCode(sym) });
+        }
       })
-      .catch(() => setWeather({ temp: 10, wind: 3, code: 2 }));
+      .catch(() => { /* leave weather as null — WeatherChip hides itself */ });
   }, []);
 
+  const lastOsrmKeyRef = useRef<string>('');
   useEffect(() => {
     if (!userLoc || (from !== 'tenvik' && from !== 'engo')) {
       setDriveMins(null);
+      lastOsrmKeyRef.current = '';
       return;
     }
+    // Round coordinates (~100 m) so GPS jitter doesn't refetch on every position tick
+    const key = `${userLoc.lat.toFixed(3)},${userLoc.lng.toFixed(3)},${from}`;
+    if (lastOsrmKeyRef.current === key) return;
+    lastOsrmKeyRef.current = key;
     const dest = stopCoords[from];
     fetch(`https://router.project-osrm.org/route/v1/driving/${userLoc.lng},${userLoc.lat};${dest.lng},${dest.lat}?overview=false`)
       .then(r => r.json())
