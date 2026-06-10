@@ -224,7 +224,7 @@ export function TripCard({ trip, isNext, countdown, onClick }: { trip: Trip; isN
             </span>
           </div>
           {!bs.passed && (
-            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 11, color: 'var(--bad)', whiteSpace: 'nowrap', opacity: 0.85 }}>{bs.label.match(/\(.+\)/)?.[0]?.replace(/[()]/g, '') ?? ''}</span>
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 11, color: 'var(--bad)', textAlign: 'right', lineHeight: 1.3, opacity: 0.85, flexShrink: 1 }}>{bs.label.match(/\(.+\)/)?.[0]?.replace(/[()]/g, '') ?? ''}</span>
           )}
         </div>
       )}

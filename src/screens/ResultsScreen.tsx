@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Icon } from '../components/Icons';
 import { DeepBand, StopDot, Label, TripCard } from '../components/Atoms';
-import { findTripsForDay, dayTypeOf, parseYmd, parseTime, minsUntil, ymd, getOsloDate, stopShort, NO_DAYS_EXPORT as NO_DAYS, NO_MONTHS_EXPORT } from '../ferryData';
+import { findTripsForDay, dayTypeOf, parseYmd, parseTime, minsUntil, ymd, getOsloDate, stopShort, isSummerSeason, NO_DAYS_EXPORT as NO_DAYS, NO_MONTHS_EXPORT } from '../ferryData';
 import type { StopId, Trip } from '../types';
 
 function cap(s: string): string { return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -21,6 +21,7 @@ function DayChips({ selected, onSelect }: { selected: string; onSelect: (ds: str
   const customLabel = customDate ? `${cap(NO_DAYS[customDate.getDay()])} ${customDate.getDate()}. ${NO_MONTHS_EXPORT[customDate.getMonth()]}` : '';
 
   return (
+    <div style={{ position: 'relative' }}>
     <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '2px 18px 4px', scrollbarWidth: 'none' }}>
       {days.map(d => {
         const on = d.ds === selected;
@@ -52,6 +53,9 @@ function DayChips({ selected, onSelect }: { selected: string; onSelect: (ds: str
         onChange={e => e.target.value && onSelect(e.target.value)}
         style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }}
       />
+    </div>
+    {/* Right-edge fade hinting that the chip row scrolls */}
+    <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 36, background: 'linear-gradient(to right, transparent, var(--surfaceAlt))', pointerEvents: 'none' }} />
     </div>
   );
 }
@@ -113,10 +117,17 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
         <div data-tour="day-chips" style={{ paddingTop: 14, paddingBottom: 2 }}>
           <DayChips selected={selectedDate} onSelect={onSelectDate} />
         </div>
+        {isSummerSeason(selDate) && (
+          <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 8 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 99, background: 'color-mix(in srgb, var(--accent) 12%, var(--surface))', border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 11, color: 'var(--accent)' }}>
+              ☀️ Sommerruter · 22. juni–16. aug
+            </span>
+          </div>
+        )}
       </div>
 
       {/* scrollable trip list */}
-      <div data-tour="trip-list" style={{ flex: 1, overflowY: 'auto', padding: '12px 18px calc(env(safe-area-inset-bottom, 0px) + 20px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div data-tour="trip-list" style={{ flex: 1, overflowY: 'auto', padding: '12px 18px calc(env(safe-area-inset-bottom, 0px) + 96px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {trips.length === 0 ? (
           <div style={{ marginTop: 30, padding: 36, borderRadius: 'var(--rad)', background: 'var(--surface)', border: '1px dashed var(--line)', textAlign: 'center' }}>
             <Icon name="anchor" size={32} color="var(--inkDim)" />

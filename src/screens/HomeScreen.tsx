@@ -125,7 +125,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
         {/* next departure hero */}
         {dep ? (
           <div data-tour="hero-card" style={{ marginTop: 18, borderRadius: 'var(--rad)', overflow: 'hidden', background: 'var(--surface)', boxShadow: '0 24px 50px -24px rgba(0,0,0,0.6)' }}>
-            <DeepBand animate={animate} texture={texture} ferry waves style={{ padding: '18px 20px 30px' }}>
+            <DeepBand animate={animate} texture={texture} ferry waves style={{ padding: '18px 20px 72px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 2 }}>
                 <Label color="var(--onDeepDim)">Neste avgang</Label>
                 <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 11.5, color: 'var(--onDeep)', padding: '4px 11px', borderRadius: 99, background: 'rgba(255,255,255,0.10)' }}>{dep.dayLabel}</span>
@@ -184,6 +184,14 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
                       </button>
                     );
                   })}
+                </div>
+              )}
+              {effectiveMode !== 'bus' && !userLoc && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '10px 13px', borderRadius: 'var(--radSm)', background: 'var(--surfaceAlt)', border: '1px dashed var(--line)' }}>
+                  <Icon name="info" size={15} color="var(--inkDim)" stroke={1.8} style={{ flexShrink: 0 }} />
+                  <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12.5, color: 'var(--inkDim)', lineHeight: 1.4 }}>
+                    Aktiver posisjon for å se reisetid og om du rekker fergen
+                  </span>
                 </div>
               )}
               {status && <div data-tour="status-signal"><StatusSignal status={status} /></div>}

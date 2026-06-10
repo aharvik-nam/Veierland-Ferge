@@ -109,9 +109,15 @@ export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick
             <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12.5, color: 'var(--onDeep)' }}>Går om {fmtCountdown(countdown)}</span>
           </div>
         )}
+        {countdown != null && countdown < 0 && (
+          <div style={{ position: 'relative', zIndex: 2, marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 7, padding: '6px 13px', borderRadius: 99, background: 'rgba(255,255,255,0.10)', whiteSpace: 'nowrap' }}>
+            <Icon name="info" size={14} color="var(--onDeepDim)" stroke={2} />
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12.5, color: 'var(--onDeepDim)' }}>Avgått — gikk kl. {trip.startTime}</span>
+          </div>
+        )}
       </DeepBand>
 
-      <div style={{ padding: '18px 18px calc(env(safe-area-inset-bottom, 0px) + 20px)', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ padding: '18px 18px calc(env(safe-area-inset-bottom, 0px) + 96px)', display: 'flex', flexDirection: 'column', gap: 16 }}>
         {(tv.showCar || tv.showWalk) && status && <StatusSignal status={status} />}
 
         {isToday && upcoming && (tv.showCar || tv.showWalk) && (
