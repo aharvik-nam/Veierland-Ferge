@@ -47,7 +47,7 @@ const KEYFRAMES = `
 `;
 
 function Cloud({ x, y, s, o, dur, animate, dark = false }: { x: number; y: number; s: number; o: number; dur: number; animate: boolean; dark?: boolean }) {
-  const fill = dark ? '#7e8b99' : '#ffffff';
+  const fill = dark ? 'color-mix(in srgb, var(--ink) 45%, var(--deep2))' : 'color-mix(in srgb, #ffffff 88%, var(--accent2))';
   return (
     <svg viewBox="0 0 64 36" style={{ position: 'absolute', left: `${x}%`, top: y, width: 64 * s, opacity: o, animation: animate ? `wxCloud ${dur}s ease-in-out infinite` : 'none' }}>
       <ellipse cx="22" cy="24" rx="18" ry="11" fill={fill} />
@@ -68,18 +68,19 @@ function WeatherAnim({ code, animate }: { code: number; animate: boolean }) {
   const partly = code === 2;
   const cloudy = code === 3 || rain || snow;
 
+  // Sky colors derived from the active theme so the scene follows the chosen palette
   const sky = clear || partly
-    ? 'linear-gradient(180deg, #3d6f9e 0%, #6aa3cc 100%)'
+    ? 'linear-gradient(180deg, color-mix(in srgb, var(--accent2) 22%, var(--deep)) 0%, color-mix(in srgb, var(--accent2) 48%, var(--deep2)) 100%)'
     : fog
-    ? 'linear-gradient(180deg, #76858f 0%, #9aa7b0 100%)'
+    ? 'linear-gradient(180deg, color-mix(in srgb, var(--inkDim) 45%, var(--surfaceAlt)) 0%, color-mix(in srgb, var(--inkDim) 25%, var(--surfaceAlt)) 100%)'
     : thunder
-    ? 'linear-gradient(180deg, #232f3d 0%, #435363 100%)'
-    : 'linear-gradient(180deg, #4d6275 0%, #7a8fa1 100%)';
+    ? 'linear-gradient(180deg, color-mix(in srgb, #000 40%, var(--deep)) 0%, color-mix(in srgb, #000 12%, var(--deep2)) 100%)'
+    : 'linear-gradient(180deg, color-mix(in srgb, var(--inkDim) 28%, var(--deep)) 0%, color-mix(in srgb, var(--inkDim) 18%, var(--deep2)) 100%)';
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: sky }}>
       {(clear || partly) && (
-        <div style={{ position: 'absolute', top: 16, right: 24, width: 46, height: 46, borderRadius: 99, background: '#ffd98a', boxShadow: '0 0 34px 14px rgba(255,214,130,0.55)', animation: animate ? 'wxSun 4s ease-in-out infinite' : 'none' }} />
+        <div style={{ position: 'absolute', top: 16, right: 24, width: 46, height: 46, borderRadius: 99, background: 'color-mix(in srgb, var(--accent) 70%, #ffd98a)', boxShadow: '0 0 34px 14px color-mix(in srgb, var(--accent) 45%, rgba(255,214,130,0.5))', animation: animate ? 'wxSun 4s ease-in-out infinite' : 'none' }} />
       )}
       {partly && <Cloud x={48} y={38} s={1.5} o={0.95} dur={9} animate={animate} />}
       {cloudy && (
