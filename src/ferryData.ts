@@ -67,7 +67,7 @@ export const stopTravel: Record<StopId, { drive: number; walk: number; showCar: 
   buss_tbg:   { drive: 4,  walk: 18, showCar: true  },
   tenvik:     { drive: 14, walk: 54, showCar: true  }, // 11 min + 3 min parkering/gang til kaia
   vestgarden: { drive: 15, walk: 71, showCar: false }, // bilfri øy
-  engo:       { drive: 19, walk: 88, showCar: false }, // bilfri øy
+  engo:       { drive: 19, walk: 88, showCar: true  }, // fastland
   tangen:     { drive: 13, walk: 62, showCar: false }, // bilfri øy
   buss_tenv:  { drive: 11, walk: 54, showCar: true  },
 };

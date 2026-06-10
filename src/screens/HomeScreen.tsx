@@ -3,7 +3,7 @@ import { CompassMark } from '../components/Icons';
 import { Icon } from '../components/Icons';
 import { DeepBand, WeatherChip, RouteCard, StatusSignal, TravelChips, NumTime, Label } from '../components/Atoms';
 import { EnturTransit } from '../components/EnturTransit';
-import { nextDepartures, prevDeparture, minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, ymd, getOsloDate, stopsMap, bookingStatus } from '../ferryData';
+import { nextDepartures, prevDeparture, upcomingTrips, minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, ymd, getOsloDate, stopsMap, stopCoords, haversineKm, bookingStatus } from '../ferryData';
 import type { StopId, Weather, Trip, TransportMode } from '../types';
 
 interface HomeScreenProps {
@@ -51,8 +51,12 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
 
   // Resolve travel time and mode for status signal
   const travelMode: 'drive' | 'walk' = effectiveMode === 'walk' ? 'walk' : 'drive';
+  // Walk estimate from actual GPS position (1.25 path factor, 4.8 km/h)
+  const walkEst = userLoc
+    ? Math.max(1, Math.ceil(haversineKm(userLoc.lat, userLoc.lng, stopCoords[from].lat, stopCoords[from].lng) * 1.25 / 4.8 * 60))
+    : null;
   const effectiveTravel = effectiveMode === 'walk'
-    ? stopTravel[from].walk
+    ? (walkEst ?? stopTravel[from].walk)
     : (driveMins ?? stopTravel[from].drive);
 
   // Override visibility based on chosen mode
@@ -63,8 +67,12 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
     ? { showCar: false, showWalk: tvBase.showWalk }
     : { showCar: tvBase.showCar, showWalk: false };
 
-  const showStatus = effectiveMode !== 'bus' && (tv.showCar || tv.showWalk);
+  // In drive mode, require a real (GPS-based) estimate — the static fallback can't know where the user is
+  const showStatus = effectiveMode !== 'bus' && (tv.showCar || tv.showWalk) && (travelMode !== 'drive' || driveMins != null);
   const status = dep && showStatus ? rekkerStatus(effectiveTravel, countdown, travelMode, nextDep) : null;
+
+  // All remaining departures today — the Entur connection check needs the full list
+  const todayFerries = upcomingTrips(from, to, ymd(getOsloDate()));
 
   if (!onboarded) {
     return (
@@ -116,14 +124,14 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
         </div>
 
         {/* compact route bar */}
-        <button data-tour="compact-route-bar" onClick={onEditFrom} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radSm)', padding: '10px 14px', cursor: 'pointer' }}>
+        <div data-tour="compact-route-bar" onClick={onEditFrom} role="button" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radSm)', padding: '10px 14px', cursor: 'pointer' }}>
           <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>{stopsMap[from]}</span>
           <Icon name="arrowRight" size={14} color="var(--onDeepDim)" stroke={2} style={{ flexShrink: 0 }} />
           <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--onDeep)', whiteSpace: 'nowrap', flex: 1, textAlign: 'right' }}>{stopsMap[to]}</span>
           <button onClick={e => { e.stopPropagation(); onSwap(); }} style={{ marginLeft: 6, width: 28, height: 28, borderRadius: 99, background: 'var(--accent)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
             <Icon name="swap" size={13} color="var(--accentInk)" stroke={2.2} />
           </button>
-        </button>
+        </div>
 
         {/* next departure hero */}
         {dep ? (
@@ -213,8 +221,8 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
                 </button>
               )}
               {status && <div data-tour="status-signal"><StatusSignal status={status} /></div>}
-              {effectiveMode !== 'bus' && status?.level !== 'bad' && <TravelChips stop={from} showCar={tv.showCar} showWalk={tv.showWalk} driveOverride={driveMins} />}
-              {effectiveMode === 'bus' && <EnturTransit userLoc={userLoc} stop={from} ferries={deps} />}
+              {effectiveMode !== 'bus' && status?.level !== 'bad' && <TravelChips stop={from} showCar={tv.showCar} showWalk={tv.showWalk} driveOverride={driveMins} walkOverride={walkEst} />}
+              {effectiveMode === 'bus' && <EnturTransit userLoc={userLoc} stop={from} ferries={todayFerries} />}
               <button onClick={() => onOpenTrip(dep)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '13px', borderRadius: 'var(--radSm)', background: 'var(--surfaceAlt)', border: '1px solid var(--line)', cursor: 'pointer' }}>
                 <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--ink)' }}>Se reisedetaljer</span>
                 <Icon name="arrowRight" size={17} color="var(--ink)" stroke={2} />

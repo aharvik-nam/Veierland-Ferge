@@ -36,12 +36,22 @@ export function StopDot({ role, size = 11 }: { role: 'from' | 'to' | 'via'; size
 
 // ── WeatherChip ──────────────────────────────────────────────
 export function WeatherChip({ weather, onDeep = true, onClick }: { weather: Weather | null; onDeep?: boolean; onClick?: () => void }) {
-  if (!weather) return <div style={{ height: 36 }} />;
-  const wp = weatherProps(weather.code);
   const col = onDeep ? 'var(--onDeep)' : 'var(--ink)';
   const Tag = onClick ? 'button' : 'div';
+  const chipStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 9, padding: '7px 13px', borderRadius: 99, background: onDeep ? 'rgba(255,255,255,0.08)' : 'var(--surfaceAlt)', border: onDeep ? '1px solid rgba(255,255,255,0.10)' : '1px solid var(--line)', cursor: onClick ? 'pointer' : 'default' };
+  if (!weather) {
+    // No data (yet) — keep the chip visible and tappable; the weather sheet fetches on its own
+    if (!onClick) return <div style={{ height: 36 }} />;
+    return (
+      <Tag onClick={onClick} style={chipStyle}>
+        <Icon name="cloud" size={17} color={col} stroke={1.8} style={{ opacity: 0.7 }} />
+        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, color: col, opacity: 0.7 }}>Vær</span>
+      </Tag>
+    );
+  }
+  const wp = weatherProps(weather.code);
   return (
-    <Tag onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 13px', borderRadius: 99, background: onDeep ? 'rgba(255,255,255,0.08)' : 'var(--surfaceAlt)', border: onDeep ? '1px solid rgba(255,255,255,0.10)' : '1px solid var(--line)', cursor: onClick ? 'pointer' : 'default' }}>
+    <Tag onClick={onClick} style={chipStyle}>
       <Icon name={wp.name} size={17} color={col} stroke={1.8} />
       <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, color: col }}>{Math.round(weather.temp)}°</span>
       <span style={{ width: 1, height: 12, background: onDeep ? 'rgba(255,255,255,0.18)' : 'var(--line)' }} />
@@ -73,14 +83,14 @@ export function StatusSignal({ status }: { status: { level: 'good' | 'warn' | 'b
 }
 
 // ── TravelChips ──────────────────────────────────────────────
-export function TravelChips({ stop, onDeep = false, showCar: showCarProp, showWalk: showWalkProp, driveOverride }: { stop: StopId; onDeep?: boolean; showCar?: boolean; showWalk?: boolean; driveOverride?: number | null }) {
+export function TravelChips({ stop, onDeep = false, showCar: showCarProp, showWalk: showWalkProp, driveOverride, walkOverride }: { stop: StopId; onDeep?: boolean; showCar?: boolean; showWalk?: boolean; driveOverride?: number | null; walkOverride?: number | null }) {
   const tv = stopTravel[stop];
   if (!tv) return null;
   const showCar = showCarProp !== undefined ? showCarProp : tv.showCar;
   const showWalk = showWalkProp !== undefined ? showWalkProp : true;
   if (!showCar && !showWalk) return null;
   const driveDisplay = fmtCountdown(driveOverride != null ? driveOverride : tv.drive);
-  const walkDisplay = fmtCountdown(tv.walk);
+  const walkDisplay = fmtCountdown(walkOverride != null ? walkOverride : tv.walk);
   const col = onDeep ? 'var(--onDeep)' : 'var(--ink)';
   const dim = onDeep ? 'var(--onDeepDim)' : 'var(--inkDim)';
 

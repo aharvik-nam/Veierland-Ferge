@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { THEMES, STYLES, themeVars } from './theme';
-import { ymd, getOsloDate, stopCoords, isSummerSeason } from './ferryData';
+import { ymd, getOsloDate, stopCoords, isSummerSeason, haversineKm } from './ferryData';
 import { HomeScreen } from './screens/HomeScreen';
 import { ResultsScreen } from './screens/ResultsScreen';
 import { DetailScreen } from './screens/DetailScreen';
@@ -192,13 +192,15 @@ export default function App() {
     if (lastOsrmKeyRef.current === key) return;
     lastOsrmKeyRef.current = key;
     const dest = stopCoords[from];
+    // Rough estimate when OSRM is unavailable: road factor 1.3, avg 55 km/h, +3 min parking
+    const estimate = () => Math.ceil(haversineKm(userLoc.lat, userLoc.lng, dest.lat, dest.lng) * 1.3 / 55 * 60 * trafficMultiplier()) + 3;
     fetch(`https://router.project-osrm.org/route/v1/driving/${userLoc.lng},${userLoc.lat};${dest.lng},${dest.lat}?overview=false`)
       .then(r => r.json())
       .then(j => {
         const secs = j.routes?.[0]?.duration;
-        if (secs != null) setDriveMins(Math.ceil(secs / 60 * trafficMultiplier()));
+        setDriveMins(secs != null ? Math.ceil(secs / 60 * trafficMultiplier()) : estimate());
       })
-      .catch(() => setDriveMins(null));
+      .catch(() => setDriveMins(estimate()));
   }, [userLoc, from]);
 
   const theme = THEMES[themeKey];

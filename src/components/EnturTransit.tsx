@@ -53,8 +53,11 @@ function transitConnection(arrivalIso: string, ferries: Trip[]): {
   label: string;
   urgent: boolean;
 } | null {
-  const arrMins = parseTime(fmt(arrivalIso));
+  // Compare full Oslo date — an arrival after midnight must not match today's ferries
+  const arrOslo = new Date(new Date(arrivalIso).toLocaleString('en-US', { timeZone: 'Europe/Oslo' }));
   const today = ymd(getOsloDate());
+  if (ymd(arrOslo) !== today) return null;
+  const arrMins = arrOslo.getHours() * 60 + arrOslo.getMinutes();
   const reachable = ferries.filter(f => f.dateStr === today && parseTime(f.startTime) > arrMins);
   if (reachable.length === 0) return null;
   const next = reachable[0];
@@ -245,10 +248,13 @@ export function EnturTransit({ userLoc, stop, ferries }: EnturTransitProps) {
   const [error, setError] = useState(false);
   const lastFetchRef = useRef<string>('');
 
+  // 5-minute bucket so suggestions refresh over time, not only on movement
+  const timeBucket = Math.floor(Date.now() / 300000);
+
   useEffect(() => {
     if (!userLoc) { setPatterns(null); return; }
     const dest = stopCoords[stop];
-    const key = `${userLoc.lat.toFixed(3)},${userLoc.lng.toFixed(3)},${stop}`;
+    const key = `${userLoc.lat.toFixed(3)},${userLoc.lng.toFixed(3)},${stop},${timeBucket}`;
     if (lastFetchRef.current === key) return;
     lastFetchRef.current = key;
 
@@ -257,7 +263,7 @@ export function EnturTransit({ userLoc, stop, ferries }: EnturTransitProps) {
     fetchTransit(userLoc.lat, userLoc.lng, dest.lat, dest.lng)
       .then(p => { setPatterns(p); setLoading(false); })
       .catch(() => { setError(true); setLoading(false); });
-  }, [userLoc?.lat.toFixed(3), userLoc?.lng.toFixed(3), stop]);
+  }, [userLoc?.lat.toFixed(3), userLoc?.lng.toFixed(3), stop, timeBucket]);
 
   if (!userLoc) {
     return (
@@ -301,8 +307,10 @@ export function EnturTransit({ userLoc, stop, ferries }: EnturTransitProps) {
     );
   }
 
-  // Keep only patterns that connect to a ferry
-  const reachablePatterns = (patterns as TripPattern[]).filter(p => transitConnection(p.expectedEndTime, ferries) !== null);
+  // Keep only patterns that haven't departed and connect to a ferry
+  const reachablePatterns = (patterns as TripPattern[])
+    .filter(p => minsFromNow(p.expectedStartTime) > -1)
+    .filter(p => transitConnection(p.expectedEndTime, ferries) !== null);
 
   // If none connect, show a simple message instead of listing useless options
   if (reachablePatterns.length === 0) {

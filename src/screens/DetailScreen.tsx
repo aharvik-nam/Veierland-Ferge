@@ -1,7 +1,7 @@
 import React from 'react';
 import { Icon } from '../components/Icons';
 import { DeepBand, Label, NumTime, StatusSignal, TravelChips, CallButton } from '../components/Atoms';
-import { minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, stopShort, ymd, getOsloDate, findTripsForDay, dayTypeOf, parseYmd, parseTime } from '../ferryData';
+import { minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, stopShort, ymd, getOsloDate, findTripsForDay, dayTypeOf, parseYmd, parseTime, stopCoords, haversineKm } from '../ferryData';
 import type { Trip, StopId, TransportMode } from '../types';
 
 function RouteTimeline({ trip, animate }: { trip: Trip; animate: boolean }) {
@@ -59,8 +59,11 @@ export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick
   const defaultMode: TransportMode = isIsland ? 'walk' : 'drive';
   const effectiveMode: TransportMode = transportMode ?? defaultMode;
   const travelMode: 'drive' | 'walk' = effectiveMode === 'walk' ? 'walk' : 'drive';
+  const walkEst = userLoc
+    ? Math.max(1, Math.ceil(haversineKm(userLoc.lat, userLoc.lng, stopCoords[trip.startStop].lat, stopCoords[trip.startStop].lng) * 1.25 / 4.8 * 60))
+    : null;
   const effectiveDrive = effectiveMode === 'walk'
-    ? stopTravel[trip.startStop].walk
+    ? (walkEst ?? stopTravel[trip.startStop].walk)
     : (driveMins ?? stopTravel[trip.startStop].drive);
   const nextTrip = (() => {
     if (!isToday) return null;
@@ -74,7 +77,7 @@ export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick
     : effectiveMode === 'walk'
     ? { showCar: false, showWalk: tvBase.showWalk }
     : { showCar: tvBase.showCar, showWalk: false };
-  const status = upcoming && isToday && effectiveMode !== 'bus' && (tv.showCar || tv.showWalk)
+  const status = upcoming && isToday && effectiveMode !== 'bus' && (tv.showCar || tv.showWalk) && (travelMode !== 'drive' || driveMins != null)
     ? rekkerStatus(effectiveDrive, countdown, travelMode, nextTrip)
     : null;
   const booking = trip.warnings.find(w => w.type === 'booking');
@@ -123,7 +126,7 @@ export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick
         {isToday && upcoming && (tv.showCar || tv.showWalk) && (
           <div>
             <Label color="var(--inkDim)" style={{ paddingLeft: 2 }}>Til {stopShort[trip.startStop]}-kaia</Label>
-            <div style={{ marginTop: 8 }}><TravelChips stop={trip.startStop} showCar={tv.showCar} showWalk={tv.showWalk} driveOverride={driveMins} /></div>
+            <div style={{ marginTop: 8 }}><TravelChips stop={trip.startStop} showCar={tv.showCar} showWalk={tv.showWalk} driveOverride={driveMins} walkOverride={walkEst} /></div>
           </div>
         )}
 
