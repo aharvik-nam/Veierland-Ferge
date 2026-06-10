@@ -220,6 +220,19 @@ export default function App() {
     });
   }, [from, to]);
 
+  // Called from the GPS hint — a user gesture re-triggers the native permission
+  // prompt when state is "prompt"; resolves false when access is denied
+  const requestLocation = useCallback((): Promise<boolean> => {
+    return new Promise(resolve => {
+      if (!navigator.geolocation) { resolve(false); return; }
+      navigator.geolocation.getCurrentPosition(
+        pos => { setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }); resolve(true); },
+        err => { resolve(err.code !== err.PERMISSION_DENIED); },
+        { enableHighAccuracy: false, maximumAge: 60000, timeout: 12000 }
+      );
+    });
+  }, []);
+
   const setTransportMode = useCallback((stop: StopId, mode: TransportMode) => {
     setTransportModes(prev => {
       const next = { ...prev, [stop]: mode };
@@ -240,6 +253,7 @@ export default function App() {
           onEditFrom={() => openPicker('from')} onEditTo={() => openPicker('to')} onSwap={swap}
           onSeeAll={() => { setSelectedDate(ymd(getOsloDate())); setScreen('results'); }}
           onOpenTrip={openTrip} tick={tick} userLoc={userLoc} driveMins={driveMins}
+          onRequestLocation={requestLocation}
           transportMode={transportModes[from]} onSetTransportMode={(m) => setTransportMode(from, m)}
           onboarded={onboarded} onSetOnboarded={() => { setOnboarded(true); localStorage.setItem('onboarded', 'true'); }}
           onReset={() => { setOnboarded(false); localStorage.removeItem('onboarded'); }}

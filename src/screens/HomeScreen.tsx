@@ -20,6 +20,7 @@ interface HomeScreenProps {
   tick: number;
   userLoc: { lat: number; lng: number } | null;
   driveMins: number | null;
+  onRequestLocation: () => Promise<boolean>;
   transportMode: TransportMode | undefined;
   onSetTransportMode: (m: TransportMode) => void;
   onboarded: boolean;
@@ -27,8 +28,9 @@ interface HomeScreenProps {
   onReset: () => void;
 }
 
-export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, transportMode, onSetTransportMode, onboarded, onSetOnboarded, onReset }: HomeScreenProps) {
+export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, onRequestLocation, transportMode, onSetTransportMode, onboarded, onSetOnboarded, onReset }: HomeScreenProps) {
   const [heroIndex, setHeroIndex] = useState(0);
+  const [locState, setLocState] = useState<'idle' | 'busy' | 'denied'>('idle');
   useEffect(() => { setHeroIndex(0); }, [from, to]);
 
   const deps = nextDepartures(from, to, heroIndex + 2);
@@ -187,12 +189,27 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
                 </div>
               )}
               {effectiveMode !== 'bus' && !userLoc && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '10px 13px', borderRadius: 'var(--radSm)', background: 'var(--surfaceAlt)', border: '1px dashed var(--line)' }}>
-                  <Icon name="info" size={15} color="var(--inkDim)" stroke={1.8} style={{ flexShrink: 0 }} />
-                  <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12.5, color: 'var(--inkDim)', lineHeight: 1.4 }}>
-                    Aktiver posisjon for å se reisetid og om du rekker fergen
-                  </span>
-                </div>
+                <button
+                  onClick={async () => {
+                    if (locState === 'busy') return;
+                    setLocState('busy');
+                    const ok = await onRequestLocation();
+                    setLocState(ok ? 'idle' : 'denied');
+                  }}
+                  style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '10px 13px', borderRadius: 'var(--radSm)', background: 'var(--surfaceAlt)', border: '1px dashed var(--line)', cursor: 'pointer', textAlign: 'left', width: '100%' }}
+                >
+                  <Icon name={locState === 'denied' ? 'alert' : 'info'} size={15} color={locState === 'denied' ? 'var(--warn)' : 'var(--inkDim)'} stroke={1.8} style={{ flexShrink: 0, marginTop: 1 }} />
+                  {locState === 'denied' ? (
+                    <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12.5, color: 'var(--inkDim)', lineHeight: 1.45 }}>
+                      <span style={{ fontWeight: 700, color: 'var(--warn)' }}>Posisjon er blokkert for dette nettstedet.</span>{' '}
+                      iPhone: Innstillinger → Personvern → Stedstjenester → Safari. Android/Chrome: trykk hengelåsen i adressefeltet → Tillatelser → Posisjon.
+                    </span>
+                  ) : (
+                    <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12.5, color: 'var(--inkDim)', lineHeight: 1.4 }}>
+                      {locState === 'busy' ? 'Henter posisjon …' : 'Trykk her for å aktivere posisjon — se reisetid og om du rekker fergen'}
+                    </span>
+                  )}
+                </button>
               )}
               {status && <div data-tour="status-signal"><StatusSignal status={status} /></div>}
               {effectiveMode !== 'bus' && status?.level !== 'bad' && <TravelChips stop={from} showCar={tv.showCar} showWalk={tv.showWalk} driveOverride={driveMins} />}
