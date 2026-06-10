@@ -166,22 +166,44 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // Tenvik pier: 59.1617, 10.3455 — api.met.no (powers Yr.no)
-    fetch('https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=59.1617&lon=10.3455', {
-      headers: { 'User-Agent': 'VeierlandFerge/1.0 github.com/aharvik-nam/Veierland-Ferge' },
-    })
-      .then(r => r.json())
-      .then(j => {
-        const ts = j.properties?.timeseries ?? [];
-        if (ts.length) setForecast(ts);
-        const cur = ts[0]?.data;
-        const inst = cur?.instant?.details;
-        const sym = cur?.next_1_hours?.summary?.symbol_code ?? cur?.next_6_hours?.summary?.symbol_code ?? '';
-        if (inst?.air_temperature != null) {
-          setWeather({ temp: inst.air_temperature, wind: inst.wind_speed, code: yrSymbolToCode(sym) });
-        }
-      })
-      .catch(() => { /* leave weather as null — WeatherChip hides itself */ });
+    // Tenvik pier: 59.1617, 10.3455 — api.met.no (powers Yr.no).
+    // No custom User-Agent header: browsers strip or preflight it, which can fail the request.
+    let cancelled = false;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    let attempt = 0;
+
+    const load = () => {
+      fetch('https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=59.1617&lon=10.3455')
+        .then(r => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+        .then(j => {
+          if (cancelled) return;
+          const ts = j.properties?.timeseries ?? [];
+          if (ts.length) setForecast(ts);
+          const inst = ts[0]?.data?.instant?.details;
+          const sym = ts[0]?.data?.next_1_hours?.summary?.symbol_code ?? ts[0]?.data?.next_6_hours?.summary?.symbol_code ?? '';
+          if (inst?.air_temperature != null) {
+            setWeather({ temp: inst.air_temperature, wind: inst.wind_speed, code: yrSymbolToCode(sym) });
+            attempt = 0;
+          }
+        })
+        .catch(() => {
+          // Retry with backoff — mobile PWAs often launch before the network is ready
+          if (cancelled || attempt >= 5) return;
+          attempt += 1;
+          retryTimer = setTimeout(load, attempt * 10000);
+        });
+    };
+
+    load();
+    const refresh = setInterval(load, 30 * 60000); // refresh every 30 min
+    const onOnline = () => load();
+    window.addEventListener('online', onOnline);
+    return () => {
+      cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+      clearInterval(refresh);
+      window.removeEventListener('online', onOnline);
+    };
   }, []);
 
   const lastOsrmKeyRef = useRef<string>('');

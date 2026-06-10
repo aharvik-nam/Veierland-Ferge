@@ -133,9 +133,7 @@ export function WeatherSheet({ open, animate, preloaded, onClose }: WeatherSheet
   useEffect(() => {
     if (!open || series) return;
     setError(false); // retry on every open
-    fetch('https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=59.1617&lon=10.3455', {
-      headers: { 'User-Agent': 'VeierlandFerge/1.0 github.com/aharvik-nam/Veierland-Ferge' },
-    })
+    fetch('https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=59.1617&lon=10.3455')
       .then(r => r.json())
       .then(j => {
         const ts = j.properties?.timeseries ?? [];
