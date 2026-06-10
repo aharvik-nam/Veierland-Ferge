@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Icon } from '../components/Icons';
 import { DeepBand, StopDot, Label, TripCard } from '../components/Atoms';
 import { findTripsForDay, dayTypeOf, parseYmd, parseTime, minsUntil, ymd, getOsloDate, stopShort, isSummerSeason, NO_DAYS_EXPORT as NO_DAYS, NO_MONTHS_EXPORT } from '../ferryData';
@@ -6,56 +6,131 @@ import type { StopId, Trip } from '../types';
 
 function cap(s: string): string { return s.charAt(0).toUpperCase() + s.slice(1); }
 
+const NO_MONTHS_FULL = ['januar', 'februar', 'mars', 'april', 'mai', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'desember'];
+
+function CalendarSheet({ open, selected, onSelect, onClose }: { open: boolean; selected: string; onSelect: (ds: string) => void; onClose: () => void }) {
+  const today = getOsloDate();
+  const todayStr = ymd(today);
+  const selDate = parseYmd(selected);
+  const [viewYm, setViewYm] = useState(() => ({ y: selDate.getFullYear(), m: selDate.getMonth() }));
+  useEffect(() => { if (open) setViewYm({ y: selDate.getFullYear(), m: selDate.getMonth() }); }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const first = new Date(viewYm.y, viewYm.m, 1);
+  const daysInMonth = new Date(viewYm.y, viewYm.m + 1, 0).getDate();
+  const offset = (first.getDay() + 6) % 7; // Monday-first
+  const cells: (number | null)[] = [...Array(offset).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
+  const atCurrentMonth = viewYm.y === today.getFullYear() && viewYm.m === today.getMonth();
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 85, pointerEvents: open ? 'auto' : 'none' }}>
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(7,20,24,0.45)', backdropFilter: 'blur(2px)', opacity: open ? 1 : 0, transition: 'opacity 0.28s ease' }} />
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: 'var(--surface)', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: '14px 20px calc(env(safe-area-inset-bottom, 0px) + 24px)', transform: open ? 'translateY(0)' : 'translateY(110%)', transition: 'transform 0.34s cubic-bezier(0.22,1,0.36,1)', boxShadow: '0 -20px 50px rgba(0,0,0,0.25)' }}>
+        <div style={{ width: 42, height: 5, borderRadius: 99, background: 'var(--line)', margin: '0 auto 16px' }} />
+
+        {/* Month navigation */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <button
+            onClick={() => setViewYm(v => v.m === 0 ? { y: v.y - 1, m: 11 } : { y: v.y, m: v.m - 1 })}
+            disabled={atCurrentMonth}
+            style={{ width: 38, height: 38, borderRadius: 99, border: '1.5px solid var(--line)', background: 'var(--surfaceAlt)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: atCurrentMonth ? 'default' : 'pointer', opacity: atCurrentMonth ? 0.3 : 1 }}
+          >
+            <Icon name="chevronLeft" size={17} color="var(--ink)" stroke={2.2} />
+          </button>
+          <span style={{ fontFamily: 'var(--num)', fontSize: 21, color: 'var(--ink)' }}>{cap(NO_MONTHS_FULL[viewYm.m])} {viewYm.y}</span>
+          <button
+            onClick={() => setViewYm(v => v.m === 11 ? { y: v.y + 1, m: 0 } : { y: v.y, m: v.m + 1 })}
+            style={{ width: 38, height: 38, borderRadius: 99, border: '1.5px solid var(--line)', background: 'var(--surfaceAlt)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          >
+            <Icon name="chevronRight" size={17} color="var(--ink)" stroke={2.2} />
+          </button>
+        </div>
+
+        {/* Weekday header */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginBottom: 6 }}>
+          {['Ma', 'Ti', 'On', 'To', 'Fr', 'Lø', 'Sø'].map(wd => (
+            <div key={wd} style={{ textAlign: 'center', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 10.5, letterSpacing: '0.08em', color: 'var(--inkDim)', textTransform: 'uppercase' }}>{wd}</div>
+          ))}
+        </div>
+
+        {/* Day grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+          {cells.map((day, i) => {
+            if (day == null) return <div key={`e${i}`} />;
+            const ds = ymd(new Date(viewYm.y, viewYm.m, day));
+            const isPast = ds < todayStr;
+            const isSel = ds === selected;
+            const isToday = ds === todayStr;
+            return (
+              <button
+                key={ds}
+                disabled={isPast}
+                onClick={() => { onSelect(ds); onClose(); }}
+                style={{
+                  aspectRatio: '1', borderRadius: 12, cursor: isPast ? 'default' : 'pointer',
+                  border: isSel ? '2px solid var(--accent)' : isToday ? '1.5px solid var(--accent2)' : '1.5px solid transparent',
+                  background: isSel ? 'var(--accent)' : 'var(--surfaceAlt)',
+                  opacity: isPast ? 0.28 : 1,
+                  fontFamily: "'Space Grotesk', sans-serif", fontWeight: isSel || isToday ? 700 : 600, fontSize: 14,
+                  color: isSel ? 'var(--accentInk)' : 'var(--ink)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                {day}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DayChips({ selected, onSelect }: { selected: string; onSelect: (ds: string) => void }) {
   const now = getOsloDate();
-  const dateInputRef = useRef<HTMLInputElement>(null);
+  const [calOpen, setCalOpen] = useState(false);
   const days = [];
   for (let i = 0; i < 7; i++) {
     const d = new Date(now); d.setDate(now.getDate() + i);
     const ds = ymd(d);
-    const label = i === 0 ? 'I dag' : i === 1 ? 'I morgen' : cap(NO_DAYS[d.getDay()]).slice(0, 3);
-    days.push({ ds, label, num: d.getDate() });
+    const label = i === 0 ? 'I dag' : cap(NO_DAYS[d.getDay()]).slice(0, 3);
+    days.push({ ds, label, num: `${d.getDate()}.${d.getMonth() + 1}` });
   }
   const isCustom = !days.some(d => d.ds === selected);
   const customDate = isCustom ? parseYmd(selected) : null;
-  const customLabel = customDate ? `${cap(NO_DAYS[customDate.getDay()])} ${customDate.getDate()}. ${NO_MONTHS_EXPORT[customDate.getMonth()]}` : '';
+  const customLabel = customDate ? `${cap(NO_DAYS[customDate.getDay()]).slice(0, 3)}` : '';
 
   return (
-    <div style={{ position: 'relative' }}>
-    <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '2px 18px 4px', scrollbarWidth: 'none' }}>
-      {days.map(d => {
-        const on = d.ds === selected;
-        return (
-          <button key={d.ds} onClick={() => onSelect(d.ds)} style={{ flexShrink: 0, padding: '9px 15px', borderRadius: 99, border: on ? '1.5px solid var(--accent)' : '1.5px solid var(--line)', background: on ? 'var(--accent)' : 'var(--surface)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: on ? 'var(--accentInk)' : 'var(--ink)' }}>{d.label}</span>
-            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 10, color: on ? 'var(--accentInk)' : 'var(--inkDim)', opacity: 0.8 }}>{d.num}.</span>
-          </button>
-        );
-      })}
-
-      {isCustom && (
-        <button onClick={() => dateInputRef.current?.showPicker()} style={{ flexShrink: 0, padding: '9px 15px', borderRadius: 99, border: '1.5px solid var(--accent)', background: 'var(--accent)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: 'var(--accentInk)', whiteSpace: 'nowrap' }}>{customLabel}</span>
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 10, color: 'var(--accentInk)', opacity: 0.8 }}>{customDate!.getDate()}.</span>
-        </button>
-      )}
-
-      <button onClick={() => dateInputRef.current?.showPicker()} style={{ flexShrink: 0, padding: '9px 15px', borderRadius: 99, border: '1.5px solid var(--line)', background: 'var(--surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-        <Icon name="calendar" size={13} color="var(--inkDim)" stroke={2} />
-        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: 'var(--ink)', whiteSpace: 'nowrap' }}>Angi dato</span>
+    <div style={{ display: 'flex', alignItems: 'stretch', gap: 8, paddingLeft: 18 }}>
+      {/* Static date picker button — always first */}
+      <button onClick={() => setCalOpen(true)} style={{ flexShrink: 0, padding: '9px 13px', borderRadius: 99, border: isCustom ? '1.5px solid var(--accent)' : '1.5px solid var(--line)', background: isCustom ? 'var(--accent)' : 'var(--surface)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+        {isCustom ? (
+          <>
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: 'var(--accentInk)', whiteSpace: 'nowrap' }}>{customLabel}</span>
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 10, color: 'var(--accentInk)', opacity: 0.8 }}>{`${customDate!.getDate()}.${customDate!.getMonth() + 1}`}</span>
+          </>
+        ) : (
+          <Icon name="calendar" size={17} color="var(--inkDim)" stroke={2} />
+        )}
       </button>
 
-      <input
-        ref={dateInputRef}
-        type="date"
-        value={selected}
-        min={ymd(now)}
-        onChange={e => e.target.value && onSelect(e.target.value)}
-        style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }}
-      />
-    </div>
-    {/* Right-edge fade hinting that the chip row scrolls */}
-    <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 36, background: 'linear-gradient(to right, transparent, var(--surfaceAlt))', pointerEvents: 'none' }} />
+      {/* Scrollable chip row */}
+      <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '2px 18px 4px 0', scrollbarWidth: 'none' }}>
+          {days.map(d => {
+            const on = d.ds === selected;
+            return (
+              <button key={d.ds} onClick={() => onSelect(d.ds)} style={{ flexShrink: 0, padding: '9px 15px', borderRadius: 99, border: on ? '1.5px solid var(--accent)' : '1.5px solid var(--line)', background: on ? 'var(--accent)' : 'var(--surface)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: on ? 'var(--accentInk)' : 'var(--ink)' }}>{d.label}</span>
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 10, color: on ? 'var(--accentInk)' : 'var(--inkDim)', opacity: 0.8 }}>{d.num}</span>
+              </button>
+            );
+          })}
+        </div>
+        {/* Right-edge fade hinting that the chip row scrolls */}
+        <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 36, background: 'linear-gradient(to right, transparent, var(--surfaceAlt))', pointerEvents: 'none' }} />
+      </div>
+
+      <CalendarSheet open={calOpen} selected={selected} onSelect={onSelect} onClose={() => setCalOpen(false)} />
     </div>
   );
 }
@@ -84,8 +159,14 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
   const firstUpcomingIndex = isToday ? trips.findIndex(t => parseTime(t.startTime) >= nowMins) : 0;
   const firstUpcomingRef = useRef<HTMLDivElement>(null);
 
+  const listRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    firstUpcomingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (firstUpcomingRef.current) {
+      firstUpcomingRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      // Other days have no "next" anchor — start at the top of the list
+      listRef.current?.scrollTo({ top: 0 });
+    }
   }, [selectedDate, from, to]);
 
   return (
@@ -127,7 +208,7 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
       </div>
 
       {/* scrollable trip list */}
-      <div data-tour="trip-list" style={{ flex: 1, overflowY: 'auto', padding: '12px 18px calc(env(safe-area-inset-bottom, 0px) + 96px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div data-tour="trip-list" ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 18px calc(env(safe-area-inset-bottom, 0px) + 96px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {trips.length === 0 ? (
           <div style={{ marginTop: 30, padding: 36, borderRadius: 'var(--rad)', background: 'var(--surface)', border: '1px dashed var(--line)', textAlign: 'center' }}>
             <Icon name="anchor" size={32} color="var(--inkDim)" />
