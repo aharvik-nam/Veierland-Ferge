@@ -35,12 +35,13 @@ export function StopDot({ role, size = 11 }: { role: 'from' | 'to' | 'via'; size
 }
 
 // ── WeatherChip ──────────────────────────────────────────────
-export function WeatherChip({ weather, onDeep = true }: { weather: Weather | null; onDeep?: boolean }) {
+export function WeatherChip({ weather, onDeep = true, onClick }: { weather: Weather | null; onDeep?: boolean; onClick?: () => void }) {
   if (!weather) return <div style={{ height: 36 }} />;
   const wp = weatherProps(weather.code);
   const col = onDeep ? 'var(--onDeep)' : 'var(--ink)';
+  const Tag = onClick ? 'button' : 'div';
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 13px', borderRadius: 99, background: onDeep ? 'rgba(255,255,255,0.08)' : 'var(--surfaceAlt)', border: onDeep ? '1px solid rgba(255,255,255,0.10)' : '1px solid var(--line)' }}>
+    <Tag onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 13px', borderRadius: 99, background: onDeep ? 'rgba(255,255,255,0.08)' : 'var(--surfaceAlt)', border: onDeep ? '1px solid rgba(255,255,255,0.10)' : '1px solid var(--line)', cursor: onClick ? 'pointer' : 'default' }}>
       <Icon name={wp.name} size={17} color={col} stroke={1.8} />
       <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, color: col }}>{Math.round(weather.temp)}°</span>
       <span style={{ width: 1, height: 12, background: onDeep ? 'rgba(255,255,255,0.18)' : 'var(--line)' }} />
@@ -48,7 +49,7 @@ export function WeatherChip({ weather, onDeep = true }: { weather: Weather | nul
       <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, color: col }}>
         {weather.wind.toFixed(0)}<span style={{ fontSize: 10, opacity: 0.7 }}> m/s</span>
       </span>
-    </div>
+    </Tag>
   );
 }
 

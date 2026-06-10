@@ -21,6 +21,7 @@ interface HomeScreenProps {
   userLoc: { lat: number; lng: number } | null;
   driveMins: number | null;
   onRequestLocation: () => Promise<boolean>;
+  onOpenWeather: () => void;
   transportMode: TransportMode | undefined;
   onSetTransportMode: (m: TransportMode) => void;
   onboarded: boolean;
@@ -28,7 +29,7 @@ interface HomeScreenProps {
   onReset: () => void;
 }
 
-export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, onRequestLocation, transportMode, onSetTransportMode, onboarded, onSetOnboarded, onReset }: HomeScreenProps) {
+export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, onRequestLocation, onOpenWeather, transportMode, onSetTransportMode, onboarded, onSetOnboarded, onReset }: HomeScreenProps) {
   const [heroIndex, setHeroIndex] = useState(0);
   const [locState, setLocState] = useState<'idle' | 'busy' | 'denied'>('idle');
   useEffect(() => { setHeroIndex(0); }, [from, to]);
@@ -76,7 +77,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
               <Label color="var(--onDeepDim)" style={{ fontSize: 9.5 }}>M/F Jutøya · Ferge</Label>
             </div>
           </div>
-          <WeatherChip weather={weather} onDeep />
+          <WeatherChip weather={weather} onDeep onClick={onOpenWeather} />
         </div>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 22px calc(env(safe-area-inset-bottom, 0px) + 40px)', gap: 14 }}>
@@ -111,7 +112,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
               <Label color="var(--onDeepDim)" style={{ fontSize: 9.5 }}>M/F Jutøya · Ferge</Label>
             </div>
           </button>
-          <WeatherChip weather={weather} onDeep />
+          <WeatherChip weather={weather} onDeep onClick={onOpenWeather} />
         </div>
 
         {/* compact route bar */}

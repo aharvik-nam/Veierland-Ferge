@@ -7,6 +7,7 @@ import { DetailScreen } from './screens/DetailScreen';
 import { StopPicker } from './components/Atoms';
 import { Icon } from './components/Icons';
 import { Tour } from './components/Tour';
+import { WeatherSheet } from './components/WeatherSheet';
 import type { StopId, ThemeKey, StyleKey, Weather, Trip, Screen, TransportMode } from './types';
 
 // Norwegian public holidays (MM-DD) and summer peak weeks
@@ -129,6 +130,7 @@ export default function App() {
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
+  const [weatherOpen, setWeatherOpen] = useState(false);
 
   const [screen, setScreen] = useState<Screen>('home');
   const [prevScreen, setPrevScreen] = useState<Screen>('home');
@@ -254,6 +256,7 @@ export default function App() {
           onSeeAll={() => { setSelectedDate(ymd(getOsloDate())); setScreen('results'); }}
           onOpenTrip={openTrip} tick={tick} userLoc={userLoc} driveMins={driveMins}
           onRequestLocation={requestLocation}
+          onOpenWeather={() => setWeatherOpen(true)}
           transportMode={transportModes[from]} onSetTransportMode={(m) => setTransportMode(from, m)}
           onboarded={onboarded} onSetOnboarded={() => { setOnboarded(true); localStorage.setItem('onboarded', 'true'); }}
           onReset={() => { setOnboarded(false); localStorage.removeItem('onboarded'); }}
@@ -304,6 +307,8 @@ export default function App() {
       />
 
       {tourOpen && <Tour screen={!onboarded ? 'onboarding' : screen === 'results' ? 'results' : 'home'} onClose={() => setTourOpen(false)} />}
+
+      <WeatherSheet open={weatherOpen} animate={animate} onClose={() => setWeatherOpen(false)} />
 
       <SettingsSheet
         open={settingsOpen}
