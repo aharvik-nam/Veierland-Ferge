@@ -120,22 +120,29 @@ interface DaySummary {
 interface WeatherSheetProps {
   open: boolean;
   animate: boolean;
+  preloaded?: SeriesEntry[] | null;
   onClose: () => void;
 }
 
-export function WeatherSheet({ open, animate, onClose }: WeatherSheetProps) {
-  const [series, setSeries] = useState<SeriesEntry[] | null>(null);
+export function WeatherSheet({ open, animate, preloaded, onClose }: WeatherSheetProps) {
+  const [fetched, setFetched] = useState<SeriesEntry[] | null>(null);
   const [error, setError] = useState(false);
+  // Prefer the forecast the app already fetched for the chip — avoids a second request that can fail
+  const series = (preloaded && preloaded.length ? preloaded : fetched) ?? null;
 
   useEffect(() => {
-    if (!open || series || error) return;
+    if (!open || series) return;
+    setError(false); // retry on every open
     fetch('https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=59.1617&lon=10.3455', {
       headers: { 'User-Agent': 'VeierlandFerge/1.0 github.com/aharvik-nam/Veierland-Ferge' },
     })
       .then(r => r.json())
-      .then(j => setSeries(j.properties?.timeseries ?? []))
+      .then(j => {
+        const ts = j.properties?.timeseries ?? [];
+        if (ts.length) setFetched(ts); else setError(true);
+      })
       .catch(() => setError(true));
-  }, [open, series, error]);
+  }, [open, series]);
 
   // Current conditions
   const cur = series?.[0];

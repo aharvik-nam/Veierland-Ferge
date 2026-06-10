@@ -140,6 +140,8 @@ export default function App() {
   const [trip, setTrip] = useState<Trip | null>(null);
   const [picker, setPicker] = useState<{ open: boolean; which: 'from' | 'to' | null }>({ open: false, which: null });
   const [weather, setWeather] = useState<Weather | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [forecast, setForecast] = useState<any[] | null>(null);
   const [tick, setTick] = useState(0);
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [driveMins, setDriveMins] = useState<number | null>(null);
@@ -170,7 +172,9 @@ export default function App() {
     })
       .then(r => r.json())
       .then(j => {
-        const cur = j.properties?.timeseries?.[0]?.data;
+        const ts = j.properties?.timeseries ?? [];
+        if (ts.length) setForecast(ts);
+        const cur = ts[0]?.data;
         const inst = cur?.instant?.details;
         const sym = cur?.next_1_hours?.summary?.symbol_code ?? cur?.next_6_hours?.summary?.symbol_code ?? '';
         if (inst?.air_temperature != null) {
@@ -310,7 +314,7 @@ export default function App() {
 
       {tourOpen && <Tour screen={!onboarded ? 'onboarding' : screen === 'results' ? 'results' : 'home'} onClose={() => setTourOpen(false)} />}
 
-      <WeatherSheet open={weatherOpen} animate={animate} onClose={() => setWeatherOpen(false)} />
+      <WeatherSheet open={weatherOpen} animate={animate} preloaded={forecast} onClose={() => setWeatherOpen(false)} />
 
       <SettingsSheet
         open={settingsOpen}
