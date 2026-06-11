@@ -147,6 +147,8 @@ export default function App() {
   const [driveMins, setDriveMins] = useState<number | null>(null);
   const [driveMinsFast, setDriveMinsFast] = useState<number | null>(null);
   const [driveRefreshKey, setDriveRefreshKey] = useState(0);
+  // Which ferry the user is aiming for — lets the route query predict traffic at the actual drive time
+  const [driveTarget, setDriveTarget] = useState<{ date: string; time: string } | null>(null);
   const watchIdRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -217,7 +219,7 @@ export default function App() {
       return;
     }
     // Round coordinates (~100 m) so GPS jitter doesn't refetch on every position tick
-    const key = `${userLoc.lat.toFixed(3)},${userLoc.lng.toFixed(3)},${from},${driveRefreshKey}`;
+    const key = `${userLoc.lat.toFixed(3)},${userLoc.lng.toFixed(3)},${from},${driveRefreshKey},${driveTarget ? `${driveTarget.date}T${driveTarget.time}` : ''}`;
     if (lastRouteKeyRef.current === key) return;
     lastRouteKeyRef.current = key;
     const dest = stopCoords[from];
@@ -225,6 +227,14 @@ export default function App() {
     const estimate = () => Math.ceil(haversineKm(userLoc.lat, userLoc.lng, dest.lat, dest.lng) * 1.3 / 55 * 60 * trafficMultiplier()) + 3;
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_KEY;
     if (!apiKey) { setDriveMins(estimate()); return; }
+    // Predict traffic at the time the user would actually be driving:
+    // estimated departure = ferry time minus rough drive estimate. Google requires a future timestamp.
+    let departureTime: string | undefined;
+    if (driveTarget) {
+      const ferryMs = new Date(`${driveTarget.date}T${driveTarget.time}:00`).getTime();
+      const departMs = ferryMs - estimate() * 60000;
+      if (departMs > Date.now() + 60000) departureTime = new Date(departMs).toISOString();
+    }
     fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
       method: 'POST',
       headers: {
@@ -237,6 +247,7 @@ export default function App() {
         destination: { location: { latLng: { latitude: dest.lat, longitude: dest.lng } } },
         travelMode: 'DRIVE',
         routingPreference: 'TRAFFIC_AWARE',
+        ...(departureTime ? { departureTime } : {}),
       }),
     })
       .then(r => r.json())
@@ -249,7 +260,7 @@ export default function App() {
         setDriveMinsFast(secsFast != null && !isNaN(secsFast) ? Math.ceil(secsFast / 60) + 3 : null);
       })
       .catch(() => setDriveMins(estimate()));
-  }, [userLoc, from, driveRefreshKey]);
+  }, [userLoc, from, driveRefreshKey, driveTarget]);
 
   const theme = THEMES[themeKey];
   const style = STYLES[styleKey];
@@ -306,6 +317,7 @@ export default function App() {
           onSeeAll={() => { setSelectedDate(ymd(getOsloDate())); setScreen('results'); }}
           onOpenTrip={openTrip} tick={tick} userLoc={userLoc} driveMins={driveMins} driveMinsFast={driveMinsFast}
           onRefreshDrive={() => setDriveRefreshKey(k => k + 1)}
+          onDriveTarget={setDriveTarget}
           onRequestLocation={requestLocation}
           onOpenWeather={() => setWeatherOpen(true)}
           transportMode={transportModes[from]} onSetTransportMode={(m) => setTransportMode(from, m)}

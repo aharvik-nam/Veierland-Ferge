@@ -22,6 +22,7 @@ interface HomeScreenProps {
   driveMins: number | null;
   driveMinsFast: number | null;
   onRefreshDrive: () => void;
+  onDriveTarget: (t: { date: string; time: string } | null) => void;
   onRequestLocation: () => Promise<boolean>;
   onOpenWeather: () => void;
   transportMode: TransportMode | undefined;
@@ -31,7 +32,7 @@ interface HomeScreenProps {
   onReset: () => void;
 }
 
-export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, driveMinsFast, onRefreshDrive, onRequestLocation, onOpenWeather, transportMode, onSetTransportMode, onboarded, onSetOnboarded, onReset }: HomeScreenProps) {
+export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, driveMinsFast, onRefreshDrive, onDriveTarget, onRequestLocation, onOpenWeather, transportMode, onSetTransportMode, onboarded, onSetOnboarded, onReset }: HomeScreenProps) {
   const [heroIndex, setHeroIndex] = useState(0);
   const [locState, setLocState] = useState<'idle' | 'busy' | 'denied'>('idle');
   useEffect(() => { setHeroIndex(0); }, [from, to]);
@@ -43,6 +44,11 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
   const prevCard = heroIndex > 0 ? (deps[heroIndex - 1] ?? null) : prevActual;
   const prevIsPast = heroIndex === 0;
   const countdown = dep && dep.dateStr === ymd(getOsloDate()) ? minsUntil(dep.dateStr, dep.startTime) : null;
+
+  // Tell App which ferry we're aiming for, so drive-time traffic is predicted for that departure
+  useEffect(() => {
+    onDriveTarget(dep ? { date: dep.dateStr, time: dep.startTime } : null);
+  }, [dep?.dateStr, dep?.startTime]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Transport mode — island stops are always walk, bus stops never show travel info
   const isIsland = from === 'vestgarden' || from === 'tangen';
