@@ -21,6 +21,7 @@ interface HomeScreenProps {
   userLoc: { lat: number; lng: number } | null;
   driveMins: number | null;
   driveMinsFast: number | null;
+  onRefreshDrive: () => void;
   onRequestLocation: () => Promise<boolean>;
   onOpenWeather: () => void;
   transportMode: TransportMode | undefined;
@@ -30,7 +31,7 @@ interface HomeScreenProps {
   onReset: () => void;
 }
 
-export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, driveMinsFast, onRequestLocation, onOpenWeather, transportMode, onSetTransportMode, onboarded, onSetOnboarded, onReset }: HomeScreenProps) {
+export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, driveMinsFast, onRefreshDrive, onRequestLocation, onOpenWeather, transportMode, onSetTransportMode, onboarded, onSetOnboarded, onReset }: HomeScreenProps) {
   const [heroIndex, setHeroIndex] = useState(0);
   const [locState, setLocState] = useState<'idle' | 'busy' | 'denied'>('idle');
   useEffect(() => { setHeroIndex(0); }, [from, to]);
@@ -268,10 +269,10 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
             ] as { trip: typeof prevCard; label: string; showCountdown: boolean; isPast: boolean }[]).map(({ trip, label, showCountdown, isPast }) => {
               const cd = showCountdown && trip && trip.dateStr === ymd(getOsloDate()) ? minsUntil(trip.dateStr, trip.startTime) : null;
               const handleClick = showCountdown
-                ? () => trip && setHeroIndex(i => i + 1)
+                ? () => { if (trip) { setHeroIndex(i => i + 1); onRefreshDrive(); } }
                 : isPast
                   ? () => trip && onOpenTrip(trip)
-                  : () => trip && setHeroIndex(i => i - 1);
+                  : () => { if (trip) { setHeroIndex(i => i - 1); onRefreshDrive(); } };
               return (
                 <button
                   key={label}

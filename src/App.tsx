@@ -146,6 +146,7 @@ export default function App() {
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [driveMins, setDriveMins] = useState<number | null>(null);
   const [driveMinsFast, setDriveMinsFast] = useState<number | null>(null);
+  const [driveRefreshKey, setDriveRefreshKey] = useState(0);
   const watchIdRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -216,7 +217,7 @@ export default function App() {
       return;
     }
     // Round coordinates (~100 m) so GPS jitter doesn't refetch on every position tick
-    const key = `${userLoc.lat.toFixed(3)},${userLoc.lng.toFixed(3)},${from}`;
+    const key = `${userLoc.lat.toFixed(3)},${userLoc.lng.toFixed(3)},${from},${driveRefreshKey}`;
     if (lastRouteKeyRef.current === key) return;
     lastRouteKeyRef.current = key;
     const dest = stopCoords[from];
@@ -248,7 +249,7 @@ export default function App() {
         setDriveMinsFast(secsFast != null && !isNaN(secsFast) ? Math.ceil(secsFast / 60) + 3 : null);
       })
       .catch(() => setDriveMins(estimate()));
-  }, [userLoc, from]);
+  }, [userLoc, from, driveRefreshKey]);
 
   const theme = THEMES[themeKey];
   const style = STYLES[styleKey];
@@ -304,6 +305,7 @@ export default function App() {
           onEditFrom={() => openPicker('from')} onEditTo={() => openPicker('to')} onSwap={swap}
           onSeeAll={() => { setSelectedDate(ymd(getOsloDate())); setScreen('results'); }}
           onOpenTrip={openTrip} tick={tick} userLoc={userLoc} driveMins={driveMins} driveMinsFast={driveMinsFast}
+          onRefreshDrive={() => setDriveRefreshKey(k => k + 1)}
           onRequestLocation={requestLocation}
           onOpenWeather={() => setWeatherOpen(true)}
           transportMode={transportModes[from]} onSetTransportMode={(m) => setTransportMode(from, m)}
