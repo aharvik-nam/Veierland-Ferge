@@ -161,13 +161,16 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
   const selDate = parseYmd(selectedDate);
   const trips = findTripsForDay(dayTypeOf(selDate), selDate, from, to);
   const nowMins = getOsloDate().getHours() * 60 + getOsloDate().getMinutes();
-  // For the Entur widget: ferries on the selected day (+ next day if today)
+  // For the Entur widget
   const selDayFerries = upcomingTrips(from, to, selectedDate);
   const enturFerries = isToday
     ? (() => { const tom = new Date(selDate); tom.setDate(selDate.getDate() + 1); return [...selDayFerries, ...upcomingTrips(from, to, ymd(tom))]; })()
     : selDayFerries;
-  // ISO dateTime for Entur query — start of selected day for future dates
   const enturDateTime = isToday ? undefined : `${selectedDate}T05:00:00`;
+  // Target the first upcoming trip on the selected day (or first trip for future days)
+  const enturTarget = isToday
+    ? trips.find(t => parseTime(t.startTime) >= nowMins) ?? trips[0] ?? null
+    : trips[0] ?? null;
   const firstUpcomingIndex = isToday ? trips.findIndex(t => parseTime(t.startTime) >= nowMins) : 0;
   const firstUpcomingRef = useRef<HTMLDivElement>(null);
 
@@ -221,12 +224,12 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
 
       {/* scrollable trip list */}
       <div data-tour="trip-list" ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 18px calc(env(safe-area-inset-bottom, 0px) + 96px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {BUS_STOPS.includes(from) && (
+        {BUS_STOPS.includes(from) && enturTarget && (
           <div>
             <Label color="var(--inkDim)" style={{ paddingLeft: 2, marginBottom: 8, display: 'block' }}>
-              Kollektivt til {stopShort[from]}-kaia
+              Kollektivt til {stopShort[from]}-kaia · ferge kl. {enturTarget.startTime}
             </Label>
-            <EnturTransit userLoc={userLoc} stop={from} ferries={enturFerries} dateTime={enturDateTime} />
+            <EnturTransit userLoc={userLoc} stop={from} targetTrip={enturTarget} allFerries={enturFerries} dateTime={enturDateTime} />
           </div>
         )}
 

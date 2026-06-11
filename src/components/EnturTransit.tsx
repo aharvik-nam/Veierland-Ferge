@@ -47,29 +47,31 @@ function fmtDur(secs: number): string {
   return h > 0 ? `${h}t ${r > 0 ? r + ' min' : ''}`.trim() : `${m} min`;
 }
 
-function transitConnection(arrivalIso: string, ferries: Trip[]): {
-  catches: boolean;
-  ferryTime: string;
-  label: string;
-  urgent: boolean;
-} | null {
-  const arrOslo = new Date(new Date(arrivalIso).toLocaleString('en-US', { timeZone: 'Europe/Oslo' }));
-  const arrDate = ymd(arrOslo);
-  const arrMins = arrOslo.getHours() * 60 + arrOslo.getMinutes();
-  const reachable = ferries.filter(f => f.dateStr === arrDate && parseTime(f.startTime) > arrMins);
-  if (reachable.length === 0) return null;
-  const next = reachable[0];
-  const buffer = parseTime(next.startTime) - arrMins;
-  return {
-    catches: true,
-    ferryTime: next.startTime,
-    label: buffer >= 10
-      ? `Rekker ferge kl. ${next.startTime} — ${buffer} min buffer`
-      : buffer >= 3
-      ? `Rekker ferge kl. ${next.startTime} — knapt`
-      : `Ferge kl. ${next.startTime} — svært knapt`,
-    urgent: buffer < 10,
-  };
+/** Oslo arrival date + minutes-of-day for a pattern's end time */
+function osloArrival(iso: string): { date: string; mins: number } {
+  const d = new Date(new Date(iso).toLocaleString('en-US', { timeZone: 'Europe/Oslo' }));
+  return { date: ymd(d), mins: d.getHours() * 60 + d.getMinutes() };
+}
+
+/** True if this transit pattern arrives in time to board the target ferry (2 min buffer) */
+function hitsTarget(pattern: TripPattern, target: Trip): boolean {
+  const { date, mins } = osloArrival(pattern.expectedEndTime);
+  return date === target.dateStr && mins <= parseTime(target.startTime) - 2;
+}
+
+/** First ferry in the list that this pattern can physically connect to */
+function firstReachableFerry(pattern: TripPattern, ferries: Trip[]): Trip | null {
+  const { date, mins } = osloArrival(pattern.expectedEndTime);
+  return ferries.find(f =>
+    f.dateStr > date ||
+    (f.dateStr === date && parseTime(f.startTime) >= mins + 2)
+  ) ?? null;
+}
+
+/** Buffer minutes between transit arrival and target ferry departure */
+function bufferMins(pattern: TripPattern, target: Trip): number {
+  const { mins } = osloArrival(pattern.expectedEndTime);
+  return parseTime(target.startTime) - mins;
 }
 
 // ── Entur fetch ──────────────────────────────────────────────
@@ -87,7 +89,7 @@ async function fetchTransit(
     trip(
       from: { coordinates: { latitude: ${fromLat}, longitude: ${fromLng} } }
       to:   { coordinates: { latitude: ${toLat},   longitude: ${toLng}   } }
-      numTripPatterns: 3
+      numTripPatterns: 5
       walkSpeed: 1.3${dtArg}
     ) {
       tripPatterns {
@@ -116,36 +118,55 @@ async function fetchTransit(
   return json?.data?.trip?.tripPatterns ?? [];
 }
 
-// ── Single transit option card ───────────────────────────────
+// ── Transit card ─────────────────────────────────────────────
 
-function TransitCard({ pattern, ferries }: { pattern: TripPattern; ferries: Trip[] }) {
+function TransitCard({ pattern, target, allFerries, isToday }: {
+  pattern: TripPattern;
+  target: Trip;
+  allFerries: Trip[];
+  isToday: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const startIn = minsFromNow(pattern.expectedStartTime);
-  const conn = transitConnection(pattern.expectedEndTime, ferries);
+  const hits = hitsTarget(pattern, target);
+  const buf = hits ? bufferMins(pattern, target) : null;
   const transitLegs = pattern.legs.filter(l => l.mode !== 'foot');
+
+  const connColor = buf == null ? 'var(--inkDim)' : buf >= 10 ? 'var(--good)' : buf >= 3 ? 'var(--warn)' : 'var(--bad)';
+  const connBg = buf == null ? 'transparent' : buf >= 10
+    ? 'color-mix(in srgb, var(--good) 10%, var(--surface))'
+    : buf >= 3
+    ? 'color-mix(in srgb, var(--warn) 10%, var(--surface))'
+    : 'color-mix(in srgb, var(--bad) 10%, var(--surface))';
+  const connBorder = buf == null ? 'transparent' : buf >= 10
+    ? 'color-mix(in srgb, var(--good) 20%, transparent)'
+    : buf >= 3
+    ? 'color-mix(in srgb, var(--warn) 20%, transparent)'
+    : 'color-mix(in srgb, var(--bad) 20%, transparent)';
+
+  const connLabel = buf == null ? null
+    : buf >= 10 ? `Rekker ferge kl. ${target.startTime} — ${buf} min buffer`
+    : buf >= 3  ? `Rekker ferge kl. ${target.startTime} — knapt (${buf} min)`
+    : `Ferge kl. ${target.startTime} — svært knapt (${buf} min)`;
 
   return (
     <div style={{
       borderRadius: 'var(--radSm)',
       background: 'var(--surfaceAlt)',
-      border: conn?.urgent
-        ? '1px solid color-mix(in srgb, var(--warn) 45%, transparent)'
-        : '1px solid var(--line)',
+      border: `1px solid ${buf != null && buf < 10 ? 'color-mix(in srgb, var(--warn) 45%, transparent)' : 'var(--line)'}`,
       overflow: 'hidden',
     }}>
-      {/* Clickable summary row */}
       <button
         onClick={() => setOpen(o => !o)}
         style={{ width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', padding: '11px 14px 9px', display: 'flex', alignItems: 'center', gap: 8 }}
       >
-        {/* Left: departure + line badges */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
             <span style={{ fontFamily: 'var(--num)', fontSize: 22, color: 'var(--ink)', lineHeight: 1 }}>
               {fmt(pattern.expectedStartTime)}
             </span>
             <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--inkDim)' }}>
-              {startIn <= 0 ? 'nå' : `om ${fmtCountdown(startIn)}`}
+              {isToday ? (startIn <= 0 ? 'nå' : `om ${fmtCountdown(startIn)}`) : fmt(pattern.expectedStartTime)}
             </span>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 5 }}>
@@ -164,8 +185,6 @@ function TransitCard({ pattern, ferries }: { pattern: TripPattern; ferries: Trip
             )}
           </div>
         </div>
-
-        {/* Right: arrival + chevron */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 10.5, color: 'var(--inkDim)', marginBottom: 1 }}>fremme</div>
@@ -178,12 +197,10 @@ function TransitCard({ pattern, ferries }: { pattern: TripPattern; ferries: Trip
         </div>
       </button>
 
-      {/* Expanded leg detail */}
       {open && (
         <div style={{ borderTop: '1px solid var(--line)', padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           {pattern.legs.map((leg, j) => (
             <div key={j} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-              {/* Mode dot */}
               <div style={{ width: 28, display: 'flex', justifyContent: 'center', paddingTop: 2, flexShrink: 0 }}>
                 <span style={{ fontSize: 16 }}>{MODE_ICON[leg.mode] ?? '🚌'}</span>
               </div>
@@ -212,21 +229,16 @@ function TransitCard({ pattern, ferries }: { pattern: TripPattern; ferries: Trip
         </div>
       )}
 
-      {/* Ferry connection row */}
-      {conn && (
+      {connLabel && (
         <div style={{
           display: 'flex', alignItems: 'center', gap: 7,
           padding: '7px 14px',
-          background: conn.urgent
-            ? 'color-mix(in srgb, var(--warn) 10%, var(--surface))'
-            : 'color-mix(in srgb, var(--good) 10%, var(--surface))',
-          borderTop: `1px solid ${conn.urgent
-            ? 'color-mix(in srgb, var(--warn) 20%, transparent)'
-            : 'color-mix(in srgb, var(--good) 20%, transparent)'}`,
+          background: connBg,
+          borderTop: `1px solid ${connBorder}`,
         }}>
-          <Icon name="arrowRight" size={13} color={conn.urgent ? 'var(--warn)' : 'var(--good)'} stroke={2.2} />
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12, color: conn.urgent ? 'var(--warn)' : 'var(--good)', lineHeight: 1.3 }}>
-            {conn.label}
+          <Icon name="arrowRight" size={13} color={connColor} stroke={2.2} />
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12, color: connColor, lineHeight: 1.3 }}>
+            {connLabel}
           </span>
         </div>
       )}
@@ -239,24 +251,28 @@ function TransitCard({ pattern, ferries }: { pattern: TripPattern; ferries: Trip
 interface EnturTransitProps {
   userLoc: { lat: number; lng: number } | null;
   stop: StopId;
-  ferries: Trip[];
-  /** ISO datetime string — pass for future dates so Entur searches from that day */
+  /** The specific ferry trip this widget targets */
+  targetTrip: Trip;
+  /** All ferries available (today + tomorrow, or selected day) for fallback lookup */
+  allFerries: Trip[];
+  /** ISO datetime — pass for future dates so Entur searches from that day */
   dateTime?: string;
 }
 
-export function EnturTransit({ userLoc, stop, ferries, dateTime }: EnturTransitProps) {
+export function EnturTransit({ userLoc, stop, targetTrip, allFerries, dateTime }: EnturTransitProps) {
   const [patterns, setPatterns] = useState<TripPattern[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const lastFetchRef = useRef<string>('');
 
-  // 5-minute bucket so suggestions refresh over time, not only on movement
   const timeBucket = Math.floor(Date.now() / 300000);
+  const isToday = targetTrip.dateStr === ymd(getOsloDate());
 
   useEffect(() => {
     if (!userLoc) { setPatterns(null); return; }
     const dest = stopCoords[stop];
-    const key = `${userLoc.lat.toFixed(3)},${userLoc.lng.toFixed(3)},${stop},${timeBucket},${dateTime ?? ''}`;
+    // Include targetTrip identity in key so a new query fires when the target ferry changes
+    const key = `${userLoc.lat.toFixed(3)},${userLoc.lng.toFixed(3)},${stop},${timeBucket},${dateTime ?? ''},${targetTrip.dateStr},${targetTrip.startTime}`;
     if (lastFetchRef.current === key) return;
     lastFetchRef.current = key;
 
@@ -265,7 +281,7 @@ export function EnturTransit({ userLoc, stop, ferries, dateTime }: EnturTransitP
     fetchTransit(userLoc.lat, userLoc.lng, dest.lat, dest.lng, dateTime)
       .then(p => { setPatterns(p); setLoading(false); })
       .catch(() => { setError(true); setLoading(false); });
-  }, [userLoc?.lat.toFixed(3), userLoc?.lng.toFixed(3), stop, timeBucket, dateTime]);
+  }, [userLoc?.lat.toFixed(3), userLoc?.lng.toFixed(3), stop, timeBucket, dateTime, targetTrip.dateStr, targetTrip.startTime]);
 
   if (!userLoc) {
     return (
@@ -309,32 +325,62 @@ export function EnturTransit({ userLoc, stop, ferries, dateTime }: EnturTransitP
     );
   }
 
-  // Keep only patterns that haven't departed and connect to a ferry
-  const reachablePatterns = (patterns as TripPattern[])
-    .filter(p => minsFromNow(p.expectedStartTime) > -1)
-    .filter(p => transitConnection(p.expectedEndTime, ferries) !== null);
+  const activePatterms = patterns.filter(p => !isToday || minsFromNow(p.expectedStartTime) > -1);
 
-  // If none connect, show a simple message instead of listing useless options
-  if (reachablePatterns.length === 0) {
+  // Split: patterns that hit the target ferry vs those that don't
+  const hitPatterns = activePatterms.filter(p => hitsTarget(p, targetTrip));
+  const missPatterns = activePatterms.filter(p => !hitsTarget(p, targetTrip));
+
+  if (hitPatterns.length > 0) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 14px', borderRadius: 'var(--radSm)', background: 'color-mix(in srgb, var(--bad) 8%, var(--surface))', border: '1px solid color-mix(in srgb, var(--bad) 18%, transparent)' }}>
-        <Icon name="info" size={14} color="var(--bad)" stroke={2} />
-        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, color: 'var(--bad)' }}>
-          Rekker ikke fergen
-        </span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {hitPatterns.map((p, i) => (
+          <TransitCard key={i} pattern={p} target={targetTrip} allFerries={allFerries} isToday={isToday} />
+        ))}
+        <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 11, color: 'var(--inkDim)', textAlign: 'center', paddingTop: 2 }}>
+          Avganger fra Entur · oppdateres automatisk
+        </div>
       </div>
     );
   }
 
+  // No pattern hits the target — find the best fallback ferry any pattern can reach
+  const fallbackEntries = missPatterns
+    .map(p => ({ pattern: p, ferry: firstReachableFerry(p, allFerries) }))
+    .filter(e => e.ferry != null) as { pattern: TripPattern; ferry: Trip }[];
+
+  // Pick the fallback with the earliest ferry
+  fallbackEntries.sort((a, b) => {
+    if (a.ferry.dateStr !== b.ferry.dateStr) return a.ferry.dateStr < b.ferry.dateStr ? -1 : 1;
+    return parseTime(a.ferry.startTime) - parseTime(b.ferry.startTime);
+  });
+
+  const best = fallbackEntries[0] ?? null;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {reachablePatterns.map((p, i) => (
-        <React.Fragment key={i}>
-          <TransitCard pattern={p} ferries={ferries} />
-        </React.Fragment>
-      ))}
+      {/* Can't-make-it banner */}
+      <div style={{ padding: '10px 14px', borderRadius: 'var(--radSm)', background: 'color-mix(in srgb, var(--bad) 8%, var(--surface))', border: '1px solid color-mix(in srgb, var(--bad) 20%, transparent)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <Icon name="info" size={14} color="var(--bad)" stroke={2} />
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13, color: 'var(--bad)' }}>
+            Ingen avganger rekker ferge kl. {targetTrip.startTime}
+          </span>
+        </div>
+        {best && (
+          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--inkDim)', marginTop: 5, lineHeight: 1.4 }}>
+            Du kan rekke fergen kl. {best.ferry.startTime}{best.ferry.dateStr !== targetTrip.dateStr ? ` (${best.ferry.dateStr})` : ''} — se rute under
+          </div>
+        )}
+      </div>
+
+      {/* Show the best fallback pattern */}
+      {best && (
+        <TransitCard pattern={best.pattern} target={best.ferry} allFerries={allFerries} isToday={isToday} />
+      )}
+
       <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 11, color: 'var(--inkDim)', textAlign: 'center', paddingTop: 2 }}>
-        Avganger fra Entur · oppdateres ved posisjonsendring
+        Avganger fra Entur · oppdateres automatisk
       </div>
     </div>
   );
