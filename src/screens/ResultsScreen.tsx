@@ -166,7 +166,6 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
   const enturFerries = isToday
     ? (() => { const tom = new Date(selDate); tom.setDate(selDate.getDate() + 1); return [...selDayFerries, ...upcomingTrips(from, to, ymd(tom))]; })()
     : selDayFerries;
-  const enturDateTime = isToday ? undefined : `${selectedDate}T05:00:00`;
   // Target the first upcoming trip on the selected day (or first trip for future days)
   const enturTarget = isToday
     ? trips.find(t => parseTime(t.startTime) >= nowMins) ?? trips[0] ?? null
@@ -229,7 +228,7 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
             <Label color="var(--inkDim)" style={{ paddingLeft: 2, marginBottom: 8, display: 'block' }}>
               Kollektivt til {stopShort[from]}-kaia · ferge kl. {enturTarget.startTime}
             </Label>
-            <EnturTransit userLoc={userLoc} stop={from} targetTrip={enturTarget} allFerries={enturFerries} dateTime={enturDateTime} />
+            <EnturTransit userLoc={userLoc} stop={from} targetTrip={enturTarget} allFerries={enturFerries} />
           </div>
         )}
 

@@ -82,15 +82,16 @@ const CLIENT_NAME = 'aharvik-veierlandferge';
 async function fetchTransit(
   fromLat: number, fromLng: number,
   toLat: number, toLng: number,
-  dateTime?: string,
+  arrivalDeadline: string,
 ): Promise<TripPattern[]> {
-  const dtArg = dateTime ? `\n      dateTime: "${dateTime}"` : '';
   const query = `{
     trip(
       from: { coordinates: { latitude: ${fromLat}, longitude: ${fromLng} } }
       to:   { coordinates: { latitude: ${toLat},   longitude: ${toLng}   } }
       numTripPatterns: 5
-      walkSpeed: 1.3${dtArg}
+      walkSpeed: 1.3
+      dateTime: "${arrivalDeadline}"
+      arriveBy: true
     ) {
       tripPatterns {
         expectedStartTime
@@ -255,33 +256,31 @@ interface EnturTransitProps {
   targetTrip: Trip;
   /** All ferries available (today + tomorrow, or selected day) for fallback lookup */
   allFerries: Trip[];
-  /** ISO datetime — pass for future dates so Entur searches from that day */
-  dateTime?: string;
 }
 
-export function EnturTransit({ userLoc, stop, targetTrip, allFerries, dateTime }: EnturTransitProps) {
+export function EnturTransit({ userLoc, stop, targetTrip, allFerries }: EnturTransitProps) {
   const [patterns, setPatterns] = useState<TripPattern[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const lastFetchRef = useRef<string>('');
 
-  const timeBucket = Math.floor(Date.now() / 300000);
   const isToday = targetTrip.dateStr === ymd(getOsloDate());
+  // Arrival deadline = ferry departure time (Entur will find buses arriving by then)
+  const arrivalDeadline = `${targetTrip.dateStr}T${targetTrip.startTime}:00`;
 
   useEffect(() => {
     if (!userLoc) { setPatterns(null); return; }
     const dest = stopCoords[stop];
-    // Include targetTrip identity in key so a new query fires when the target ferry changes
-    const key = `${userLoc.lat.toFixed(3)},${userLoc.lng.toFixed(3)},${stop},${timeBucket},${dateTime ?? ''},${targetTrip.dateStr},${targetTrip.startTime}`;
+    const key = `${userLoc.lat.toFixed(3)},${userLoc.lng.toFixed(3)},${stop},${targetTrip.dateStr},${targetTrip.startTime}`;
     if (lastFetchRef.current === key) return;
     lastFetchRef.current = key;
 
     setLoading(true);
     setError(false);
-    fetchTransit(userLoc.lat, userLoc.lng, dest.lat, dest.lng, dateTime)
+    fetchTransit(userLoc.lat, userLoc.lng, dest.lat, dest.lng, arrivalDeadline)
       .then(p => { setPatterns(p); setLoading(false); })
       .catch(() => { setError(true); setLoading(false); });
-  }, [userLoc?.lat.toFixed(3), userLoc?.lng.toFixed(3), stop, timeBucket, dateTime, targetTrip.dateStr, targetTrip.startTime]);
+  }, [userLoc?.lat.toFixed(3), userLoc?.lng.toFixed(3), stop, targetTrip.dateStr, targetTrip.startTime]);
 
   if (!userLoc) {
     return (
@@ -325,11 +324,13 @@ export function EnturTransit({ userLoc, stop, targetTrip, allFerries, dateTime }
     );
   }
 
-  const activePatterms = patterns.filter(p => !isToday || minsFromNow(p.expectedStartTime) > -1);
+  const activePatterns = patterns.filter(p => !isToday || minsFromNow(p.expectedStartTime) > -1);
 
   // Split: patterns that hit the target ferry vs those that don't
-  const hitPatterns = activePatterms.filter(p => hitsTarget(p, targetTrip));
-  const missPatterns = activePatterms.filter(p => !hitsTarget(p, targetTrip));
+  const hitPatterns = activePatterns
+    .filter(p => hitsTarget(p, targetTrip))
+    .sort((a, b) => bufferMins(a, targetTrip) - bufferMins(b, targetTrip)); // shortest buffer first
+  const missPatterns = activePatterns.filter(p => !hitsTarget(p, targetTrip));
 
   if (hitPatterns.length > 0) {
     return (
