@@ -145,6 +145,7 @@ export default function App() {
   const [tick, setTick] = useState(0);
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [driveMins, setDriveMins] = useState<number | null>(null);
+  const [driveMinsFast, setDriveMinsFast] = useState<number | null>(null);
   const watchIdRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -210,6 +211,7 @@ export default function App() {
   useEffect(() => {
     if (!userLoc || (from !== 'tenvik' && from !== 'engo')) {
       setDriveMins(null);
+      setDriveMinsFast(null);
       lastRouteKeyRef.current = '';
       return;
     }
@@ -227,7 +229,7 @@ export default function App() {
       headers: {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': apiKey,
-        'X-Goog-FieldMask': 'routes.duration',
+        'X-Goog-FieldMask': 'routes.duration,routes.staticDuration',
       },
       body: JSON.stringify({
         origin: { location: { latLng: { latitude: userLoc.lat, longitude: userLoc.lng } } },
@@ -238,10 +240,12 @@ export default function App() {
     })
       .then(r => r.json())
       .then(j => {
-        // duration returned as e.g. "612s"
-        const raw = j.routes?.[0]?.duration as string | undefined;
-        const secs = raw ? parseInt(raw.replace('s', ''), 10) : null;
+        // duration / staticDuration returned as e.g. "612s"
+        const parse = (s: string | undefined) => s ? parseInt(s.replace('s', ''), 10) : null;
+        const secs = parse(j.routes?.[0]?.duration);
+        const secsFast = parse(j.routes?.[0]?.staticDuration);
         setDriveMins(secs != null && !isNaN(secs) ? Math.ceil(secs / 60) + 3 : estimate());
+        setDriveMinsFast(secsFast != null && !isNaN(secsFast) ? Math.ceil(secsFast / 60) + 3 : null);
       })
       .catch(() => setDriveMins(estimate()));
   }, [userLoc, from]);
@@ -299,7 +303,7 @@ export default function App() {
           animate={animate} texture={style.texture}
           onEditFrom={() => openPicker('from')} onEditTo={() => openPicker('to')} onSwap={swap}
           onSeeAll={() => { setSelectedDate(ymd(getOsloDate())); setScreen('results'); }}
-          onOpenTrip={openTrip} tick={tick} userLoc={userLoc} driveMins={driveMins}
+          onOpenTrip={openTrip} tick={tick} userLoc={userLoc} driveMins={driveMins} driveMinsFast={driveMinsFast}
           onRequestLocation={requestLocation}
           onOpenWeather={() => setWeatherOpen(true)}
           transportMode={transportModes[from]} onSetTransportMode={(m) => setTransportMode(from, m)}
@@ -320,7 +324,7 @@ export default function App() {
         <DetailScreen
           trip={trip} from={from}
           animate={animate} texture={style.texture}
-          onBack={() => setScreen(prevScreen)} tick={tick} userLoc={userLoc} driveMins={driveMins}
+          onBack={() => setScreen(prevScreen)} tick={tick} userLoc={userLoc} driveMins={driveMins} driveMinsFast={driveMinsFast}
           transportMode={transportModes[from]}
         />
       )}

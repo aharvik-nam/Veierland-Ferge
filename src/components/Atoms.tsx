@@ -83,13 +83,18 @@ export function StatusSignal({ status }: { status: { level: 'good' | 'warn' | 'b
 }
 
 // ── TravelChips ──────────────────────────────────────────────
-export function TravelChips({ stop, onDeep = false, showCar: showCarProp, showWalk: showWalkProp, driveOverride, walkOverride }: { stop: StopId; onDeep?: boolean; showCar?: boolean; showWalk?: boolean; driveOverride?: number | null; walkOverride?: number | null }) {
+export function TravelChips({ stop, onDeep = false, showCar: showCarProp, showWalk: showWalkProp, driveOverride, driveOverrideFast, walkOverride }: { stop: StopId; onDeep?: boolean; showCar?: boolean; showWalk?: boolean; driveOverride?: number | null; driveOverrideFast?: number | null; walkOverride?: number | null }) {
   const tv = stopTravel[stop];
   if (!tv) return null;
   const showCar = showCarProp !== undefined ? showCarProp : tv.showCar;
   const showWalk = showWalkProp !== undefined ? showWalkProp : true;
   if (!showCar && !showWalk) return null;
-  const driveDisplay = fmtCountdown(driveOverride != null ? driveOverride : tv.drive);
+  const driveSlow = driveOverride != null ? driveOverride : tv.drive;
+  const driveFast = driveOverrideFast != null ? driveOverrideFast : null;
+  // Show a range when traffic adds more than 5 min
+  const driveDisplay = driveFast != null && driveSlow - driveFast > 5
+    ? `${fmtCountdown(driveFast)}–${fmtCountdown(driveSlow)}`
+    : fmtCountdown(driveSlow);
   const walkDisplay = fmtCountdown(walkOverride != null ? walkOverride : tv.walk);
   const col = onDeep ? 'var(--onDeep)' : 'var(--ink)';
   const dim = onDeep ? 'var(--onDeepDim)' : 'var(--inkDim)';

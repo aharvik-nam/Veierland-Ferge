@@ -3,7 +3,7 @@ import { CompassMark } from '../components/Icons';
 import { Icon } from '../components/Icons';
 import { DeepBand, WeatherChip, RouteCard, StatusSignal, TravelChips, NumTime, Label } from '../components/Atoms';
 import { EnturTransit } from '../components/EnturTransit';
-import { nextDepartures, prevDeparture, upcomingTrips, minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, ymd, getOsloDate, stopsMap, stopCoords, haversineKm, bookingStatus } from '../ferryData';
+import { nextDepartures, prevDeparture, upcomingTrips, minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, ymd, getOsloDate, stopsMap, stopCoords, haversineKm, bookingStatus, parseTime } from '../ferryData';
 import type { StopId, Weather, Trip, TransportMode } from '../types';
 
 interface HomeScreenProps {
@@ -20,6 +20,7 @@ interface HomeScreenProps {
   tick: number;
   userLoc: { lat: number; lng: number } | null;
   driveMins: number | null;
+  driveMinsFast: number | null;
   onRequestLocation: () => Promise<boolean>;
   onOpenWeather: () => void;
   transportMode: TransportMode | undefined;
@@ -29,7 +30,7 @@ interface HomeScreenProps {
   onReset: () => void;
 }
 
-export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, onRequestLocation, onOpenWeather, transportMode, onSetTransportMode, onboarded, onSetOnboarded, onReset }: HomeScreenProps) {
+export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, driveMinsFast, onRequestLocation, onOpenWeather, transportMode, onSetTransportMode, onboarded, onSetOnboarded, onReset }: HomeScreenProps) {
   const [heroIndex, setHeroIndex] = useState(0);
   const [locState, setLocState] = useState<'idle' | 'busy' | 'denied'>('idle');
   useEffect(() => { setHeroIndex(0); }, [from, to]);
@@ -70,6 +71,15 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
   // In drive mode, require a real (GPS-based) estimate — the static fallback can't know where the user is
   const showStatus = effectiveMode !== 'bus' && (tv.showCar || tv.showWalk) && (travelMode !== 'drive' || driveMins != null);
   const status = dep && showStatus ? rekkerStatus(effectiveTravel, countdown, travelMode, nextDep) : null;
+
+  // "Dra innen kl. HH:MM" — ferry departure minus typical drive time
+  const leaveBy = dep && driveMins != null && tv.showCar && effectiveMode !== 'bus' && effectiveMode !== 'walk'
+    ? (() => {
+        const leaveMins = parseTime(dep.startTime) - driveMins;
+        if (leaveMins < 0) return null;
+        return `${String(Math.floor(leaveMins / 60)).padStart(2, '0')}:${String(leaveMins % 60).padStart(2, '0')}`;
+      })()
+    : null;
 
   // Ferries for today + tomorrow — needed when the next ferry is after midnight
   const osloNow = getOsloDate();
@@ -226,12 +236,20 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
                 </button>
               )}
               {status && <div data-tour="status-signal"><StatusSignal status={status} /></div>}
-              {effectiveMode !== 'bus' && status?.level !== 'bad' && <TravelChips stop={from} showCar={tv.showCar} showWalk={tv.showWalk} driveOverride={driveMins} walkOverride={walkEst} />}
+              {effectiveMode !== 'bus' && status?.level !== 'bad' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <TravelChips stop={from} showCar={tv.showCar} showWalk={tv.showWalk} driveOverride={driveMins} driveOverrideFast={driveMinsFast} walkOverride={walkEst} />
+                  {leaveBy && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 13px', borderRadius: 'var(--radSm)', background: 'color-mix(in srgb, var(--accent2) 12%, var(--surface))', border: '1px solid color-mix(in srgb, var(--accent2) 25%, transparent)' }}>
+                      <Icon name="clock" size={14} color="var(--accent2)" stroke={2} />
+                      <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12.5, color: 'var(--ink)' }}>
+                        Dra senest innen kl. <span style={{ fontFamily: 'var(--num)', fontSize: 14 }}>{leaveBy}</span>
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
               {effectiveMode === 'bus' && dep && <EnturTransit userLoc={userLoc} stop={from} targetTrip={dep} allFerries={todayFerries} />}
-              <button onClick={() => onOpenTrip(dep)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '13px', borderRadius: 'var(--radSm)', background: 'var(--surfaceAlt)', border: '1px solid var(--line)', cursor: 'pointer' }}>
-                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--ink)' }}>Se reisedetaljer</span>
-                <Icon name="arrowRight" size={17} color="var(--ink)" stroke={2} />
-              </button>
             </div>
           </div>
         ) : (
