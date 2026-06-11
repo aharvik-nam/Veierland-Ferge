@@ -206,25 +206,42 @@ export default function App() {
     };
   }, []);
 
-  const lastOsrmKeyRef = useRef<string>('');
+  const lastRouteKeyRef = useRef<string>('');
   useEffect(() => {
     if (!userLoc || (from !== 'tenvik' && from !== 'engo')) {
       setDriveMins(null);
-      lastOsrmKeyRef.current = '';
+      lastRouteKeyRef.current = '';
       return;
     }
     // Round coordinates (~100 m) so GPS jitter doesn't refetch on every position tick
     const key = `${userLoc.lat.toFixed(3)},${userLoc.lng.toFixed(3)},${from}`;
-    if (lastOsrmKeyRef.current === key) return;
-    lastOsrmKeyRef.current = key;
+    if (lastRouteKeyRef.current === key) return;
+    lastRouteKeyRef.current = key;
     const dest = stopCoords[from];
-    // Rough estimate when OSRM is unavailable: road factor 1.3, avg 55 km/h, +3 min parking
+    // Haversine fallback: road factor 1.3, avg 55 km/h, +3 min parking, with traffic estimate
     const estimate = () => Math.ceil(haversineKm(userLoc.lat, userLoc.lng, dest.lat, dest.lng) * 1.3 / 55 * 60 * trafficMultiplier()) + 3;
-    fetch(`https://router.project-osrm.org/route/v1/driving/${userLoc.lng},${userLoc.lat};${dest.lng},${dest.lat}?overview=false`)
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_KEY;
+    if (!apiKey) { setDriveMins(estimate()); return; }
+    fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': apiKey,
+        'X-Goog-FieldMask': 'routes.duration',
+      },
+      body: JSON.stringify({
+        origin: { location: { latLng: { latitude: userLoc.lat, longitude: userLoc.lng } } },
+        destination: { location: { latLng: { latitude: dest.lat, longitude: dest.lng } } },
+        travelMode: 'DRIVE',
+        routingPreference: 'TRAFFIC_AWARE',
+      }),
+    })
       .then(r => r.json())
       .then(j => {
-        const secs = j.routes?.[0]?.duration;
-        setDriveMins(secs != null ? Math.ceil(secs / 60 * trafficMultiplier()) : estimate());
+        // duration returned as e.g. "612s"
+        const raw = j.routes?.[0]?.duration as string | undefined;
+        const secs = raw ? parseInt(raw.replace('s', ''), 10) : null;
+        setDriveMins(secs != null && !isNaN(secs) ? Math.ceil(secs / 60) + 3 : estimate());
       })
       .catch(() => setDriveMins(estimate()));
   }, [userLoc, from]);
