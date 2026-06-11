@@ -296,7 +296,7 @@ export default function App() {
           animate={animate} texture={style.texture}
           onBack={() => setScreen('home')} onSwap={swap}
           onEditFrom={() => openPicker('from')} onEditTo={() => openPicker('to')}
-          onOpenTrip={openTrip} tick={tick}
+          onOpenTrip={openTrip} tick={tick} userLoc={userLoc}
         />
       )}
       {screen === 'detail' && trip && (

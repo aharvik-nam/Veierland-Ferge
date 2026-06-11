@@ -186,7 +186,12 @@ export function WeatherSheet({ open, animate, preloaded, onClose }: WeatherSheet
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(7,20,24,0.45)', backdropFilter: 'blur(2px)', opacity: open ? 1 : 0, transition: 'opacity 0.28s ease' }} />
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, maxHeight: '88dvh', overflowY: 'auto', background: 'var(--surface)', borderTopLeftRadius: 30, borderTopRightRadius: 30, transform: open ? 'translateY(0)' : 'translateY(110%)', transition: 'transform 0.34s cubic-bezier(0.22,1,0.36,1)', boxShadow: '0 -20px 50px rgba(0,0,0,0.25)' }}>
         <div style={{ position: 'sticky', top: 0, zIndex: 2, background: 'var(--surface)', paddingTop: 14, borderTopLeftRadius: 30, borderTopRightRadius: 30 }}>
-          <div style={{ width: 42, height: 5, borderRadius: 99, background: 'var(--line)', margin: '0 auto 12px' }} />
+          <div style={{ width: 42, height: 5, borderRadius: 99, background: 'var(--line)', margin: '0 auto 8px' }} />
+          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 16px 8px' }}>
+            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 99, background: 'var(--surfaceAlt)', border: '1px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <Icon name="x" size={16} color="var(--inkDim)" stroke={2.2} />
+            </button>
+          </div>
         </div>
 
         <div style={{ padding: '0 20px calc(env(safe-area-inset-bottom, 0px) + 24px)' }}>

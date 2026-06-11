@@ -71,8 +71,13 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
   const showStatus = effectiveMode !== 'bus' && (tv.showCar || tv.showWalk) && (travelMode !== 'drive' || driveMins != null);
   const status = dep && showStatus ? rekkerStatus(effectiveTravel, countdown, travelMode, nextDep) : null;
 
-  // All remaining departures today — the Entur connection check needs the full list
-  const todayFerries = upcomingTrips(from, to, ymd(getOsloDate()));
+  // Ferries for today + tomorrow — needed when the next ferry is after midnight
+  const osloNow = getOsloDate();
+  const tomorrowDate = new Date(osloNow); tomorrowDate.setDate(osloNow.getDate() + 1);
+  const todayFerries = [
+    ...upcomingTrips(from, to, ymd(osloNow)),
+    ...upcomingTrips(from, to, ymd(tomorrowDate)),
+  ];
 
   if (!onboarded) {
     return (

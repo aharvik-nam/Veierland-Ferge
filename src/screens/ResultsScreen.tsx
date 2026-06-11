@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Icon } from '../components/Icons';
 import { DeepBand, StopDot, Label, TripCard } from '../components/Atoms';
-import { findTripsForDay, dayTypeOf, parseYmd, parseTime, minsUntil, ymd, getOsloDate, stopShort, isSummerSeason, NO_DAYS_EXPORT as NO_DAYS, NO_MONTHS_EXPORT } from '../ferryData';
+import { EnturTransit } from '../components/EnturTransit';
+import { findTripsForDay, dayTypeOf, parseYmd, parseTime, minsUntil, ymd, getOsloDate, stopShort, isSummerSeason, upcomingTrips, NO_DAYS_EXPORT as NO_DAYS, NO_MONTHS_EXPORT } from '../ferryData';
 import type { StopId, Trip } from '../types';
 
 function cap(s: string): string { return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -148,14 +149,25 @@ interface ResultsScreenProps {
   onEditTo: () => void;
   onOpenTrip: (trip: Trip) => void;
   tick: number;
+  userLoc: { lat: number; lng: number } | null;
 }
 
-export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, texture, onBack, onSwap, onEditFrom, onEditTo, onOpenTrip, tick: _tick }: ResultsScreenProps) {
+// Stops that have real public transit access (not car-free islands)
+const BUS_STOPS: StopId[] = ['tenvik', 'engo', 'buss_tbg', 'buss_tenv'];
+
+export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, texture, onBack, onSwap, onEditFrom, onEditTo, onOpenTrip, tick: _tick, userLoc }: ResultsScreenProps) {
   const todayStr = ymd(getOsloDate());
   const isToday = selectedDate === todayStr;
   const selDate = parseYmd(selectedDate);
   const trips = findTripsForDay(dayTypeOf(selDate), selDate, from, to);
   const nowMins = getOsloDate().getHours() * 60 + getOsloDate().getMinutes();
+  // For the Entur widget: ferries on the selected day (+ next day if today)
+  const selDayFerries = upcomingTrips(from, to, selectedDate);
+  const enturFerries = isToday
+    ? (() => { const tom = new Date(selDate); tom.setDate(selDate.getDate() + 1); return [...selDayFerries, ...upcomingTrips(from, to, ymd(tom))]; })()
+    : selDayFerries;
+  // ISO dateTime for Entur query — start of selected day for future dates
+  const enturDateTime = isToday ? undefined : `${selectedDate}T05:00:00`;
   const firstUpcomingIndex = isToday ? trips.findIndex(t => parseTime(t.startTime) >= nowMins) : 0;
   const firstUpcomingRef = useRef<HTMLDivElement>(null);
 
@@ -209,6 +221,15 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
 
       {/* scrollable trip list */}
       <div data-tour="trip-list" ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 18px calc(env(safe-area-inset-bottom, 0px) + 96px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {BUS_STOPS.includes(from) && (
+          <div>
+            <Label color="var(--inkDim)" style={{ paddingLeft: 2, marginBottom: 8, display: 'block' }}>
+              Kollektivt til {stopShort[from]}-kaia
+            </Label>
+            <EnturTransit userLoc={userLoc} stop={from} ferries={enturFerries} dateTime={enturDateTime} />
+          </div>
+        )}
+
         {trips.length === 0 ? (
           <div style={{ marginTop: 30, padding: 36, borderRadius: 'var(--rad)', background: 'var(--surface)', border: '1px dashed var(--line)', textAlign: 'center' }}>
             <Icon name="anchor" size={32} color="var(--inkDim)" />

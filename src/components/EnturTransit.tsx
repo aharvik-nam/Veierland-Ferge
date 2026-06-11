@@ -53,12 +53,10 @@ function transitConnection(arrivalIso: string, ferries: Trip[]): {
   label: string;
   urgent: boolean;
 } | null {
-  // Compare full Oslo date — an arrival after midnight must not match today's ferries
   const arrOslo = new Date(new Date(arrivalIso).toLocaleString('en-US', { timeZone: 'Europe/Oslo' }));
-  const today = ymd(getOsloDate());
-  if (ymd(arrOslo) !== today) return null;
+  const arrDate = ymd(arrOslo);
   const arrMins = arrOslo.getHours() * 60 + arrOslo.getMinutes();
-  const reachable = ferries.filter(f => f.dateStr === today && parseTime(f.startTime) > arrMins);
+  const reachable = ferries.filter(f => f.dateStr === arrDate && parseTime(f.startTime) > arrMins);
   if (reachable.length === 0) return null;
   const next = reachable[0];
   const buffer = parseTime(next.startTime) - arrMins;
@@ -82,13 +80,15 @@ const CLIENT_NAME = 'aharvik-veierlandferge';
 async function fetchTransit(
   fromLat: number, fromLng: number,
   toLat: number, toLng: number,
+  dateTime?: string,
 ): Promise<TripPattern[]> {
+  const dtArg = dateTime ? `\n      dateTime: "${dateTime}"` : '';
   const query = `{
     trip(
       from: { coordinates: { latitude: ${fromLat}, longitude: ${fromLng} } }
       to:   { coordinates: { latitude: ${toLat},   longitude: ${toLng}   } }
       numTripPatterns: 3
-      walkSpeed: 1.3
+      walkSpeed: 1.3${dtArg}
     ) {
       tripPatterns {
         expectedStartTime
@@ -240,9 +240,11 @@ interface EnturTransitProps {
   userLoc: { lat: number; lng: number } | null;
   stop: StopId;
   ferries: Trip[];
+  /** ISO datetime string — pass for future dates so Entur searches from that day */
+  dateTime?: string;
 }
 
-export function EnturTransit({ userLoc, stop, ferries }: EnturTransitProps) {
+export function EnturTransit({ userLoc, stop, ferries, dateTime }: EnturTransitProps) {
   const [patterns, setPatterns] = useState<TripPattern[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -254,16 +256,16 @@ export function EnturTransit({ userLoc, stop, ferries }: EnturTransitProps) {
   useEffect(() => {
     if (!userLoc) { setPatterns(null); return; }
     const dest = stopCoords[stop];
-    const key = `${userLoc.lat.toFixed(3)},${userLoc.lng.toFixed(3)},${stop},${timeBucket}`;
+    const key = `${userLoc.lat.toFixed(3)},${userLoc.lng.toFixed(3)},${stop},${timeBucket},${dateTime ?? ''}`;
     if (lastFetchRef.current === key) return;
     lastFetchRef.current = key;
 
     setLoading(true);
     setError(false);
-    fetchTransit(userLoc.lat, userLoc.lng, dest.lat, dest.lng)
+    fetchTransit(userLoc.lat, userLoc.lng, dest.lat, dest.lng, dateTime)
       .then(p => { setPatterns(p); setLoading(false); })
       .catch(() => { setError(true); setLoading(false); });
-  }, [userLoc?.lat.toFixed(3), userLoc?.lng.toFixed(3), stop, timeBucket]);
+  }, [userLoc?.lat.toFixed(3), userLoc?.lng.toFixed(3), stop, timeBucket, dateTime]);
 
   if (!userLoc) {
     return (
