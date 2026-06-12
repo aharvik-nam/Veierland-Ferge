@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { THEMES, STYLES, themeVars } from './theme';
 import { ymd, getOsloDate, stopCoords, isSummerSeason, haversineKm } from './ferryData';
 import { HomeScreen } from './screens/HomeScreen';
+import { Dashboard } from './screens/Dashboard';
 import { ResultsScreen } from './screens/ResultsScreen';
 import { DetailScreen } from './screens/DetailScreen';
 import { StopPicker } from './components/Atoms';
@@ -150,6 +151,17 @@ export default function App() {
   // Which ferry the user is aiming for — lets the route query predict traffic at the actual drive time
   const [driveTarget, setDriveTarget] = useState<{ date: string; time: string } | null>(null);
   const watchIdRef = useRef<number | null>(null);
+
+  // Desktop dashboard: shown on wide screens unless the user picks mobile view
+  const [isWide, setIsWide] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 1100px)').matches);
+  const [desktopView, setDesktopView] = useState<'dashboard' | 'mobile'>(() => (localStorage.getItem('desktopView') as 'dashboard' | 'mobile') || 'dashboard');
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1100px)');
+    const onChange = (e: MediaQueryListEvent) => setIsWide(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  const setDesktopViewPersist = (v: 'dashboard' | 'mobile') => { setDesktopView(v); localStorage.setItem('desktopView', v); };
 
   useEffect(() => {
     const id = setInterval(() => setTick(x => x + 1), 1000);
@@ -306,6 +318,29 @@ export default function App() {
 
   const openTrip = (t: Trip) => { setTrip(t); setPrevScreen(screen); setScreen('detail'); };
 
+  // Desktop dashboard — mobile view below stays untouched
+  if (isWide && desktopView === 'dashboard') {
+    return (
+      <div style={{ minHeight: '100dvh', background: 'var(--surfaceAlt)', ...(vars as React.CSSProperties) }}>
+        <Dashboard
+          weather={weather} forecast={forecast} animate={animate} tick={tick}
+          onOpenWeather={() => setWeatherOpen(true)}
+          onOpenSettings={() => setSettingsOpen(true)}
+          onMobileView={() => setDesktopViewPersist('mobile')}
+        />
+        <WeatherSheet open={weatherOpen} animate={animate} preloaded={forecast} onClose={() => setWeatherOpen(false)} />
+        <SettingsSheet
+          open={settingsOpen}
+          theme={themeKey} style={styleKey} animate={animate}
+          onTheme={k => { setThemeKey(k); localStorage.setItem('themeKey', k); }}
+          onStyle={s => { setStyleKey(s); localStorage.setItem('styleKey', s); }}
+          onAnimate={v => { setAnimate(v); localStorage.setItem('animate', String(v)); }}
+          onClose={() => setSettingsOpen(false)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--deep)', display: 'flex', justifyContent: 'center', ...(vars as React.CSSProperties) }}>
     <div style={{ width: '100%', maxWidth: 430, minHeight: '100dvh', position: 'relative', boxShadow: '0 0 80px rgba(0,0,0,0.5)' }}>
@@ -345,6 +380,15 @@ export default function App() {
 
       {/* FABs */}
       <div style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)', right: 'calc(max(0px, (100vw - 430px) / 2) + 20px)', display: 'flex', gap: 10, zIndex: 70 }}>
+        {isWide && (
+          <button
+            onClick={() => setDesktopViewPersist('dashboard')}
+            title="Dashboard"
+            style={{ width: 48, height: 48, borderRadius: 99, background: 'var(--deep)', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 24px rgba(0,0,0,0.35)' }}
+          >
+            <span style={{ fontSize: 19, lineHeight: 1 }}>🖥️</span>
+          </button>
+        )}
         <button
           onClick={() => setTourOpen(true)}
           style={{ width: 48, height: 48, borderRadius: 99, background: 'var(--deep)', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 24px rgba(0,0,0,0.35)' }}
