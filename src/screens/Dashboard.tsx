@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Icon, CompassMark, weatherProps, FerryGlyph, WaveField } from '../components/Icons';
-import { Label, NumTime, WeatherChip } from '../components/Atoms';
+import { Label, NumTime, WeatherChip, StopDot } from '../components/Atoms';
 import {
   findTripsForDay, dayTypeOf, parseYmd, parseTime, minsUntil, fmtCountdown,
   ymd, getOsloDate, stopsMap, stopShort, isSummerSeason, bookingStatus,
@@ -178,12 +178,17 @@ interface DashboardProps {
   forecast: any[] | null;
   animate: boolean;
   tick: number;
+  from: StopId;
+  to: StopId;
+  onEditFrom: () => void;
+  onEditTo: () => void;
+  onSwap: () => void;
   onOpenWeather: () => void;
   onOpenSettings: () => void;
   onMobileView: () => void;
 }
 
-export function Dashboard({ weather, forecast, animate, tick: _tick, onOpenWeather, onOpenSettings, onMobileView }: DashboardProps) {
+export function Dashboard({ weather, forecast, animate, tick: _tick, from, to, onEditFrom, onEditTo, onSwap, onOpenWeather, onOpenSettings, onMobileView }: DashboardProps) {
   const now = getOsloDate();
   const todayStr = ymd(now);
   const [dayOffset, setDayOffset] = useState(0);
@@ -209,6 +214,22 @@ export function Dashboard({ weather, forecast, animate, tick: _tick, onOpenWeath
               </span>
             )}
           </div>
+          {/* Route picker */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radSm)', padding: '9px 16px' }}>
+            <button onClick={onEditFrom} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <StopDot role="from" size={9} />
+              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>{stopShort[from]}</span>
+              <Icon name="chevronDown" size={14} color="var(--onDeepDim)" stroke={2} />
+            </button>
+            <button onClick={onSwap} style={{ width: 30, height: 30, borderRadius: 99, background: 'var(--accent)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+              <Icon name="swap" size={15} color="var(--accentInk)" stroke={2.2} />
+            </button>
+            <button onClick={onEditTo} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>{stopShort[to]}</span>
+              <StopDot role="to" size={9} />
+              <Icon name="chevronDown" size={14} color="var(--onDeepDim)" stroke={2} />
+            </button>
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <NumTime size={44} color="var(--onDeep)">{clock}</NumTime>
             <WeatherChip weather={weather} onDeep onClick={onOpenWeather} />
@@ -230,11 +251,11 @@ export function Dashboard({ weather, forecast, animate, tick: _tick, onOpenWeath
 
       {/* Grid */}
       <div style={{ flex: 1, padding: 22, display: 'grid', gridTemplateColumns: '1fr 1fr 360px', gridTemplateRows: 'auto 1fr', gap: 18, alignItems: 'start' }}>
-        <Panel title={`Fra ${stopsMap.tenvik}`} accent>
-          <DepartureList from="tenvik" to="vestgarden" />
+        <Panel title={`${stopsMap[from]} → ${stopsMap[to]}`} accent>
+          <DepartureList from={from} to={to} />
         </Panel>
-        <Panel title={`Fra ${stopsMap.vestgarden}`} accent>
-          <DepartureList from="vestgarden" to="tenvik" />
+        <Panel title={`${stopsMap[to]} → ${stopsMap[from]}`}>
+          <DepartureList from={to} to={from} />
         </Panel>
         <Panel title="Vær · Veierland">
           <WeatherPanel weather={weather} forecast={forecast} />
@@ -258,8 +279,8 @@ export function Dashboard({ weather, forecast, animate, tick: _tick, onOpenWeath
           }
         >
           <div style={{ padding: '16px 18px', display: 'flex', gap: 28, flexWrap: 'wrap' }}>
-            <DayColumn from="tenvik" to="vestgarden" dateObj={tableDate} />
-            <DayColumn from="vestgarden" to="tenvik" dateObj={tableDate} />
+            <DayColumn from={from} to={to} dateObj={tableDate} />
+            <DayColumn from={to} to={from} dateObj={tableDate} />
           </div>
           <div style={{ padding: '0 18px 14px', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 11, color: 'var(--inkDim)' }}>
             Røde tider krever forhåndsbestilling — ring fergen. Passerte avganger er nedtonet.

@@ -324,9 +324,20 @@ export default function App() {
       <div style={{ minHeight: '100dvh', background: 'var(--surfaceAlt)', ...(vars as React.CSSProperties) }}>
         <Dashboard
           weather={weather} forecast={forecast} animate={animate} tick={tick}
+          from={from} to={to}
+          onEditFrom={() => openPicker('from')} onEditTo={() => openPicker('to')} onSwap={swap}
           onOpenWeather={() => setWeatherOpen(true)}
           onOpenSettings={() => setSettingsOpen(true)}
           onMobileView={() => setDesktopViewPersist('mobile')}
+        />
+        <StopPicker
+          open={picker.open}
+          title={picker.which === 'from' ? 'Reise fra' : 'Reise til'}
+          selected={picker.which === 'from' ? from : to}
+          exclude={picker.which === 'from' ? to : from}
+          which={picker.which}
+          onPick={pick}
+          onClose={() => setPicker({ open: false, which: null })}
         />
         <WeatherSheet open={weatherOpen} animate={animate} preloaded={forecast} onClose={() => setWeatherOpen(false)} />
         <SettingsSheet
