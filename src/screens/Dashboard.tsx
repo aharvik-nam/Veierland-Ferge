@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { Icon, CompassMark, weatherProps, FerryGlyph, WaveField } from '../components/Icons';
 import { Label, NumTime, WeatherChip, StopDot } from '../components/Atoms';
 import {
-  findTripsForDay, dayTypeOf, parseYmd, parseTime, minsUntil, fmtCountdown,
+  findTripsForDay, dayTypeOf, parseTime, minsUntil, fmtCountdown,
   ymd, getOsloDate, stopsMap, stopShort, isSummerSeason, bookingStatus,
   NO_DAYS_EXPORT as NO_DAYS, NO_MONTHS_EXPORT as NO_MONTHS,
 } from '../ferryData';
-import type { StopId, Weather, Trip } from '../types';
+import type { StopId, Weather } from '../types';
 
 function cap(s: string): string { return s.charAt(0).toUpperCase() + s.slice(1); }
 
@@ -37,52 +37,77 @@ function Panel({ title, children, accent = false, style = {} }: { title: React.R
 
 // ── Departure list (one direction) ───────────────────────────
 
-function DepartureList({ from, to, count = 6 }: { from: StopId; to: StopId; count?: number }) {
+function DepartureList({ from, to, count = 6, tick: _tick }: { from: StopId; to: StopId; count?: number; tick: number }) {
+  // tick prop is intentionally received to force re-render every second
   const now = getOsloDate();
   const todayStr = ymd(now);
   const nowMins = now.getHours() * 60 + now.getMinutes();
 
-  // Today's remaining + spill into tomorrow if needed
-  const collect: Trip[] = [];
+  const collect: { trip: ReturnType<typeof findTripsForDay>[0]; isToday: boolean }[] = [];
   for (let i = 0; i < 2 && collect.length < count; i++) {
     const d = new Date(now); d.setDate(now.getDate() + i);
     const trips = findTripsForDay(dayTypeOf(d), d, from, to);
     for (const t of trips) {
       if (i === 0 && parseTime(t.startTime) < nowMins) continue;
-      collect.push(t);
+      collect.push({ trip: t, isToday: i === 0 });
       if (collect.length >= count) break;
     }
   }
 
   if (collect.length === 0) {
-    return <div style={{ padding: 24, fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, color: 'var(--inkDim)' }}>Ingen flere avganger</div>;
+    return <div style={{ padding: 24, fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, color: 'var(--inkDim)' }}>Ingen flere avganger i dag</div>;
   }
 
   return (
     <div>
-      {collect.map((t, i) => {
-        const isToday = t.dateStr === todayStr;
+      {collect.map(({ trip: t, isToday }, i) => {
         const cd = isToday ? minsUntil(t.dateStr, t.startTime) : null;
         const bs = bookingStatus(t);
         const isNext = i === 0;
+
+        // Hero card for next departure
+        if (isNext) {
+          return (
+            <div key={t.id + t.dateStr} style={{ padding: '16px 18px 14px', borderBottom: '1px solid var(--line)', background: 'color-mix(in srgb, var(--accent) 7%, var(--surface))' }}>
+              <Label color="var(--inkDim)" style={{ fontSize: 10.5, display: 'block', marginBottom: 6 }}>Neste avgang</Label>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <NumTime size={36} color="var(--accent)">{t.startTime}</NumTime>
+                  <Icon name="arrowRight" size={14} color="var(--inkDim)" stroke={2} />
+                  <NumTime size={20} color="var(--inkDim)">{t.endTime}</NumTime>
+                  {bs.required && (
+                    <span style={{ padding: '2px 8px', borderRadius: 99, background: 'color-mix(in srgb, var(--bad) 10%, var(--surface))', border: '1px solid color-mix(in srgb, var(--bad) 30%, transparent)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 10, color: 'var(--bad)' }}>RING</span>
+                  )}
+                </div>
+                {!isToday && (
+                  <span style={{ padding: '6px 12px', borderRadius: 99, background: 'var(--surfaceAlt)', border: '1px solid var(--line)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12, color: 'var(--inkDim)', whiteSpace: 'nowrap' }}>i morgen</span>
+                )}
+                {cd != null && cd >= 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 99, background: 'var(--accent)', flexShrink: 0 }}>
+                    <Icon name="clock" size={13} color="var(--accentInk)" stroke={2} />
+                    <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13.5, color: 'var(--accentInk)', whiteSpace: 'nowrap' }}>om {fmtCountdown(cd)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        // Compact rows for subsequent departures
         return (
-          <div key={t.id + t.dateStr + i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 18px', borderBottom: '1px solid var(--line)', background: isNext ? 'color-mix(in srgb, var(--accent) 7%, var(--surface))' : 'transparent' }}>
-            <NumTime size={24} color={isNext ? 'var(--accent)' : 'var(--ink)'}>{t.startTime}</NumTime>
+          <div key={t.id + t.dateStr + i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 18px', borderBottom: '1px solid var(--line)' }}>
+            <NumTime size={22} color="var(--ink)">{t.startTime}</NumTime>
             <Icon name="arrowRight" size={13} color="var(--inkDim)" stroke={2} />
-            <NumTime size={17} color="var(--inkDim)">{t.endTime}</NumTime>
+            <NumTime size={16} color="var(--inkDim)">{t.endTime}</NumTime>
             <div style={{ flex: 1 }} />
             {bs.required && (
-              <span title="Forhåndsbestilling påkrevd" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 99, background: 'color-mix(in srgb, var(--bad) 10%, var(--surface))', border: '1px solid color-mix(in srgb, var(--bad) 30%, transparent)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 10, color: 'var(--bad)' }}>
-                RING
-              </span>
+              <span style={{ padding: '2px 8px', borderRadius: 99, background: 'color-mix(in srgb, var(--bad) 10%, var(--surface))', border: '1px solid color-mix(in srgb, var(--bad) 30%, transparent)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 10, color: 'var(--bad)' }}>RING</span>
             )}
             {!isToday && (
               <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 11, color: 'var(--inkDim)' }}>i morgen</span>
             )}
             {cd != null && cd >= 0 && (
-              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: isNext ? 700 : 500, fontSize: 12.5, color: isNext ? 'var(--accent)' : 'var(--inkDim)', whiteSpace: 'nowrap' }}>
-                om {fmtCountdown(cd)}
-              </span>
+              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--inkDim)', whiteSpace: 'nowrap' }}>om {fmtCountdown(cd)}</span>
             )}
           </div>
         );
@@ -188,9 +213,8 @@ interface DashboardProps {
   onMobileView: () => void;
 }
 
-export function Dashboard({ weather, forecast, animate, tick: _tick, from, to, onEditFrom, onEditTo, onSwap, onOpenWeather, onOpenSettings, onMobileView }: DashboardProps) {
+export function Dashboard({ weather, forecast, animate, tick, from, to, onEditFrom, onEditTo, onSwap, onOpenWeather, onOpenSettings, onMobileView }: DashboardProps) {
   const now = getOsloDate();
-  const todayStr = ymd(now);
   const [dayOffset, setDayOffset] = useState(0);
   const tableDate = new Date(now); tableDate.setDate(now.getDate() + dayOffset);
   const dateLabel = `${cap(NO_DAYS[now.getDay()])} ${now.getDate()}. ${NO_MONTHS[now.getMonth()]}`;
@@ -199,48 +223,53 @@ export function Dashboard({ weather, forecast, animate, tick: _tick, from, to, o
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--surfaceAlt)', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
-      <div style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(160deg, var(--deep) 0%, var(--deep2) 130%)', padding: '20px 28px 26px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, position: 'relative', zIndex: 2 }}>
+      {/* Header — two rows */}
+      <div style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(160deg, var(--deep) 0%, var(--deep2) 130%)', padding: '20px 28px 22px' }}>
+
+        {/* Row 1: logo + controls */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, position: 'relative', zIndex: 2, marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <CompassMark size={42} color="var(--onDeep)" opacity={0.85} />
+            <CompassMark size={40} color="var(--onDeep)" opacity={0.85} />
             <div>
-              <div style={{ fontFamily: 'var(--num)', fontSize: 30, color: 'var(--onDeep)', lineHeight: 0.95 }}>Veierland</div>
+              <div style={{ fontFamily: 'var(--num)', fontSize: 28, color: 'var(--onDeep)', lineHeight: 0.95 }}>Veierland</div>
               <Label color="var(--onDeepDim)" style={{ fontSize: 10 }}>M/F Jutøya · Ferge · {dateLabel}</Label>
             </div>
             {isSummerSeason(now) && (
-              <span style={{ marginLeft: 10, padding: '4px 12px', borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 11, color: 'var(--onDeep)' }}>
+              <span style={{ marginLeft: 6, padding: '4px 12px', borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 11, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>
                 ☀️ Sommerruter
               </span>
             )}
           </div>
-          {/* Route picker */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radSm)', padding: '9px 16px' }}>
-            <button onClick={onEditFrom} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <StopDot role="from" size={9} />
-              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>{stopShort[from]}</span>
-              <Icon name="chevronDown" size={14} color="var(--onDeepDim)" stroke={2} />
-            </button>
-            <button onClick={onSwap} style={{ width: 30, height: 30, borderRadius: 99, background: 'var(--accent)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-              <Icon name="swap" size={15} color="var(--accentInk)" stroke={2.2} />
-            </button>
-            <button onClick={onEditTo} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>{stopShort[to]}</span>
-              <StopDot role="to" size={9} />
-              <Icon name="chevronDown" size={14} color="var(--onDeepDim)" stroke={2} />
-            </button>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <NumTime size={44} color="var(--onDeep)">{clock}</NumTime>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <NumTime size={40} color="var(--onDeep)">{clock}</NumTime>
             <WeatherChip weather={weather} onDeep onClick={onOpenWeather} />
-            <button onClick={onOpenSettings} style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <button onClick={onOpenSettings} title="Innstillinger" style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <Icon name="settings" size={18} color="var(--onDeep)" stroke={1.8} />
             </button>
-            <button onClick={onMobileView} style={{ padding: '9px 16px', borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', cursor: 'pointer', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12.5, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>
-              📱 Mobilvisning
+            <button onClick={onMobileView} title="Bytt til mobilvisning" style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 14px', borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', cursor: 'pointer' }}>
+              <Icon name="monitor" size={16} color="var(--onDeep)" stroke={1.8} />
+              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12.5, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>Mobilvisning</span>
             </button>
           </div>
         </div>
+
+        {/* Row 2: route picker */}
+        <div style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radSm)', padding: '9px 16px', width: 'fit-content' }}>
+          <button onClick={onEditFrom} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <StopDot role="from" size={9} />
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>{stopShort[from]}</span>
+            <Icon name="chevronDown" size={14} color="var(--onDeepDim)" stroke={2} />
+          </button>
+          <button onClick={onSwap} style={{ width: 30, height: 30, borderRadius: 99, background: 'var(--accent)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+            <Icon name="swap" size={15} color="var(--accentInk)" stroke={2.2} />
+          </button>
+          <button onClick={onEditTo} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>{stopShort[to]}</span>
+            <StopDot role="to" size={9} />
+            <Icon name="chevronDown" size={14} color="var(--onDeepDim)" stroke={2} />
+          </button>
+        </div>
+
         <WaveField height={42} animate={animate} />
         <div style={{ position: 'absolute', bottom: 8, left: 0, width: 64, animation: animate ? 'ferryGlide 14s ease-in-out infinite' : 'none', zIndex: 1 }}>
           <div style={{ animation: animate ? 'ferryBob 3.2s ease-in-out infinite' : 'none' }}>
@@ -249,13 +278,20 @@ export function Dashboard({ weather, forecast, animate, tick: _tick, from, to, o
         </div>
       </div>
 
+      {/* Section label tying departure panels to today */}
+      <div style={{ padding: '16px 22px 4px' }}>
+        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--inkDim)' }}>
+          Avganger · {dateLabel}
+        </span>
+      </div>
+
       {/* Grid */}
-      <div style={{ flex: 1, padding: 22, display: 'grid', gridTemplateColumns: '1fr 1fr 360px', gridTemplateRows: 'auto 1fr', gap: 18, alignItems: 'start' }}>
+      <div style={{ flex: 1, padding: '10px 22px 22px', display: 'grid', gridTemplateColumns: '1fr 1fr 360px', gridTemplateRows: 'auto 1fr', gap: 18, alignItems: 'start' }}>
         <Panel title={`${stopsMap[from]} → ${stopsMap[to]}`} accent>
-          <DepartureList from={from} to={to} />
+          <DepartureList from={from} to={to} tick={tick} />
         </Panel>
         <Panel title={`${stopsMap[to]} → ${stopsMap[from]}`}>
-          <DepartureList from={to} to={from} />
+          <DepartureList from={to} to={from} tick={tick} />
         </Panel>
         <Panel title="Vær · Veierland">
           <WeatherPanel weather={weather} forecast={forecast} />
