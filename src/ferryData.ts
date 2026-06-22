@@ -189,8 +189,20 @@ export function findTripsForDay(dayType: 'monfri' | 'sat' | 'sun', dateObj: Date
     if (hasEngo && !isEngoSeason) {
       warnings.push({ type: 'engo', text: 'Rød avgang via Engø — kjøres normalt kun 1. april–28. sep. Ring fergen for å forhåndsbestille.' });
     }
-    // Bestillingskrav gjelder kun ordinære ruter — sommerrutene har ingen avganger som krever forhåndsbestilling
-    if (!isSummerSeason(dateObj)) {
+    if (isSummerSeason(dateObj)) {
+      // Sommerruter: siste tur krever bestilling innen kl. 20:00 samme dag
+      if (dayType === 'monfri') {
+        if ((startStop === 'tenvik' && startTime >= '21:45') ||
+            (startStop === 'vestgarden' && startTime >= '21:55')) {
+          warnings.push({ type: 'booking', deadline: '20:00', text: 'Siste tur — må bestilles innen kl. 20:00 på avreisedagen.' });
+        }
+      } else if (dayType === 'sun') {
+        if ((startStop === 'tenvik' && startTime >= '21:30') ||
+            (startStop === 'vestgarden' && startTime >= '21:40')) {
+          warnings.push({ type: 'booking', deadline: '20:00', text: 'Siste tur — må bestilles innen kl. 20:00 på avreisedagen.' });
+        }
+      }
+    } else {
       if (dayType === 'monfri' || dayType === 'sun') {
         if ((startStop === 'tangen' && startTime >= '20:30') ||
             (startStop === 'vestgarden' && startTime >= '20:40') ||
@@ -297,22 +309,24 @@ export function bookingStatus(trip: { warnings: import('./types').TripWarning[];
   const dayBefore = new Date(tripDate); dayBefore.setDate(tripDate.getDate() - 1);
   const dayBeforeStr = ymd(dayBefore);
 
-  const sameDay = booking.deadline === '18:00';
+  // '18:00' and '20:00' = same-day deadline; 'kvelden før, 20:00' = evening-before deadline
+  const sameDayDeadline = booking.deadline === '18:00' || booking.deadline === '20:00';
+  const deadlineTime = booking.deadline === '18:00' ? '18:00' : '20:00';
 
-  if (sameDay) {
-    // Deadline: trip date at 18:00
+  if (sameDayDeadline) {
+    // Deadline: trip date at deadlineTime
     if (trip.dateStr === todayStr) {
-      const mins = minsUntil(todayStr, '18:00');
+      const mins = minsUntil(todayStr, deadlineTime);
       if (mins <= 0) return { required: true, passed: true, minsLeft: null, label: 'Bestillingsfristen er passert' };
-      return { required: true, passed: false, minsLeft: mins, label: `${fmtCountdown(mins)} igjen til fristen (kl. 18:00)` };
+      return { required: true, passed: false, minsLeft: mins, label: `${fmtCountdown(mins)} igjen til fristen (kl. ${deadlineTime})` };
     }
     if (trip.dateStr === ymd(new Date(now.getTime() + 86400000))) {
-      // Tomorrow — deadline is today at 18:00
-      const mins = minsUntil(todayStr, '18:00');
+      // Tomorrow — deadline is today at deadlineTime
+      const mins = minsUntil(todayStr, deadlineTime);
       if (mins <= 0) return { required: true, passed: true, minsLeft: null, label: 'Bestillingsfristen er passert' };
-      return { required: true, passed: false, minsLeft: mins, label: `Ring i dag — frist kl. 18:00 (${fmtCountdown(mins)} igjen)` };
+      return { required: true, passed: false, minsLeft: mins, label: `Ring i dag — frist kl. ${deadlineTime} (${fmtCountdown(mins)} igjen)` };
     }
-    return { required: true, passed: false, minsLeft: null, label: 'Må bestilles innen kl. 18:00 på avreisedagen' };
+    return { required: true, passed: false, minsLeft: null, label: `Må bestilles innen kl. ${deadlineTime} på avreisedagen` };
   } else {
     // Deadline: evening before at 20:00
     if (trip.dateStr === todayStr) {

@@ -95,7 +95,7 @@ export const summerMonFriLoops: FerryLoop[] = [
   { id: "smf-11", bussTbg: "16:15", tenvikUt: "17:00", vestgardenUt: "17:10", engoUt: "17:20", tangenUt: "17:30", tangenInn: "17:30", engoInn: null, vestgardenInn: "17:40", tenvikInn: "17:50", bussTenvik: "17:58" },
   { id: "smf-12", bussTbg: "18:30", tenvikUt: "19:00", vestgardenUt: "19:10", engoUt: "19:20", tangenUt: "19:30", tangenInn: "19:30", engoInn: null, vestgardenInn: "19:40", tenvikInn: "19:50", bussTenvik: "19:58" },
   { id: "smf-13", bussTbg: "19:30", tenvikUt: "20:00", vestgardenUt: "20:10", engoUt: null, tangenUt: "20:20", tangenInn: "20:30", engoInn: null, vestgardenInn: "20:40", tenvikInn: "20:50", bussTenvik: "20:58" },
-  { id: "smf-14", bussTbg: "20:30", tenvikUt: "21:25", vestgardenUt: "21:35", engoUt: "21:45", tangenUt: null, tangenInn: null, engoInn: null, vestgardenInn: "21:55", tenvikInn: "22:05", bussTenvik: null }
+  { id: "smf-14", bussTbg: "20:30", tenvikUt: "21:45", vestgardenUt: "21:55", engoUt: null, tangenUt: null, tangenInn: null, engoInn: null, vestgardenInn: "21:55", tenvikInn: "22:05", bussTenvik: null }
 ];
 
 export const summerSatLoops: FerryLoop[] = [
@@ -127,8 +127,8 @@ export const summerSunLoops: FerryLoop[] = [
 export const rules = [
   { text: "Røde avganger til/fra Engø kjøres kun i perioden 1. april – 28. september. Enkeltavganger kan forhåndsbestilles hele året ved å ringe fergen." },
   { text: "ALL RETUR TIL ENGØ GÅR FRA VESTGÅRDEN!", alert: true },
-  { text: "Hverdager: Avgang 20:30 fra Tangen og 20:40 fra Vestgården MÅ bestilles før kl 18:00. Siste avgang 21:45 fra Tenvik MÅ bestilles før 18:00." },
+  { text: "Sommerruter (22. jun–16. aug): Siste avgang 21:45 fra Tenvik (hverdager) og 21:30 fra Tenvik (søndag) MÅ bestilles innen kl. 20:00 samme dag." },
+  { text: "Ordinære ruter: Avgang 20:30 fra Tangen og 20:40 fra Vestgården MÅ bestilles før kl 18:00. Siste avgang 21:45 fra Tenvik (hverdager/søndag) MÅ bestilles før 18:00." },
   { text: "Lørdag: Avgang Vestgården 07:50 MÅ bestilles kvelden før innen 20:00." },
-  { text: "Søndag: Avgang 20:30 fra Tangen og 20:40 fra Vestgården MÅ bestilles før 18:00. Siste avgang 21:30 fra Tenvik MÅ bestilles før 18:00." },
   { text: "Telefon Fergen: 91888219" }
 ];
