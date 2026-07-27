@@ -248,6 +248,19 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
             </div>
           );
         })}
+
+        <a
+          href="/rutetabell.png"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'var(--surface)', border: '1px solid var(--line)', cursor: 'pointer', textDecoration: 'none', marginTop: 4 }}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+            <Icon name="calendar" size={19} color="var(--inkDim)" stroke={1.9} />
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>Klassisk rutetabell</span>
+          </span>
+          <Icon name="chevronRight" size={18} color="var(--inkDim)" stroke={2} />
+        </a>
       </div>
     </div>
   );
