@@ -140,6 +140,15 @@ export function isSummerSeason(dateObj: Date): boolean {
   return false;
 }
 
+// Verkstedopphold ca. 1. sep – 1. des 2026: kun Tenvik ↔ Vestgården, erstatningsfartøy
+export function isMaintenancePeriod(dateObj: Date): boolean {
+  const y = dateObj.getFullYear(), m = dateObj.getMonth() + 1, d = dateObj.getDate();
+  if (y !== 2026) return false;
+  if (m === 9 || m === 10 || m === 11) return true;
+  if (m === 12 && d <= 1) return true;
+  return false;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function loopsFor(dayType: string, dateObj: Date): any[] {
   const summer = isSummerSeason(dateObj);
@@ -152,7 +161,7 @@ export function findTripsForDay(dayType: 'monfri' | 'sat' | 'sun', dateObj: Date
   const loops = loopsFor(dayType, dateObj);
   const month = dateObj.getMonth() + 1;
   const dayNum = dateObj.getDate();
-  const isEngoSeason = (month > 4 && month < 9) || (month === 4) || (month === 9 && dayNum <= 28);
+  const isEngoSeason = (month === 3 && dayNum >= 22) || (month >= 4 && month <= 8) || (month === 9 && dayNum <= 27);
 
   const trips: Trip[] = [];
   const dateStr = ymd(dateObj);

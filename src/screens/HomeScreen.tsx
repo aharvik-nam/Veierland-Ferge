@@ -3,7 +3,7 @@ import { CompassMark } from '../components/Icons';
 import { Icon } from '../components/Icons';
 import { DeepBand, WeatherChip, RouteCard, StatusSignal, TravelChips, NumTime, Label } from '../components/Atoms';
 import { EnturTransit } from '../components/EnturTransit';
-import { nextDepartures, prevDeparture, upcomingTrips, minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, ymd, getOsloDate, stopsMap, stopCoords, haversineKm, bookingStatus, parseTime } from '../ferryData';
+import { nextDepartures, prevDeparture, upcomingTrips, minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, ymd, getOsloDate, stopsMap, stopCoords, haversineKm, bookingStatus, parseTime, isSummerSeason, isMaintenancePeriod } from '../ferryData';
 import type { StopId, Weather, Trip, TransportMode } from '../types';
 
 interface HomeScreenProps {
@@ -127,7 +127,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
           </button>
 
           <a
-            href="/rutetabell.png"
+            href={isSummerSeason(getOsloDate()) ? '/rutetabell.png' : '/rutetabell-hoest.png'}
             target="_blank"
             rel="noopener noreferrer"
             style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', textDecoration: 'none', boxSizing: 'border-box' }}
@@ -138,6 +138,16 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
             </span>
             <Icon name="chevronRight" size={17} color="var(--onDeepDim)" stroke={2} />
           </a>
+
+          {isMaintenancePeriod(getOsloDate()) && (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 'var(--rad)', background: 'rgba(220,50,50,0.15)', border: '1px solid rgba(220,50,50,0.35)' }}>
+              <Icon name="alert" size={15} color="#ff6b6b" stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
+              <div>
+                <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: '#ff6b6b', marginBottom: 2 }}>M/F Jutøya til verksted · ca. 1. sep – 1. des.</div>
+                <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--onDeepDim)', lineHeight: 1.4 }}>Erstatningsfartøy: kun Tenvik og Vestgården. Ingen last, sykler eller varer.</div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -335,7 +345,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
         </button>
 
         <a
-          href="/rutetabell.png"
+          href={isSummerSeason(getOsloDate()) ? '/rutetabell.png' : '/rutetabell-hoest.png'}
           target="_blank"
           rel="noopener noreferrer"
           style={{ marginTop: 8, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', textDecoration: 'none', boxSizing: 'border-box' }}
@@ -346,6 +356,16 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
           </span>
           <Icon name="chevronRight" size={18} color="var(--onDeepDim)" stroke={2} />
         </a>
+
+        {isMaintenancePeriod(getOsloDate()) && (
+          <div style={{ marginTop: 8, display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 'var(--rad)', background: 'rgba(220,50,50,0.15)', border: '1px solid rgba(220,50,50,0.35)' }}>
+            <Icon name="alert" size={15} color="#ff6b6b" stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
+            <div>
+              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: '#ff6b6b', marginBottom: 2 }}>M/F Jutøya til verksted · ca. 1. sep – 1. des.</div>
+              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--onDeepDim)', lineHeight: 1.4 }}>Erstatningsfartøy: kun Tenvik og Vestgården. Ingen last, sykler eller varer.</div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

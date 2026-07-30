@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Icon } from '../components/Icons';
 import { DeepBand, StopDot, Label, TripCard } from '../components/Atoms';
 import { EnturTransit } from '../components/EnturTransit';
-import { findTripsForDay, dayTypeOf, parseYmd, parseTime, minsUntil, ymd, getOsloDate, stopShort, isSummerSeason, upcomingTrips, NO_DAYS_EXPORT as NO_DAYS, NO_MONTHS_EXPORT } from '../ferryData';
+import { findTripsForDay, dayTypeOf, parseYmd, parseTime, minsUntil, ymd, getOsloDate, stopShort, isSummerSeason, isMaintenancePeriod, upcomingTrips, NO_DAYS_EXPORT as NO_DAYS, NO_MONTHS_EXPORT } from '../ferryData';
 import type { StopId, Trip } from '../types';
 
 function cap(s: string): string { return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -219,6 +219,15 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
             </span>
           </div>
         )}
+        {isMaintenancePeriod(selDate) && (
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, margin: '8px 18px 0', padding: '12px 14px', borderRadius: 'var(--radSm)', background: 'color-mix(in srgb, var(--bad) 12%, var(--surface))', border: '1px solid color-mix(in srgb, var(--bad) 30%, transparent)' }}>
+            <Icon name="alert" size={15} color="var(--bad)" stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
+            <div>
+              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: 'var(--bad)', marginBottom: 2 }}>M/F Jutøya til verksted · ca. 1. sep – 1. des.</div>
+              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--inkDim)', lineHeight: 1.4 }}>Erstatningsfartøy: kun Tenvik og Vestgården. Ingen last, sykler eller varer.</div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* scrollable trip list */}
@@ -232,7 +241,15 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
           </div>
         )}
 
-        {trips.length === 0 ? (
+        {isMaintenancePeriod(selDate) && (from === 'tangen' || to === 'tangen' || from === 'engo' || to === 'engo') ? (
+          <div style={{ marginTop: 30, padding: 36, borderRadius: 'var(--rad)', background: 'var(--surface)', border: '1px dashed color-mix(in srgb, var(--bad) 40%, transparent)', textAlign: 'center' }}>
+            <Icon name="alert" size={32} color="var(--bad)" />
+            <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--bad)', marginTop: 12 }}>Midlertidig stengt</div>
+            <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12.5, color: 'var(--inkDim)', marginTop: 6, lineHeight: 1.45 }}>
+              Tangen og Engø er ute av drift ca. 1. sep – 1. des. 2026 mens M/F Jutøya er til verksted.
+            </div>
+          </div>
+        ) : trips.length === 0 ? (
           <div style={{ marginTop: 30, padding: 36, borderRadius: 'var(--rad)', background: 'var(--surface)', border: '1px dashed var(--line)', textAlign: 'center' }}>
             <Icon name="anchor" size={32} color="var(--inkDim)" />
             <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 14, color: 'var(--inkDim)', marginTop: 12 }}>{isToday ? 'Ingen flere avganger i dag' : 'Ingen avganger på valgt dag'}</div>
@@ -249,18 +266,25 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
           );
         })}
 
-        <a
-          href="/rutetabell.png"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'var(--surface)', border: '1px solid var(--line)', cursor: 'pointer', textDecoration: 'none', marginTop: 4 }}
-        >
-          <span style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-            <Icon name="calendar" size={19} color="var(--inkDim)" stroke={1.9} />
-            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>Klassisk rutetabell</span>
-          </span>
-          <Icon name="chevronRight" size={18} color="var(--inkDim)" stroke={2} />
-        </a>
+        {(() => {
+          const isSummer = isSummerSeason(selDate);
+          return (
+            <a
+              href={isSummer ? '/rutetabell.png' : '/rutetabell-hoest.png'}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'var(--surface)', border: '1px solid var(--line)', cursor: 'pointer', textDecoration: 'none', marginTop: 4 }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+                <Icon name="calendar" size={19} color="var(--inkDim)" stroke={1.9} />
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>
+                  {isSummer ? 'Klassisk rutetabell (sommer)' : 'Klassisk rutetabell'}
+                </span>
+              </span>
+              <Icon name="chevronRight" size={18} color="var(--inkDim)" stroke={2} />
+            </a>
+          );
+        })()}
       </div>
     </div>
   );

@@ -47,7 +47,7 @@ export const monFriLoops: FerryLoop[] = [
   { id: "mf-11", bussTbg: "16:45", tenvikUt: "17:10", vestgardenUt: "17:20", engoUt: null, tangenUt: "17:30", tangenInn: "17:30", engoInn: null, vestgardenInn: "17:40", tenvikInn: "17:50", bussTenvik: "17:58" },
   { id: "mf-12", bussTbg: "18:30", tenvikUt: "19:00", vestgardenUt: "19:10", engoUt: "19:20", tangenUt: "19:30", tangenInn: "19:30", engoInn: null, vestgardenInn: "19:40", tenvikInn: "19:50", bussTenvik: "19:58" },
   { id: "mf-13", bussTbg: "19:30", tenvikUt: "20:00", vestgardenUt: "20:10", engoUt: null, tangenUt: null, tangenInn: null, engoInn: null, vestgardenInn: null, tenvikInn: null, bussTenvik: null },
-  { id: "mf-14", bussTbg: null, tenvikUt: null, vestgardenUt: null, engoUt: null, tangenUt: null, tangenInn: "20:30", engoInn: null, vestgardenInn: "20:40", tenvikInn: "20:50", bussTenvik: null },
+  { id: "mf-14", bussTbg: null, tenvikUt: null, vestgardenUt: null, engoUt: null, tangenUt: null, tangenInn: "20:30", engoInn: null, vestgardenInn: "20:40", tenvikInn: "20:50", bussTenvik: "20:58" },
   { id: "mf-15", bussTbg: null, tenvikUt: "21:45", vestgardenUt: "21:55", engoUt: null, tangenUt: null, tangenInn: null, engoInn: null, vestgardenInn: null, tenvikInn: null, bussTenvik: null }
 ];
 
@@ -125,7 +125,8 @@ export const summerSunLoops: FerryLoop[] = [
 ];
 
 export const rules = [
-  { text: "Røde avganger til/fra Engø kjøres kun i perioden 1. april – 28. september. Enkeltavganger kan forhåndsbestilles hele året ved å ringe fergen." },
+  { text: "OBS: M/F Jutøya er til verksted ca. 1. september – 1. desember 2026. Erstatningsfartøy i drift — kun Tenvik og Vestgården. Ingen last, sykler eller varer.", alert: true },
+  { text: "Røde avganger til/fra Engø kjøres kun i perioden 22. mars – 27. september. Enkeltavganger kan forhåndsbestilles hele året ved å ringe fergen." },
   { text: "ALL RETUR TIL ENGØ GÅR FRA VESTGÅRDEN!", alert: true },
   { text: "Sommerruter (22. jun–16. aug): Siste avgang 21:45 fra Tenvik (hverdager) og 21:30 fra Tenvik (søndag) MÅ bestilles innen kl. 20:00 samme dag." },
   { text: "Ordinære ruter: Avgang 20:30 fra Tangen og 20:40 fra Vestgården MÅ bestilles før kl 18:00. Siste avgang 21:45 fra Tenvik (hverdager/søndag) MÅ bestilles før 18:00." },
