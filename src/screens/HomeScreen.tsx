@@ -3,8 +3,67 @@ import { CompassMark } from '../components/Icons';
 import { Icon } from '../components/Icons';
 import { DeepBand, WeatherChip, RouteCard, StatusSignal, TravelChips, NumTime, Label } from '../components/Atoms';
 import { EnturTransit } from '../components/EnturTransit';
-import { nextDepartures, prevDeparture, upcomingTrips, minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, ymd, getOsloDate, stopsMap, stopCoords, haversineKm, bookingStatus, parseTime, isSummerSeason, isMaintenancePeriod } from '../ferryData';
+import { nextDepartures, prevDeparture, upcomingTrips, minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, ymd, getOsloDate, parseYmd, stopsMap, stopCoords, haversineKm, bookingStatus, parseTime, isSummerSeason, isMaintenancePeriod } from '../ferryData';
 import type { StopId, Weather, Trip, TransportMode } from '../types';
+
+const PLAN_MONTHS = ['januar','februar','mars','april','mai','juni','juli','august','september','oktober','november','desember'];
+const PLAN_DAYS_SHORT = ['søn','man','tir','ons','tor','fre','lør'];
+function capFirst(s: string) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function formatPlanDate(ds: string): string {
+  const d = parseYmd(ds);
+  return `${capFirst(PLAN_DAYS_SHORT[d.getDay()])} ${d.getDate()}. ${PLAN_MONTHS[d.getMonth()].slice(0, 3)}`;
+}
+
+function PlanCalendar({ open, selected, onSelect, onClose }: { open: boolean; selected: string; onSelect: (ds: string) => void; onClose: () => void }) {
+  const today = getOsloDate();
+  const todayStr = ymd(today);
+  const selDate = parseYmd(selected);
+  const [viewYm, setViewYm] = useState(() => ({ y: selDate.getFullYear(), m: selDate.getMonth() }));
+  useEffect(() => { if (open) setViewYm({ y: selDate.getFullYear(), m: selDate.getMonth() }); }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const first = new Date(viewYm.y, viewYm.m, 1);
+  const daysInMonth = new Date(viewYm.y, viewYm.m + 1, 0).getDate();
+  const offset = (first.getDay() + 6) % 7;
+  const cells: (number | null)[] = [...Array(offset).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
+  const atCurrentMonth = viewYm.y === today.getFullYear() && viewYm.m === today.getMonth();
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 85, pointerEvents: open ? 'auto' : 'none' }}>
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(7,20,24,0.45)', backdropFilter: 'blur(2px)', opacity: open ? 1 : 0, transition: 'opacity 0.28s ease' }} />
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: 'var(--surface)', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: '14px 20px calc(env(safe-area-inset-bottom, 0px) + 24px)', transform: open ? 'translateY(0)' : 'translateY(110%)', transition: 'transform 0.34s cubic-bezier(0.22,1,0.36,1)', boxShadow: '0 -20px 50px rgba(0,0,0,0.25)' }}>
+        <div style={{ width: 42, height: 5, borderRadius: 99, background: 'var(--line)', margin: '0 auto 16px' }} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <button onClick={() => setViewYm(v => v.m === 0 ? { y: v.y - 1, m: 11 } : { y: v.y, m: v.m - 1 })} disabled={atCurrentMonth} style={{ width: 38, height: 38, borderRadius: 99, border: '1.5px solid var(--line)', background: 'var(--surfaceAlt)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: atCurrentMonth ? 'default' : 'pointer', opacity: atCurrentMonth ? 0.3 : 1 }}>
+            <Icon name="chevronLeft" size={17} color="var(--ink)" stroke={2.2} />
+          </button>
+          <span style={{ fontFamily: 'var(--num)', fontSize: 21, color: 'var(--ink)' }}>{capFirst(PLAN_MONTHS[viewYm.m])} {viewYm.y}</span>
+          <button onClick={() => setViewYm(v => v.m === 11 ? { y: v.y + 1, m: 0 } : { y: v.y, m: v.m + 1 })} style={{ width: 38, height: 38, borderRadius: 99, border: '1.5px solid var(--line)', background: 'var(--surfaceAlt)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <Icon name="chevronRight" size={17} color="var(--ink)" stroke={2.2} />
+          </button>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginBottom: 6 }}>
+          {['Ma','Ti','On','To','Fr','Lø','Sø'].map(wd => (
+            <div key={wd} style={{ textAlign: 'center', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 10.5, letterSpacing: '0.08em', color: 'var(--inkDim)', textTransform: 'uppercase' }}>{wd}</div>
+          ))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+          {cells.map((day, i) => {
+            if (day == null) return <div key={`e${i}`} />;
+            const ds = ymd(new Date(viewYm.y, viewYm.m, day));
+            const isPast = ds < todayStr;
+            const isSel = ds === selected;
+            const isToday = ds === todayStr;
+            return (
+              <button key={ds} disabled={isPast} onClick={() => { onSelect(ds); onClose(); }} style={{ aspectRatio: '1', borderRadius: 12, cursor: isPast ? 'default' : 'pointer', border: isSel ? '2px solid var(--accent)' : isToday ? '1.5px solid var(--accent2)' : '1.5px solid transparent', background: isSel ? 'var(--accent)' : 'var(--surfaceAlt)', opacity: isPast ? 0.28 : 1, fontFamily: "'Space Grotesk', sans-serif", fontWeight: isSel || isToday ? 700 : 600, fontSize: 14, color: isSel ? 'var(--accentInk)' : 'var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {day}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface HomeScreenProps {
   from: StopId;
@@ -30,11 +89,14 @@ interface HomeScreenProps {
   onboarded: boolean;
   onSetOnboarded: () => void;
   onReset: () => void;
+  onPlanDate: (date: string) => void;
 }
 
-export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, driveMinsFast, onRefreshDrive, onDriveTarget, onRequestLocation, onOpenWeather, transportMode, onSetTransportMode, onboarded, onSetOnboarded, onReset }: HomeScreenProps) {
+export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, driveMinsFast, onRefreshDrive, onDriveTarget, onRequestLocation, onOpenWeather, transportMode, onSetTransportMode, onboarded, onSetOnboarded, onReset, onPlanDate }: HomeScreenProps) {
   const [heroIndex, setHeroIndex] = useState(0);
   const [locState, setLocState] = useState<'idle' | 'busy' | 'denied'>('idle');
+  const [planCal, setPlanCal] = useState(false);
+  const [planDate, setPlanDate] = useState<string | null>(null);
   useEffect(() => { setHeroIndex(0); }, [from, to]);
 
   const deps = nextDepartures(from, to, heroIndex + 2);
@@ -98,6 +160,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
 
   if (!onboarded) {
     return (
+      <>
       <div style={{ minHeight: '100dvh', background: 'linear-gradient(180deg, var(--deep) 0%, var(--deep2) 55%, var(--deep) 100%)', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 28px) 22px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
@@ -116,6 +179,11 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
           <button data-tour="find-next-btn" onClick={onSetOnboarded} style={{ width: '100%', padding: '16px', borderRadius: 'var(--rad)', background: 'var(--accent)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
             <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 16, color: 'var(--accentInk)' }}>Finn neste avgang</span>
             <Icon name="arrowRight" size={18} color="var(--accentInk)" stroke={2.2} />
+          </button>
+
+          <button onClick={() => setPlanCal(true)} style={{ width: '100%', padding: '16px', borderRadius: 'var(--rad)', background: 'transparent', border: '2px solid var(--accent)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <Icon name="calendar" size={18} color="var(--accent)" stroke={2.2} />
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 16, color: 'var(--accent)' }}>{planDate ? formatPlanDate(planDate) : 'Planlegg reise'}</span>
           </button>
 
           <a
@@ -142,6 +210,13 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
           )}
         </div>
       </div>
+      <PlanCalendar
+        open={planCal}
+        selected={planDate ?? ymd(getOsloDate())}
+        onSelect={(ds) => { setPlanDate(ds); onSetOnboarded(); onPlanDate(ds); }}
+        onClose={() => setPlanCal(false)}
+      />
+      </>
     );
   }
 

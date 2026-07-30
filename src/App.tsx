@@ -324,6 +324,7 @@ export default function App() {
           transportMode={transportModes[from]} onSetTransportMode={(m) => setTransportMode(from, m)}
           onboarded={onboarded} onSetOnboarded={() => { setOnboarded(true); localStorage.setItem('onboarded', 'true'); }}
           onReset={() => { setOnboarded(false); localStorage.removeItem('onboarded'); }}
+          onPlanDate={(date) => { setSelectedDate(date); setOnboarded(true); localStorage.setItem('onboarded', 'true'); setScreen('results'); }}
         />
       )}
       {screen === 'results' && (
