@@ -118,14 +118,6 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
             <Icon name="arrowRight" size={18} color="var(--accentInk)" stroke={2.2} />
           </button>
 
-          <button data-tour="timetable-btn-onboard" onClick={onSeeAll} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-              <Icon name="calendar" size={18} color="var(--onDeep)" stroke={1.9} />
-              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)' }}>Rutetabell</span>
-            </span>
-            <Icon name="chevronRight" size={17} color="var(--onDeepDim)" stroke={2} />
-          </button>
-
           <a
             href={isSummerSeason(getOsloDate()) ? '/rutetabell.png' : '/rutetabell-hoest.png'}
             target="_blank"
@@ -335,20 +327,11 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
           </div>
         )}
 
-        {/* see all */}
-        <button data-tour="rutetabell-btn" onClick={onSeeAll} style={{ marginTop: 16, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-            <Icon name="calendar" size={19} color="var(--onDeep)" stroke={1.9} />
-            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)' }}>Rutetabell</span>
-          </span>
-          <Icon name="chevronRight" size={18} color="var(--onDeepDim)" stroke={2} />
-        </button>
-
         <a
           href={isSummerSeason(getOsloDate()) ? '/rutetabell.png' : '/rutetabell-hoest.png'}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ marginTop: 8, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', textDecoration: 'none', boxSizing: 'border-box' }}
+          style={{ marginTop: 16, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', textDecoration: 'none', boxSizing: 'border-box' }}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
             <Icon name="calendar" size={19} color="var(--onDeep)" stroke={1.9} />
