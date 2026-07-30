@@ -122,7 +122,7 @@ function SettingsSheet({ open, theme, style: stylePref, animate, onTheme, onStyl
 
 export default function App() {
   const [onboarded, setOnboarded] = useState(() => localStorage.getItem('onboarded') === 'true');
-  const [themeKey, setThemeKey] = useState<ThemeKey>(() => (localStorage.getItem('themeKey') as ThemeKey) || 'fjord');
+  const [themeKey, setThemeKey] = useState<ThemeKey>(() => (localStorage.getItem('themeKey') as ThemeKey) || 'midnattsol');
   const [styleKey, setStyleKey] = useState<StyleKey>(() => (localStorage.getItem('styleKey') as StyleKey) || 'sjokart');
   const [animate, setAnimate] = useState(() => localStorage.getItem('animate') !== 'false');
   const [transportModes, setTransportModes] = useState<Partial<Record<StopId, TransportMode>>>(() => {
