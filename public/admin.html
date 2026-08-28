@@ -36,7 +36,8 @@
   --tblAlt: #F2F9FC;
   --tblOut: rgba(11,139,173,0.06);
   --tblIn: rgba(26,143,106,0.06);
-  --tblDivider: #A8C8DC;
+  --tblTangen: rgba(180,120,20,0.10);
+  --tblTangenTxt: #8A5E10;
   --inp: #FFFFFF;
   --inpBorder: #A8CADA;
   --inpFocus: #0B8BAD;
@@ -70,7 +71,8 @@
     --tblAlt: #0E1A28;
     --tblOut: rgba(47,196,223,0.06);
     --tblIn: rgba(61,191,144,0.06);
-    --tblDivider: #264560;
+    --tblTangen: rgba(226,170,80,0.08);
+    --tblTangenTxt: #C8A030;
     --inp: #0C1A27;
     --inpBorder: #264560;
     --inpFocus: #2FC4DF;
@@ -103,7 +105,8 @@
   --tblAlt: #0E1A28;
   --tblOut: rgba(47,196,223,0.06);
   --tblIn: rgba(61,191,144,0.06);
-  --tblDivider: #264560;
+  --tblTangen: rgba(226,170,80,0.09);
+  --tblTangenTxt: #B8902A;
   --inp: #0C1A27;
   --inpBorder: #264560;
   --inpFocus: #2FC4DF;
@@ -341,15 +344,13 @@ thead th.th-dir {
   font-size: 8px; letter-spacing: 0.18em;
   border-bottom: 1px solid var(--border);
 }
-thead th.th-divider {
-  width: 3px; padding: 0; background: var(--tblDivider);
-}
+thead th.th-tangen { background: var(--tblTangen); color: var(--tblTangenTxt); }
 tbody tr { border-bottom: 1px solid var(--border); }
 tbody tr:nth-child(odd) td { background: var(--tblRow); }
 tbody tr:nth-child(even) td { background: var(--tblAlt); }
 tbody tr:hover td { background: var(--accentSoft) !important; }
 tbody td { padding: 4px 3px; text-align: center; vertical-align: middle; }
-tbody td.td-divider { background: var(--tblDivider) !important; width: 3px; padding: 0; }
+tbody td.td-tangen { background: var(--tblTangen) !important; }
 
 .tinp {
   font-family: 'IBM Plex Mono', monospace; font-size: 13px;
@@ -496,23 +497,21 @@ tbody td.td-divider { background: var(--tblDivider) !important; width: 3px; padd
           <table>
             <thead>
               <tr>
-                <th rowspan="2" class="row-num" style="width:32px">#</th>
-                <th colspan="2" class="th-dir th-out">← TIL VEIERLAND</th>
-                <th rowspan="2" class="th-out">Tenvik</th>
-                <th rowspan="2" class="th-out">Vestg.</th>
-                <th rowspan="2" class="th-out">Engø</th>
-                <th rowspan="2" class="th-out">Tangen</th>
-                <th rowspan="2" class="th-divider"></th>
-                <th rowspan="2" class="th-in">Tangen</th>
-                <th rowspan="2" class="th-in">Engø</th>
-                <th rowspan="2" class="th-in">Vestg.</th>
-                <th rowspan="2" class="th-in">Tenvik</th>
-                <th colspan="2" class="th-dir th-in">FRA VEIERLAND →</th>
+                <th rowspan="2" style="width:32px">#</th>
+                <th colspan="4" class="th-dir th-out">← TIL VEIERLAND</th>
+                <th colspan="2" class="th-dir th-tangen">TANGEN</th>
+                <th colspan="4" class="th-dir th-in">FRA VEIERLAND →</th>
                 <th rowspan="2" style="width:32px"></th>
               </tr>
               <tr>
                 <th class="th-out">Buss Tbg</th>
                 <th class="th-out">Tenvik</th>
+                <th class="th-out">Vestg.</th>
+                <th class="th-out">Engø</th>
+                <th class="th-tangen">Ankommer</th>
+                <th class="th-tangen">Avgår</th>
+                <th class="th-in">Engø</th>
+                <th class="th-in">Vestg.</th>
                 <th class="th-in">Tenvik</th>
                 <th class="th-in">Buss Tenv</th>
               </tr>
@@ -611,6 +610,9 @@ const LS_PW   = 'vf_pw_hash';
 const LS_AUTH = 'vf_admin_sess';
 
 let state = { seasons: [], currentId: null, currentDay: 'monFri' };
+
+const COL_FIELDS = ['bussTbg','tenvikUt','vestgardenUt','engoUt','tangenUt','tangenInn','engoInn','vestgardenInn','tenvikInn','bussTenvik'];
+const TANGEN_FIELDS = new Set(['tangenUt','tangenInn']);
 
 // ─── AUTH ────────────────────────────────────────────────────────────────────
 
@@ -821,9 +823,6 @@ function switchDay(el) {
 
 // ─── TABLE ───────────────────────────────────────────────────────────────────
 
-// Column order: bussTbg, tenvikUt, vestgardenUt, engoUt, tangenUt, [div], tangenInn, engoInn, vestgardenInn, tenvikInn, bussTenvik
-const COL_FIELDS = ['bussTbg','tenvikUt','vestgardenUt','engoUt','tangenUt','DIVIDER','tangenInn','engoInn','vestgardenInn','tenvikInn','bussTenvik'];
-
 function curLoops() {
   const s = curSeason();
   if (!s) return [];
@@ -834,9 +833,9 @@ function renderTable() {
   const loops = curLoops();
   const rows = loops.map((loop, ri) => {
     const cells = COL_FIELDS.map((f, ci) => {
-      if (f === 'DIVIDER') return '<td class="td-divider"></td>';
       const val = loop[f] ?? '';
-      return `<td><input type="text" class="tinp" value="${esc(val)}" placeholder="–"
+      const cls = TANGEN_FIELDS.has(f) ? ' class="td-tangen"' : '';
+      return `<td${cls}><input type="text" class="tinp" value="${esc(val)}" placeholder="–"
         maxlength="5" data-ri="${ri}" data-fi="${ci}" data-field="${f}"
         onchange="updateCell(${ri},'${f}',this.value)"
         onkeydown="timeKey(event,${ri},${ci})"></td>`;
