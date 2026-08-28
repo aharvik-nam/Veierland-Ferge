@@ -87,7 +87,17 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
   const [heroIndex, setHeroIndex] = useState(0);
   const [planCal, setPlanCal] = useState(false);
   const [planDate, setPlanDate] = useState<string | null>(null);
+  const [adminNotices, setAdminNotices] = useState<Array<{id: string; text: string; type: string; active: boolean}>>([]);
   useEffect(() => { setHeroIndex(0); }, [from, to]);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('vf_notices');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setAdminNotices(parsed.filter((n: {active?: boolean}) => n.active));
+      }
+    } catch {}
+  }, []);
 
   const deps = nextDepartures(from, to, heroIndex + 2);
   const dep = deps[heroIndex] ?? null;
@@ -127,7 +137,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
           </button>
 
           <a
-            href={isSummerSeason(getOsloDate()) ? '/rutetabell.png' : '/rutetabell-hoest.png'}
+            href="/rutetabell.html"
             target="_blank"
             rel="noopener noreferrer"
             style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', textDecoration: 'none', boxSizing: 'border-box' }}
@@ -138,6 +148,18 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
             </span>
             <Icon name="chevronRight" size={17} color="var(--onDeepDim)" stroke={2} />
           </a>
+
+          {adminNotices.map(n => {
+            const bg = n.type === 'warning' ? 'rgba(220,50,50,0.15)' : n.type === 'price' ? 'rgba(26,138,100,0.15)' : 'rgba(12,130,166,0.15)';
+            const br = n.type === 'warning' ? 'rgba(220,50,50,0.35)' : n.type === 'price' ? 'rgba(26,138,100,0.35)' : 'rgba(12,130,166,0.35)';
+            const col = n.type === 'warning' ? '#ff6b6b' : n.type === 'price' ? '#4ad4a0' : '#7ecfea';
+            return (
+              <div key={n.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 'var(--rad)', background: bg, border: `1px solid ${br}` }}>
+                <Icon name="alert" size={15} color={col} stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
+                <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, color: col, lineHeight: 1.45 }}>{n.text}</div>
+              </div>
+            );
+          })}
 
           {isMaintenancePeriod(getOsloDate()) && (
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 'var(--rad)', background: 'rgba(220,50,50,0.15)', border: '1px solid rgba(220,50,50,0.35)' }}>
@@ -287,7 +309,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
         )}
 
         <a
-          href={isSummerSeason(getOsloDate()) ? '/rutetabell.png' : '/rutetabell-hoest.png'}
+          href="/rutetabell.html"
           target="_blank"
           rel="noopener noreferrer"
           style={{ marginTop: 16, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', textDecoration: 'none', boxSizing: 'border-box' }}
@@ -298,6 +320,18 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
           </span>
           <Icon name="chevronRight" size={18} color="var(--onDeepDim)" stroke={2} />
         </a>
+
+        {adminNotices.map(n => {
+          const bg = n.type === 'warning' ? 'rgba(220,50,50,0.15)' : n.type === 'price' ? 'rgba(26,138,100,0.15)' : 'rgba(12,130,166,0.15)';
+          const br = n.type === 'warning' ? 'rgba(220,50,50,0.35)' : n.type === 'price' ? 'rgba(26,138,100,0.35)' : 'rgba(12,130,166,0.35)';
+          const col = n.type === 'warning' ? '#ff6b6b' : n.type === 'price' ? '#4ad4a0' : '#7ecfea';
+          return (
+            <div key={n.id} style={{ marginTop: 8, display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 'var(--rad)', background: bg, border: `1px solid ${br}` }}>
+              <Icon name="alert" size={15} color={col} stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
+              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, color: col, lineHeight: 1.45 }}>{n.text}</div>
+            </div>
+          );
+        })}
 
         {isMaintenancePeriod(getOsloDate()) && (
           <div style={{ marginTop: 8, display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 'var(--rad)', background: 'rgba(220,50,50,0.15)', border: '1px solid rgba(220,50,50,0.35)' }}>

@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rutetider — M/F Jutøya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: #f4f8fb;
+  color: #091820;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 60px;
+}
+
+.page { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+
+/* ── TOP BAR ── */
+.topbar {
+  background: #0A1620;
+  padding: 0 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 52px;
+  position: sticky; top: 0; z-index: 10;
+}
+.topbar-back {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: #38C8E8; font-size: 15px; font-weight: 600;
+  text-decoration: none;
+}
+.topbar-title {
+  color: rgba(255,255,255,0.4); font-size: 13px; font-weight: 500;
+}
+.topbar-print {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: rgba(255,255,255,0.5); font-size: 13px;
+  background: none; border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 7px; padding: 6px 12px; cursor: pointer;
+}
+.topbar-print:hover { color: #fff; border-color: rgba(255,255,255,0.35); }
+
+/* ── HEADER ── */
+.header {
+  display: grid; grid-template-columns: 1fr auto;
+  align-items: center; gap: 16px;
+  padding: 24px 0 20px;
+  border-bottom: 3px solid #091820;
+}
+.header-left {}
+.boat-eyebrow {
+  font-size: 13px; font-weight: 600; letter-spacing: 0.18em;
+  text-transform: uppercase; color: #4E718A; margin-bottom: 4px;
+}
+.boat-name {
+  font-size: 36px; font-weight: 700; line-height: 1.1; color: #091820;
+}
+.boat-sub { font-size: 15px; color: #4E718A; margin-top: 6px; font-weight: 500; }
+.phone-link {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 10px; font-size: 18px; font-weight: 700;
+  color: #091820; text-decoration: none;
+  background: #E5EFF6; border-radius: 8px; padding: 8px 14px;
+}
+.phone-link:hover { background: #D0E4F0; }
+.boat-img { font-size: 72px; line-height: 1; }
+
+/* ── VALID FROM ── */
+.valid-from {
+  background: #C00000; color: #fff;
+  padding: 12px 20px; margin: 16px 0 0;
+  border-radius: 8px;
+  font-size: 22px; font-weight: 700; text-align: center;
+  letter-spacing: 0.01em;
+}
+
+/* ── NOTICES ── */
+.notices { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 0; }
+.notice {
+  padding: 12px 16px; border-radius: 8px;
+  font-size: 16px; font-weight: 600; line-height: 1.45;
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.notice.warning {
+  background: rgba(192,52,52,0.10); border-left: 4px solid #C03434; color: #8B1010;
+}
+.notice.info {
+  background: rgba(12,130,166,0.10); border-left: 4px solid #0C82A6; color: #094E65;
+}
+.notice.price {
+  background: rgba(26,138,100,0.10); border-left: 4px solid #1A8A64; color: #0A5438;
+}
+.notice-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── SECTION ── */
+.section { margin-top: 28px; }
+.section-hdr {
+  padding: 10px 16px;
+  display: flex; align-items: baseline; gap: 10px;
+  border-radius: 8px 8px 0 0;
+}
+.section-hdr.til { background: #0A4060; }
+.section-hdr.fra { background: #0A4028; }
+.section-hdr-title {
+  font-size: 18px; font-weight: 700; color: #fff; letter-spacing: 0.01em;
+}
+.section-hdr-route {
+  font-size: 13px; color: rgba(255,255,255,0.65); font-weight: 500;
+}
+
+/* ── DAY GROUP ── */
+.day-group { margin-top: 0; }
+.day-group:first-child .day-header { border-top: none; }
+.day-header {
+  font-size: 20px; font-weight: 700; color: #091820;
+  padding: 14px 16px 10px;
+  border-top: 2px solid #BBC8D8;
+  background: #fff;
+  letter-spacing: 0.01em;
+}
+
+/* ── TABLE ── */
+.tt {
+  width: 100%; border-collapse: collapse;
+  overflow-x: auto; display: block;
+  background: #fff;
+}
+.tt td {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 16px; font-weight: 400;
+  padding: 7px 6px; text-align: center;
+  white-space: nowrap; vertical-align: middle;
+  border-bottom: 1px solid #E2EDF4;
+}
+.tt tr:last-child td { border-bottom: none; }
+.tt td.stop-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px; font-weight: 700;
+  text-align: left; padding-left: 16px;
+  color: #091820; min-width: 130px;
+  border-right: 2px solid #BBC8D8;
+  position: sticky; left: 0;
+  background: inherit; z-index: 2;
+}
+.tt tr.row-ext { background: #F2F7FB; }
+.tt tr.row-ext td.stop-label { color: #4E718A; font-weight: 600; font-style: italic; }
+.tt tr.row-engo td.stop-label { color: #0080A0; }
+.tt td.t-engo { color: #0080A0; font-weight: 600; }
+.tt td.t-empty { color: #BBC8D8; }
+.tt td.t-booking { color: #C00000; font-weight: 600; }
+.tt tr:nth-child(odd) { background: #fff; }
+.tt tr:nth-child(even) { background: #F7FAFD; }
+.tt tr.row-ext:nth-child(even) { background: #EDF4F9; }
+.section-wrap {
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+  border: 1.5px solid #BBC8D8;
+  border-top: none;
+}
+
+/* ── FOOTER ── */
+.engo-note {
+  margin-top: 20px; padding: 14px 18px;
+  background: rgba(0,128,160,0.10);
+  border: 1.5px solid rgba(0,128,160,0.30);
+  border-radius: 10px;
+  font-size: 16px; font-weight: 600; color: #005070; line-height: 1.5;
+}
+.footer {
+  margin-top: 40px; padding-top: 18px;
+  border-top: 1px solid #BBC8D8;
+  font-size: 13px; color: #4E718A;
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+
+@media (max-width: 600px) {
+  .boat-name { font-size: 26px; }
+  .valid-from { font-size: 17px; }
+  .header { grid-template-columns: 1fr; }
+  .boat-img { display: none; }
+  .tt td { font-size: 14px; padding: 6px 4px; }
+  .tt td.stop-label { font-size: 13px; min-width: 110px; }
+  .day-header { font-size: 17px; }
+}
+
+@media print {
+  .topbar, .topbar-print { display: none; }
+  body { background: #fff; }
+  .section-hdr.til { background: #0A4060 !important; -webkit-print-color-adjust: exact; }
+  .section-hdr.fra { background: #0A4028 !important; -webkit-print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="topbar-back" href="/">
+    ← Tilbake til appen
+  </a>
+  <span class="topbar-title">M/F Jutøya · Rutetider</span>
+  <button class="topbar-print" onclick="window.print()">🖨 Skriv ut</button>
+</div>
+
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="boat-eyebrow">Daglige avganger · Tenvik – Veierland – Engø</div>
+      <div class="boat-name">Rutetider for<br>M/F Jutøya</div>
+      <div class="boat-sub">Vestfold og Telemark</div>
+      <a class="phone-link" href="tel:91888219">📞 TLF. 918 88 219</a>
+    </div>
+    <div class="boat-img">⛴</div>
+  </div>
+
+  <!-- Valid from -->
+  <div id="valid-from" class="valid-from" style="display:none"></div>
+
+  <!-- Notices -->
+  <div id="notices" class="notices"></div>
+
+  <!-- Timetable -->
+  <div id="timetable"></div>
+
+  <div class="engo-note" id="engo-note" style="display:none">
+    ⚠️ <strong>ENGØ:</strong> Røde avganger til/fra Engø kjøres kun i perioden <strong>22. mars – 27. september</strong>.
+    Enkeltavganger kan forhåndsbestilles hele året ved å ringe fergen på 918 88 219.<br>
+    <strong>ALL RETUR TIL ENGØ GÅR FRA VESTGÅRDEN!</strong>
+  </div>
+
+  <div class="footer">
+    <span>M/F Jutøya · Veierland Ferge</span>
+    <span id="footer-updated"></span>
+  </div>
+
+</div>
+
+<script>
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+
+function fmt(t) {
+  if (!t) return '.....';
+  return t.replace(':', '');
+}
+
+function getOsloDateStr() {
+  return new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Oslo' }).slice(0, 10);
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─── DATA LOADING ─────────────────────────────────────────────────────────────
+
+function getActiveSeason() {
+  try {
+    const raw = localStorage.getItem('vf_timetable');
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data.seasons) || !data.seasons.length) return null;
+    const today = getOsloDateStr();
+    let s = data.seasons.find(function(s) {
+      const from = s.dateFrom || '0000-01-01';
+      const to   = s.dateTo   || '9999-12-31';
+      return today >= from && today <= to;
+    });
+    if (!s) s = data.seasons.find(function(s) { return s.isDefault; });
+    if (!s) s = data.seasons[0];
+    return s;
+  } catch(e) { return null; }
+}
+
+function getNotices() {
+  try {
+    const raw = localStorage.getItem('vf_notices');
+    if (!raw) return [];
+    const data = JSON.parse(raw);
+    return Array.isArray(data) ? data.filter(function(n) { return n.active; }) : [];
+  } catch(e) { return []; }
+}
+
+// ─── RENDERING ─────────────────────────────────────────────────────────────────
+
+const TIL_STOPS = [
+  { label: 'Buss fra Tbg.', field: 'bussTbg',       cls: 'row-ext'  },
+  { label: 'Fra Tenvik',    field: 'tenvikUt',       cls: ''         },
+  { label: 'Vestgården',    field: 'vestgardenUt',   cls: ''         },
+  { label: 'Engø',          field: 'engoUt',         cls: 'row-engo' },
+  { label: 'Tangen',        field: 'tangenUt',       cls: ''         },
+];
+const FRA_STOPS = [
+  { label: 'Fra Tangen',    field: 'tangenInn',      cls: ''         },
+  { label: 'Vestgården',    field: 'vestgardenInn',  cls: ''         },
+  { label: 'Til Tenvik',    field: 'tenvikInn',      cls: ''         },
+  { label: 'Buss fra Tenv', field: 'bussTenvik',     cls: 'row-ext'  },
+];
+
+function renderTable(loops, stops) {
+  if (!loops || !loops.length) return '<p style="padding:14px 16px;color:#4E718A;font-size:15px">Ingen avganger registrert.</p>';
+
+  var rows = stops.map(function(stop) {
+    var cells = loops.map(function(loop) {
+      var t = loop[stop.field];
+      var cls = '';
+      if (!t) {
+        cls = 't-empty';
+      } else if (loop.rowType === 'booking') {
+        cls = 't-booking';
+      } else if (stop.cls === 'row-engo') {
+        cls = 't-engo';
+      }
+      return '<td class="' + cls + '">' + fmt(t) + '</td>';
+    }).join('');
+    return '<tr class="' + (stop.cls || '') + '"><td class="stop-label">' + esc(stop.label) + '</td>' + cells + '</tr>';
+  });
+  return '<table class="tt"><tbody>' + rows.join('') + '</tbody></table>';
+}
+
+function renderDayGroup(title, loops, stops) {
+  return '<div class="day-group"><div class="day-header">' + esc(title) + '</div>' +
+         renderTable(loops, stops) + '</div>';
+}
+
+function renderSection(title, route, cls, season, stops) {
+  var html = '<div class="section">' +
+    '<div class="section-hdr ' + cls + '">' +
+    '<span class="section-hdr-title">' + esc(title) + '</span>' +
+    '<span class="section-hdr-route">' + esc(route) + '</span>' +
+    '</div>' +
+    '<div class="section-wrap">' +
+    renderDayGroup('Mandag – Fredag', season.loops.monFri, stops) +
+    renderDayGroup('Lørdag', season.loops.sat, stops) +
+    renderDayGroup('Søndag', season.loops.sun, stops) +
+    '</div></div>';
+  return html;
+}
+
+function noticeIcon(type) {
+  if (type === 'warning') return '⚠️';
+  if (type === 'price')   return '💰';
+  return 'ℹ️';
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+
+(function init() {
+  var season = getActiveSeason();
+  var notices = getNotices();
+
+  // Valid from
+  if (season && season.dateFrom) {
+    var d = new Date(season.dateFrom + 'T00:00:00');
+    var months = ['januar','februar','mars','april','mai','juni','juli','august','september','oktober','november','desember'];
+    var dateStr = d.getDate() + '. ' + months[d.getMonth()] + ' ' + d.getFullYear() + '.';
+    var el = document.getElementById('valid-from');
+    el.textContent = 'RUTENE GJELDER F.O.M. ' + dateStr.toUpperCase();
+    el.style.display = '';
+  }
+
+  // Notices
+  var noticeEl = document.getElementById('notices');
+  if (notices.length) {
+    noticeEl.innerHTML = notices.map(function(n) {
+      return '<div class="notice ' + (n.type || 'info') + '">' +
+        '<span class="notice-icon">' + noticeIcon(n.type) + '</span>' +
+        '<span>' + esc(n.text) + '</span>' +
+        '</div>';
+    }).join('');
+  }
+
+  // Timetable
+  var ttEl = document.getElementById('timetable');
+  if (!season) {
+    ttEl.innerHTML = '<div style="padding:40px 0;text-align:center;color:#4E718A;font-size:17px">' +
+      'Ingen rutedata er lagret ennå.<br><span style="font-size:14px;margin-top:8px;display:block">Logg inn i admin-panelet og lagre rutetidene.</span>' +
+      '</div>';
+    return;
+  }
+
+  ttEl.innerHTML =
+    renderSection('TIL VEIERLAND', 'Tønsberg – Tenvik – Vestgården – Engø – Tangen', 'til', season, TIL_STOPS) +
+    renderSection('FRA VEIERLAND', 'Tangen – Vestgården – Tenvik – Tønsberg', 'fra', season, FRA_STOPS);
+
+  // Show Engø note if any loop has engo stops
+  var allLoops = (season.loops.monFri || []).concat(season.loops.sat || []).concat(season.loops.sun || []);
+  var hasEngo = allLoops.some(function(l) { return l.engoUt || l.engoInn; });
+  if (hasEngo) document.getElementById('engo-note').style.display = '';
+
+  // Footer
+  document.getElementById('footer-updated').textContent = 'Sesong: ' + (season.name || '—');
+})();
+</script>
+</body>
+</html>

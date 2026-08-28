@@ -256,6 +256,96 @@ body {
 }
 .sb-add:hover { border-color: var(--sidebarAccent); color: var(--sidebarAccent); background: var(--sidebarActive); }
 
+/* ── NOTICES SIDEBAR BUTTON ── */
+.sb-notices-btn {
+  margin: 2px 14px 16px; padding: 12px 14px;
+  border-radius: 10px; border: 1.5px solid var(--sidebarDim);
+  background: transparent; color: var(--sidebarText);
+  font-size: 14px; font-family: 'IBM Plex Sans', sans-serif; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; text-align: left;
+  display: flex; align-items: center; gap: 8px;
+  width: calc(100% - 28px);
+}
+.sb-notices-btn:hover { border-color: var(--sidebarAccent); color: var(--sidebarAccent); background: var(--sidebarActive); }
+.sb-notices-count {
+  background: var(--danger); color: #fff; border-radius: 99px;
+  font-size: 11px; font-weight: 700; padding: 1px 7px; flex-shrink: 0;
+}
+
+/* ── NOTICES MODAL ── */
+.notices-modal-bg {
+  position: fixed; inset: 0; background: rgba(9,24,32,0.55);
+  display: flex; align-items: center; justify-content: center; z-index: 200;
+  backdrop-filter: blur(3px);
+}
+.notices-modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; width: 600px; max-height: 82vh;
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow-md); overflow: hidden;
+}
+.notices-modal-hdr {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.notices-modal-title {
+  font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; color: var(--text);
+}
+.notices-list {
+  flex: 1; overflow-y: auto; padding: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.notice-card {
+  border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; background: var(--surfaceAlt);
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.notice-card.active-notice { border-color: var(--accent); background: var(--accentSoft); }
+.notice-card.type-warning { border-color: var(--danger); background: rgba(192,52,52,0.06); }
+.notice-card.type-warning.active-notice { border-color: var(--danger); }
+.notice-card.type-price { border-color: var(--good); background: rgba(26,138,100,0.07); }
+.notice-card-body { flex: 1; min-width: 0; }
+.notice-type-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.notice-type-sel {
+  font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 99px;
+  border: 1.5px solid var(--border); background: var(--surface); color: var(--text);
+  cursor: pointer; outline: none; font-family: 'IBM Plex Sans', sans-serif;
+}
+.notice-active-toggle {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--textDim); cursor: pointer;
+}
+.notice-active-toggle input { accent-color: var(--good); cursor: pointer; width: 16px; height: 16px; }
+.notice-text-inp {
+  width: 100%; padding: 8px 10px; border-radius: 8px;
+  border: 1.5px solid var(--border); background: var(--inp);
+  font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; color: var(--text);
+  outline: none; resize: vertical; min-height: 56px; max-height: 150px;
+  transition: border-color 0.14s;
+}
+.notice-text-inp:focus { border-color: var(--inpFocus); }
+.del-notice {
+  width: 30px; height: 30px; border-radius: 7px; flex-shrink: 0;
+  border: 1.5px solid transparent; background: transparent;
+  color: var(--textDim); cursor: pointer; font-size: 18px;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: all 0.13s;
+}
+.del-notice:hover { border-color: var(--danger); color: var(--danger); background: rgba(192,52,52,0.08); }
+.notices-add-btn {
+  margin: 0 16px 16px; padding: 12px;
+  border: 2px dashed var(--border); border-radius: 10px;
+  background: transparent; color: var(--textDim);
+  font-size: 14px; font-family: 'IBM Plex Sans', sans-serif; font-weight: 500;
+  cursor: pointer; transition: all 0.15s;
+}
+.notices-add-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accentSoft); }
+.notices-modal-footer {
+  padding: 14px 24px; border-top: 1px solid var(--border);
+  display: flex; justify-content: flex-end; gap: 10px;
+}
+
 /* ── CONTENT ── */
 .content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
@@ -547,6 +637,11 @@ tbody tr.row-engo:hover td { background: color-mix(in srgb, var(--accent) 11%, v
       <div class="sb-section">Sesonger</div>
       <div id="season-list"></div>
       <button class="sb-add" onclick="addSeason()">+ Ny sesong</button>
+      <div class="sb-section" style="margin-top:4px">Meldinger</div>
+      <button class="sb-notices-btn" id="sb-notices-btn" onclick="openNotices()">
+        <span id="sb-notices-count" class="sb-notices-count" style="display:none">0</span>
+        Varsler &amp; meldinger
+      </button>
     </div>
     <div class="content">
       <div class="season-hdr" id="season-hdr">
@@ -609,6 +704,22 @@ tbody tr.row-engo:hover td { background: color-mix(in srgb, var(--accent) 11%, v
         </div>
         <button class="add-row-btn" onclick="addRow()">+ Legg til avgang</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── NOTICES MODAL ── -->
+<div class="notices-modal-bg" id="notices-modal" style="display:none" onclick="if(event.target===this)closeNotices()">
+  <div class="notices-modal" onclick="event.stopPropagation()">
+    <div class="notices-modal-hdr">
+      <div class="notices-modal-title">Varsler &amp; meldinger</div>
+      <button class="modal-btn ghost" onclick="closeNotices()">Lukk</button>
+    </div>
+    <div class="notices-list" id="notices-list"></div>
+    <button class="notices-add-btn" onclick="addNotice()">+ Legg til melding</button>
+    <div class="notices-modal-footer">
+      <button class="modal-btn ghost" onclick="closeNotices()">Avbryt</button>
+      <button class="modal-btn primary" onclick="saveNotices()">Lagre meldinger</button>
     </div>
   </div>
 </div>
@@ -822,6 +933,7 @@ function doSave() {
 function initApp() {
   state.seasons = loadData();
   state.currentId = state.seasons[0]?.id ?? null;
+  loadNotices();
   renderAll();
 }
 
@@ -1027,6 +1139,96 @@ function deleteRow(ri) {
   if (!s) return;
   s.loops[state.currentDay].splice(ri, 1);
   renderTable();
+}
+
+// ─── NOTICES ─────────────────────────────────────────────────────────────────
+
+let notices = [];
+
+function loadNotices() {
+  try {
+    const raw = localStorage.getItem('vf_notices');
+    notices = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(notices)) notices = [];
+  } catch { notices = []; }
+  updateNoticesBadge();
+}
+
+function updateNoticesBadge() {
+  const active = notices.filter(n => n.active).length;
+  const badge = document.getElementById('sb-notices-count');
+  if (active > 0) {
+    badge.textContent = active;
+    badge.style.display = '';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+const TYPE_LABELS = { info: 'ℹ️ Info', warning: '⚠️ Varsel', price: '💰 Pris' };
+
+function renderNoticesList() {
+  const el = document.getElementById('notices-list');
+  if (!notices.length) {
+    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--textDim);font-size:15px">Ingen meldinger ennå. Klikk «Legg til» for å lage en.</div>';
+    return;
+  }
+  el.innerHTML = notices.map((n, i) => {
+    const cardCls = (n.active ? 'active-notice ' : '') + (n.type === 'warning' ? 'type-warning' : n.type === 'price' ? 'type-price' : '');
+    const typeOpts = ['info','warning','price'].map(t =>
+      `<option value="${t}"${n.type === t ? ' selected' : ''}>${TYPE_LABELS[t]}</option>`
+    ).join('');
+    return `<div class="notice-card ${cardCls}" id="notice-card-${i}">
+      <div class="notice-card-body">
+        <div class="notice-type-row">
+          <select class="notice-type-sel" onchange="setNoticeField(${i},'type',this.value)">${typeOpts}</select>
+          <label class="notice-active-toggle">
+            <input type="checkbox" ${n.active ? 'checked' : ''} onchange="setNoticeField(${i},'active',this.checked)">
+            Aktiv (vises i appen)
+          </label>
+        </div>
+        <textarea class="notice-text-inp" rows="2" placeholder="Skriv melding her..."
+          oninput="setNoticeField(${i},'text',this.value)">${n.text || ''}</textarea>
+      </div>
+      <button class="del-notice" onclick="deleteNotice(${i})" title="Slett melding">×</button>
+    </div>`;
+  }).join('');
+}
+
+function setNoticeField(i, field, value) {
+  notices[i][field] = value;
+  const card = document.getElementById(`notice-card-${i}`);
+  if (card) {
+    card.className = 'notice-card ' + (notices[i].active ? 'active-notice ' : '') + (notices[i].type === 'warning' ? 'type-warning' : notices[i].type === 'price' ? 'type-price' : '');
+  }
+}
+
+function addNotice() {
+  notices.push({ id: 'n-' + Date.now(), text: '', type: 'info', active: true });
+  renderNoticesList();
+  const el = document.getElementById('notices-list');
+  el.scrollTop = el.scrollHeight;
+}
+
+function deleteNotice(i) {
+  notices.splice(i, 1);
+  renderNoticesList();
+}
+
+function openNotices() {
+  renderNoticesList();
+  document.getElementById('notices-modal').style.display = 'flex';
+}
+
+function closeNotices() {
+  document.getElementById('notices-modal').style.display = 'none';
+}
+
+function saveNotices() {
+  localStorage.setItem('vf_notices', JSON.stringify(notices));
+  updateNoticesBadge();
+  closeNotices();
+  toast('Meldinger lagret!');
 }
 
 // ─── EXPORT ──────────────────────────────────────────────────────────────────
