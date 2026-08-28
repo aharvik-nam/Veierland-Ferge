@@ -143,14 +143,38 @@ export function isSummerSeason(dateObj: Date): boolean {
 // Verkstedopphold ca. 1. sep – 1. des 2026: kun Tenvik ↔ Vestgården, erstatningsfartøy
 export function isMaintenancePeriod(dateObj: Date): boolean {
   const y = dateObj.getFullYear(), m = dateObj.getMonth() + 1, d = dateObj.getDate();
-  if (y !== 2026) return false;
-  if (m === 9 || m === 10 || m === 11) return true;
-  if (m === 12 && d <= 1) return true;
+  if (y === 2026 && (m === 10 || m === 11 || m === 12)) return true;
+  if (y === 2027 && m === 1 && d <= 1) return true;
   return false;
+}
+
+function getAdminSeason(dateObj: Date): { monFri: FerryLoop[], sat: FerryLoop[], sun: FerryLoop[] } | null {
+  try {
+    const raw = localStorage.getItem('vf_timetable');
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data.seasons) || !data.seasons.length) return null;
+    const dateStr = ymd(dateObj);
+    let season = data.seasons.find((s: { dateFrom?: string; dateTo?: string }) => {
+      if (!s.dateFrom && !s.dateTo) return false;
+      const from = s.dateFrom || '0000-01-01';
+      const to = s.dateTo || '9999-12-31';
+      return dateStr >= from && dateStr <= to;
+    });
+    if (!season) season = data.seasons.find((s: { isDefault?: boolean }) => s.isDefault);
+    if (!season) return null;
+    return { monFri: season.loops?.monFri ?? [], sat: season.loops?.sat ?? [], sun: season.loops?.sun ?? [] };
+  } catch { return null; }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function loopsFor(dayType: string, dateObj: Date): any[] {
+  const admin = getAdminSeason(dateObj);
+  if (admin) {
+    if (dayType === 'sat') return admin.sat;
+    if (dayType === 'sun') return admin.sun;
+    return admin.monFri;
+  }
   const summer = isSummerSeason(dateObj);
   if (dayType === 'sat') return summer ? summerSatLoops : satLoops;
   if (dayType === 'sun') return summer ? summerSunLoops : sunLoops;

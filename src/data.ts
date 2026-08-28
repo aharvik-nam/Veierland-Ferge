@@ -125,11 +125,12 @@ export const summerSunLoops: FerryLoop[] = [
 ];
 
 export const rules = [
-  { text: "OBS: M/F Jutøya er til verksted ca. 1. september – 1. desember 2026. Erstatningsfartøy i drift — kun Tenvik og Vestgården. Ingen last, sykler eller varer.", alert: true },
+  { text: "OBS: M/F Jutøya er til verksted ca. 1. oktober 2026 – ca. 1. januar 2027. Erstatningsfartøy i drift — kun Tenvik og Vestgården. Ingen last, sykler eller varer.", alert: true },
   { text: "Røde avganger til/fra Engø kjøres kun i perioden 22. mars – 27. september. Enkeltavganger kan forhåndsbestilles hele året ved å ringe fergen." },
   { text: "ALL RETUR TIL ENGØ GÅR FRA VESTGÅRDEN!", alert: true },
   { text: "Sommerruter (22. jun–16. aug): Siste avgang 21:45 fra Tenvik (hverdager) og 21:30 fra Tenvik (søndag) MÅ bestilles innen kl. 20:00 samme dag." },
-  { text: "Ordinære ruter: Avgang 20:30 fra Tangen og 20:40 fra Vestgården MÅ bestilles før kl 18:00. Siste avgang 21:45 fra Tenvik (hverdager/søndag) MÅ bestilles før 18:00." },
+  { text: "Mandag–fredag: Avgang 20:30 fra Tangen og 20:40 fra Vestgården MÅ bestilles før 18:00. Siste avgang 21:45 fra Tenvik MÅ bestilles før 18:00." },
+  { text: "Søndag: Avgang 20:30 fra Tangen og 20:40 fra Vestgården MÅ bestilles før 18:00. Siste avgang 21:30 fra Tenvik MÅ bestilles før 18:00." },
   { text: "Lørdag: Avgang Vestgården 07:50 MÅ bestilles kvelden før innen 20:00." },
   { text: "Telefon Fergen: 91888219" }
 ];
