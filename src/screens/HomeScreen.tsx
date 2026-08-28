@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { CompassMark } from '../components/Icons';
 import { Icon } from '../components/Icons';
-import { DeepBand, WeatherChip, RouteCard, StatusSignal, TravelChips, NumTime, Label } from '../components/Atoms';
-import { EnturTransit } from '../components/EnturTransit';
-import { nextDepartures, prevDeparture, upcomingTrips, minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, ymd, getOsloDate, parseYmd, stopsMap, stopCoords, haversineKm, bookingStatus, parseTime, isSummerSeason, isMaintenancePeriod } from '../ferryData';
-import type { StopId, Weather, Trip, TransportMode } from '../types';
+import { DeepBand, WeatherChip, RouteCard, NumTime, Label } from '../components/Atoms';
+import { nextDepartures, prevDeparture, minsUntil, fmtCountdown, ymd, getOsloDate, parseYmd, stopsMap, bookingStatus, isSummerSeason, isMaintenancePeriod } from '../ferryData';
+import type { StopId, Weather, Trip } from '../types';
 
 const PLAN_MONTHS = ['januar','februar','mars','april','mai','juni','juli','august','september','oktober','november','desember'];
 const PLAN_DAYS_SHORT = ['søn','man','tir','ons','tor','fre','lør'];
@@ -77,24 +76,15 @@ interface HomeScreenProps {
   onSeeAll: () => void;
   onOpenTrip: (trip: Trip) => void;
   tick: number;
-  userLoc: { lat: number; lng: number } | null;
-  driveMins: number | null;
-  driveMinsFast: number | null;
-  onRefreshDrive: () => void;
-  onDriveTarget: (t: { date: string; time: string } | null) => void;
-  onRequestLocation: () => Promise<boolean>;
   onOpenWeather: () => void;
-  transportMode: TransportMode | undefined;
-  onSetTransportMode: (m: TransportMode) => void;
   onboarded: boolean;
   onSetOnboarded: () => void;
   onReset: () => void;
   onPlanDate: (date: string) => void;
 }
 
-export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, userLoc, driveMins, driveMinsFast, onRefreshDrive, onDriveTarget, onRequestLocation, onOpenWeather, transportMode, onSetTransportMode, onboarded, onSetOnboarded, onReset, onPlanDate }: HomeScreenProps) {
+export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll: _onSeeAll, onOpenTrip, tick: _tick, onOpenWeather, onboarded, onSetOnboarded, onReset, onPlanDate }: HomeScreenProps) {
   const [heroIndex, setHeroIndex] = useState(0);
-  const [locState, setLocState] = useState<'idle' | 'busy' | 'denied'>('idle');
   const [planCal, setPlanCal] = useState(false);
   const [planDate, setPlanDate] = useState<string | null>(null);
   useEffect(() => { setHeroIndex(0); }, [from, to]);
@@ -107,56 +97,6 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
   const prevIsPast = heroIndex === 0;
   const countdown = dep && dep.dateStr === ymd(getOsloDate()) ? minsUntil(dep.dateStr, dep.startTime) : null;
 
-  // Tell App which ferry we're aiming for, so drive-time traffic is predicted for that departure
-  useEffect(() => {
-    onDriveTarget(dep ? { date: dep.dateStr, time: dep.startTime } : null);
-  }, [dep?.dateStr, dep?.startTime]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Transport mode — island stops are always walk, bus stops never show travel info
-  const isIsland = from === 'vestgarden' || from === 'tangen';
-  const isBusStop = from === 'buss_tbg' || from === 'buss_tenv';
-  const defaultMode: TransportMode = isIsland ? 'walk' : 'drive';
-  const effectiveMode: TransportMode = isBusStop ? 'bus' : (transportMode ?? defaultMode);
-  const showModePicker = !isIsland && !isBusStop;
-
-  // Resolve travel time and mode for status signal
-  const travelMode: 'drive' | 'walk' = effectiveMode === 'walk' ? 'walk' : 'drive';
-  // Walk estimate from actual GPS position (1.25 path factor, 4.8 km/h)
-  const walkEst = userLoc
-    ? Math.max(1, Math.ceil(haversineKm(userLoc.lat, userLoc.lng, stopCoords[from].lat, stopCoords[from].lng) * 1.25 / 4.8 * 60))
-    : null;
-  const effectiveTravel = effectiveMode === 'walk'
-    ? (walkEst ?? stopTravel[from].walk)
-    : (driveMins ?? stopTravel[from].drive);
-
-  // Override visibility based on chosen mode
-  const tvBase = travelVisibility(from, userLoc);
-  const tv = effectiveMode === 'bus'
-    ? { showCar: false, showWalk: false }
-    : effectiveMode === 'walk'
-    ? { showCar: false, showWalk: tvBase.showWalk }
-    : { showCar: tvBase.showCar, showWalk: false };
-
-  // In drive mode, require a real (GPS-based) estimate — the static fallback can't know where the user is
-  const showStatus = effectiveMode !== 'bus' && (tv.showCar || tv.showWalk) && (travelMode !== 'drive' || driveMins != null);
-  const status = dep && showStatus ? rekkerStatus(effectiveTravel, countdown, travelMode, nextDep) : null;
-
-  // "Dra innen kl. HH:MM" — ferry departure minus typical drive time
-  const leaveBy = dep && driveMins != null && tv.showCar && effectiveMode !== 'bus' && effectiveMode !== 'walk'
-    ? (() => {
-        const leaveMins = parseTime(dep.startTime) - driveMins;
-        if (leaveMins < 0) return null;
-        return `${String(Math.floor(leaveMins / 60)).padStart(2, '0')}:${String(leaveMins % 60).padStart(2, '0')}`;
-      })()
-    : null;
-
-  // Ferries for today + tomorrow — needed when the next ferry is after midnight
-  const osloNow = getOsloDate();
-  const tomorrowDate = new Date(osloNow); tomorrowDate.setDate(osloNow.getDate() + 1);
-  const todayFerries = [
-    ...upcomingTrips(from, to, ymd(osloNow)),
-    ...upcomingTrips(from, to, ymd(tomorrowDate)),
-  ];
 
   if (!onboarded) {
     return (
@@ -291,63 +231,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
                 </div>
               );
             })()}
-            <div style={{ padding: '18px 20px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {showModePicker && (
-                <div style={{ display: 'flex', gap: 6 }}>
-                  {([
-                    { mode: 'drive' as TransportMode, label: 'Kjører', icon: '🚗' },
-                    { mode: 'bus'   as TransportMode, label: 'Buss/Tog', icon: '🚌' },
-                    { mode: 'walk'  as TransportMode, label: 'Går', icon: '🚶' },
-                  ]).map(({ mode, label, icon }) => {
-                    const on = effectiveMode === mode;
-                    return (
-                      <button key={mode} onClick={() => onSetTransportMode(mode)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 4px', borderRadius: 'var(--radSm)', border: on ? '1.5px solid var(--accent)' : '1px solid var(--line)', background: on ? 'color-mix(in srgb, var(--accent) 10%, var(--surface))' : 'var(--surfaceAlt)', cursor: 'pointer', transition: 'all 0.15s' }}>
-                        <span style={{ fontSize: 14 }}>{icon}</span>
-                        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: on ? 700 : 600, fontSize: 12, color: on ? 'var(--accent)' : 'var(--inkDim)', whiteSpace: 'nowrap' }}>{label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-              {effectiveMode !== 'bus' && !userLoc && (
-                <button
-                  onClick={async () => {
-                    if (locState === 'busy') return;
-                    setLocState('busy');
-                    const ok = await onRequestLocation();
-                    setLocState(ok ? 'idle' : 'denied');
-                  }}
-                  style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '10px 13px', borderRadius: 'var(--radSm)', background: 'var(--surfaceAlt)', border: '1px dashed var(--line)', cursor: 'pointer', textAlign: 'left', width: '100%' }}
-                >
-                  <Icon name={locState === 'denied' ? 'alert' : 'info'} size={15} color={locState === 'denied' ? 'var(--warn)' : 'var(--inkDim)'} stroke={1.8} style={{ flexShrink: 0, marginTop: 1 }} />
-                  {locState === 'denied' ? (
-                    <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12.5, color: 'var(--inkDim)', lineHeight: 1.45 }}>
-                      <span style={{ fontWeight: 700, color: 'var(--warn)' }}>Posisjon er blokkert for dette nettstedet.</span>{' '}
-                      iPhone: Innstillinger → Personvern → Stedstjenester → Safari. Android/Chrome: trykk hengelåsen i adressefeltet → Tillatelser → Posisjon.
-                    </span>
-                  ) : (
-                    <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12.5, color: 'var(--inkDim)', lineHeight: 1.4 }}>
-                      {locState === 'busy' ? 'Henter posisjon …' : 'Trykk her for å aktivere posisjon — se reisetid og om du rekker fergen'}
-                    </span>
-                  )}
-                </button>
-              )}
-              {status && <div data-tour="status-signal"><StatusSignal status={status} /></div>}
-              {effectiveMode !== 'bus' && status?.level !== 'bad' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <TravelChips stop={from} showCar={tv.showCar} showWalk={tv.showWalk} driveOverride={driveMins} driveOverrideFast={driveMinsFast} walkOverride={walkEst} />
-                  {leaveBy && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 13px', borderRadius: 'var(--radSm)', background: 'color-mix(in srgb, var(--accent2) 12%, var(--surface))', border: '1px solid color-mix(in srgb, var(--accent2) 25%, transparent)' }}>
-                      <Icon name="clock" size={14} color="var(--accent2)" stroke={2} />
-                      <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12.5, color: 'var(--ink)' }}>
-                        Dra senest innen kl. <span style={{ fontFamily: 'var(--num)', fontSize: 14 }}>{leaveBy}</span>
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
-              {effectiveMode === 'bus' && dep && <EnturTransit userLoc={userLoc} stop={from} targetTrip={dep} allFerries={todayFerries} />}
-            </div>
+            <div style={{ padding: '18px 20px 20px' }} />
           </div>
         ) : (
           <div style={{ marginTop: 18, padding: 30, borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.06)', textAlign: 'center' }}>
@@ -365,10 +249,10 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
             ] as { trip: typeof prevCard; label: string; showCountdown: boolean; isPast: boolean }[]).map(({ trip, label, showCountdown, isPast }) => {
               const cd = showCountdown && trip && trip.dateStr === ymd(getOsloDate()) ? minsUntil(trip.dateStr, trip.startTime) : null;
               const handleClick = showCountdown
-                ? () => { if (trip) { setHeroIndex(i => i + 1); onRefreshDrive(); } }
+                ? () => { if (trip) setHeroIndex(i => i + 1); }
                 : isPast
                   ? () => trip && onOpenTrip(trip)
-                  : () => { if (trip) { setHeroIndex(i => i - 1); onRefreshDrive(); } };
+                  : () => { if (trip) setHeroIndex(i => i - 1); };
               return (
                 <button
                   key={label}

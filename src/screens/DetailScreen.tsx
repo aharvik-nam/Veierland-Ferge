@@ -1,8 +1,8 @@
 import React from 'react';
 import { Icon } from '../components/Icons';
-import { DeepBand, Label, NumTime, StatusSignal, TravelChips, CallButton } from '../components/Atoms';
-import { minsUntil, fmtCountdown, rekkerStatus, stopTravel, travelVisibility, stopShort, ymd, getOsloDate, findTripsForDay, dayTypeOf, parseYmd, parseTime, stopCoords, haversineKm } from '../ferryData';
-import type { Trip, StopId, TransportMode } from '../types';
+import { DeepBand, Label, NumTime, CallButton } from '../components/Atoms';
+import { minsUntil, fmtCountdown, stopShort, ymd, getOsloDate, parseYmd } from '../ferryData';
+import type { Trip, StopId } from '../types';
 
 function RouteTimeline({ trip, animate }: { trip: Trip; animate: boolean }) {
   const n = trip.subpath.length;
@@ -46,41 +46,11 @@ interface DetailScreenProps {
   texture: boolean;
   onBack: () => void;
   tick: number;
-  userLoc: { lat: number; lng: number } | null;
-  driveMins: number | null;
-  driveMinsFast: number | null;
-  transportMode: TransportMode | undefined;
 }
 
-export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick: _tick, userLoc, driveMins, driveMinsFast, transportMode }: DetailScreenProps) {
+export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick: _tick }: DetailScreenProps) {
   const isToday = trip.dateStr === ymd(getOsloDate());
   const countdown = isToday ? minsUntil(trip.dateStr, trip.startTime) : null;
-  const upcoming = countdown == null || countdown >= 0;
-  const isIsland = trip.startStop === 'vestgarden' || trip.startStop === 'tangen';
-  const defaultMode: TransportMode = isIsland ? 'walk' : 'drive';
-  const effectiveMode: TransportMode = transportMode ?? defaultMode;
-  const travelMode: 'drive' | 'walk' = effectiveMode === 'walk' ? 'walk' : 'drive';
-  const walkEst = userLoc
-    ? Math.max(1, Math.ceil(haversineKm(userLoc.lat, userLoc.lng, stopCoords[trip.startStop].lat, stopCoords[trip.startStop].lng) * 1.25 / 4.8 * 60))
-    : null;
-  const effectiveDrive = effectiveMode === 'walk'
-    ? (walkEst ?? stopTravel[trip.startStop].walk)
-    : (driveMins ?? stopTravel[trip.startStop].drive);
-  const nextTrip = (() => {
-    if (!isToday) return null;
-    const nowMins = getOsloDate().getHours() * 60 + getOsloDate().getMinutes();
-    const todayTrips = findTripsForDay(dayTypeOf(parseYmd(trip.dateStr)), parseYmd(trip.dateStr), trip.startStop, trip.subpath[trip.subpath.length - 1].stopId);
-    return todayTrips.find(t => parseTime(t.startTime) > parseTime(trip.startTime) && parseTime(t.startTime) > nowMins) ?? null;
-  })();
-  const tvBase = travelVisibility(trip.startStop, userLoc);
-  const tv = effectiveMode === 'bus'
-    ? { showCar: false, showWalk: false }
-    : effectiveMode === 'walk'
-    ? { showCar: false, showWalk: tvBase.showWalk }
-    : { showCar: tvBase.showCar, showWalk: false };
-  const status = upcoming && isToday && effectiveMode !== 'bus' && (tv.showCar || tv.showWalk) && (travelMode !== 'drive' || driveMins != null)
-    ? rekkerStatus(effectiveDrive, countdown, travelMode, nextTrip)
-    : null;
   const booking = trip.warnings.find(w => w.type === 'booking');
   const engo = trip.warnings.find(w => w.type === 'engo');
   const endStop = trip.subpath[trip.subpath.length - 1].stopId;
@@ -122,15 +92,6 @@ export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick
       </DeepBand>
 
       <div style={{ padding: '18px 18px calc(env(safe-area-inset-bottom, 0px) + 96px)', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {(tv.showCar || tv.showWalk) && status && <StatusSignal status={status} />}
-
-        {isToday && upcoming && (tv.showCar || tv.showWalk) && (
-          <div>
-            <Label color="var(--inkDim)" style={{ paddingLeft: 2 }}>Til {stopShort[trip.startStop]}-kaia</Label>
-            <div style={{ marginTop: 8 }}><TravelChips stop={trip.startStop} showCar={tv.showCar} showWalk={tv.showWalk} driveOverride={driveMins} driveOverrideFast={driveMinsFast} walkOverride={walkEst} /></div>
-          </div>
-        )}
-
         {(booking || engo) && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {booking && (

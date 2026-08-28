@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { THEMES, STYLES, themeVars } from './theme';
-import { ymd, getOsloDate, stopCoords, isSummerSeason, haversineKm } from './ferryData';
+import { ymd, getOsloDate } from './ferryData';
 import { HomeScreen } from './screens/HomeScreen';
 import { ResultsScreen } from './screens/ResultsScreen';
 import { DetailScreen } from './screens/DetailScreen';
@@ -8,43 +8,8 @@ import { StopPicker } from './components/Atoms';
 import { Icon } from './components/Icons';
 import { Tour } from './components/Tour';
 import { WeatherSheet } from './components/WeatherSheet';
-import type { StopId, ThemeKey, StyleKey, Weather, Trip, Screen, TransportMode } from './types';
+import type { StopId, ThemeKey, StyleKey, Weather, Trip, Screen } from './types';
 
-// Norwegian public holidays (MM-DD) and summer peak weeks
-const NO_HOLIDAYS = new Set([
-  '01-01','04-17','04-18','04-20','04-21','05-01','05-17',
-  '05-29','06-08','06-09','12-25','12-26',
-]);
-
-function trafficMultiplier(): number {
-  const now = getOsloDate();
-  const dow = now.getDay();       // 0=sun, 5=fri, 6=sat
-  const hour = now.getHours();
-  const mmdd = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-
-  // Public holidays — treat like Sunday, no rush
-  if (NO_HOLIDAYS.has(mmdd)) return 1.0;
-
-  // Summer peak follows the summer timetable period (22 Jun – 16 Aug)
-  const isSummerPeak = isSummerSeason(now);
-
-  // Friday afternoon outbound rush (E18 sørover) 14:00–19:00
-  if (dow === 5 && hour >= 14 && hour < 19) return isSummerPeak ? 1.55 : 1.35;
-
-  // Friday morning / evening light traffic
-  if (dow === 5) return 1.1;
-
-  // Sunday evening return rush 15:00–20:00 (summer) — people heading back to Oslo
-  if (dow === 0 && hour >= 15 && hour < 20 && isSummerPeak) return 1.4;
-
-  // Weekday morning rush 07:00–09:00 and afternoon rush 15:00–18:00
-  if (dow >= 1 && dow <= 4) {
-    if (hour >= 7 && hour < 9) return 1.2;
-    if (hour >= 15 && hour < 18) return 1.25;
-  }
-
-  return 1.0;
-}
 
 function yrSymbolToCode(sym: string): number {
   if (!sym) return 2;
@@ -125,9 +90,6 @@ export default function App() {
   const [themeKey, setThemeKey] = useState<ThemeKey>(() => (localStorage.getItem('themeKey') as ThemeKey) || 'midnattsol');
   const [styleKey, setStyleKey] = useState<StyleKey>(() => (localStorage.getItem('styleKey') as StyleKey) || 'sjokart');
   const [animate, setAnimate] = useState(() => localStorage.getItem('animate') !== 'false');
-  const [transportModes, setTransportModes] = useState<Partial<Record<StopId, TransportMode>>>(() => {
-    try { return JSON.parse(localStorage.getItem('transportModes') || '{}'); } catch { return {}; }
-  });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
   const [weatherOpen, setWeatherOpen] = useState(false);
@@ -143,31 +105,11 @@ export default function App() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [forecast, setForecast] = useState<any[] | null>(null);
   const [tick, setTick] = useState(0);
-  const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
-  const [driveMins, setDriveMins] = useState<number | null>(null);
-  const [driveMinsFast, setDriveMinsFast] = useState<number | null>(null);
-  const [driveRefreshKey, setDriveRefreshKey] = useState(0);
-  // Which ferry the user is aiming for — lets the route query predict traffic at the actual drive time
-  const [driveTarget, setDriveTarget] = useState<{ date: string; time: string } | null>(null);
-  const watchIdRef = useRef<number | null>(null);
 
 
   useEffect(() => {
     const id = setInterval(() => setTick(x => x + 1), 1000);
     return () => clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    if (!navigator.geolocation) return;
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      pos => setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      err => {
-        // Keep last known position on transient errors; clear only if access is denied
-        if (err.code === err.PERMISSION_DENIED) setUserLoc(null);
-      },
-      { enableHighAccuracy: false, maximumAge: 60000, timeout: 10000 }
-    );
-    return () => { if (watchIdRef.current != null) navigator.geolocation.clearWatch(watchIdRef.current); };
   }, []);
 
   useEffect(() => {
@@ -211,58 +153,6 @@ export default function App() {
     };
   }, []);
 
-  const lastRouteKeyRef = useRef<string>('');
-  useEffect(() => {
-    if (!userLoc || (from !== 'tenvik' && from !== 'engo')) {
-      setDriveMins(null);
-      setDriveMinsFast(null);
-      lastRouteKeyRef.current = '';
-      return;
-    }
-    // Round coordinates (~100 m) so GPS jitter doesn't refetch on every position tick
-    const key = `${userLoc.lat.toFixed(3)},${userLoc.lng.toFixed(3)},${from},${driveRefreshKey},${driveTarget ? `${driveTarget.date}T${driveTarget.time}` : ''}`;
-    if (lastRouteKeyRef.current === key) return;
-    lastRouteKeyRef.current = key;
-    const dest = stopCoords[from];
-    // Haversine fallback: road factor 1.3, avg 55 km/h, +3 min parking, with traffic estimate
-    const estimate = () => Math.ceil(haversineKm(userLoc.lat, userLoc.lng, dest.lat, dest.lng) * 1.3 / 55 * 60 * trafficMultiplier()) + 3;
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_KEY;
-    if (!apiKey) { setDriveMins(estimate()); return; }
-    // Predict traffic at the time the user would actually be driving:
-    // estimated departure = ferry time minus rough drive estimate. Google requires a future timestamp.
-    let departureTime: string | undefined;
-    if (driveTarget) {
-      const ferryMs = new Date(`${driveTarget.date}T${driveTarget.time}:00`).getTime();
-      const departMs = ferryMs - estimate() * 60000;
-      if (departMs > Date.now() + 60000) departureTime = new Date(departMs).toISOString();
-    }
-    fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': apiKey,
-        'X-Goog-FieldMask': 'routes.duration,routes.staticDuration',
-      },
-      body: JSON.stringify({
-        origin: { location: { latLng: { latitude: userLoc.lat, longitude: userLoc.lng } } },
-        destination: { location: { latLng: { latitude: dest.lat, longitude: dest.lng } } },
-        travelMode: 'DRIVE',
-        routingPreference: 'TRAFFIC_AWARE',
-        ...(departureTime ? { departureTime } : {}),
-      }),
-    })
-      .then(r => r.json())
-      .then(j => {
-        // duration / staticDuration returned as e.g. "612s"
-        const parse = (s: string | undefined) => s ? parseInt(s.replace('s', ''), 10) : null;
-        const secs = parse(j.routes?.[0]?.duration);
-        const secsFast = parse(j.routes?.[0]?.staticDuration);
-        setDriveMins(secs != null && !isNaN(secs) ? Math.ceil(secs / 60) + 3 : estimate());
-        setDriveMinsFast(secsFast != null && !isNaN(secsFast) ? Math.ceil(secsFast / 60) + 3 : null);
-      })
-      .catch(() => setDriveMins(estimate()));
-  }, [userLoc, from, driveRefreshKey, driveTarget]);
-
   const theme = THEMES[themeKey];
   const style = STYLES[styleKey];
   const vars = themeVars(theme, style);
@@ -284,27 +174,6 @@ export default function App() {
     });
   }, [from, to]);
 
-  // Called from the GPS hint — a user gesture re-triggers the native permission
-  // prompt when state is "prompt"; resolves false when access is denied
-  const requestLocation = useCallback((): Promise<boolean> => {
-    return new Promise(resolve => {
-      if (!navigator.geolocation) { resolve(false); return; }
-      navigator.geolocation.getCurrentPosition(
-        pos => { setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }); resolve(true); },
-        err => { resolve(err.code !== err.PERMISSION_DENIED); },
-        { enableHighAccuracy: false, maximumAge: 60000, timeout: 12000 }
-      );
-    });
-  }, []);
-
-  const setTransportMode = useCallback((stop: StopId, mode: TransportMode) => {
-    setTransportModes(prev => {
-      const next = { ...prev, [stop]: mode };
-      localStorage.setItem('transportModes', JSON.stringify(next));
-      return next;
-    });
-  }, []);
-
   const openTrip = (t: Trip) => { setTrip(t); setPrevScreen(screen); setScreen('detail'); };
 
   return (
@@ -316,12 +185,8 @@ export default function App() {
           animate={animate} texture={style.texture}
           onEditFrom={() => openPicker('from')} onEditTo={() => openPicker('to')} onSwap={swap}
           onSeeAll={() => { setSelectedDate(ymd(getOsloDate())); setScreen('results'); }}
-          onOpenTrip={openTrip} tick={tick} userLoc={userLoc} driveMins={driveMins} driveMinsFast={driveMinsFast}
-          onRefreshDrive={() => setDriveRefreshKey(k => k + 1)}
-          onDriveTarget={setDriveTarget}
-          onRequestLocation={requestLocation}
+          onOpenTrip={openTrip} tick={tick}
           onOpenWeather={() => setWeatherOpen(true)}
-          transportMode={transportModes[from]} onSetTransportMode={(m) => setTransportMode(from, m)}
           onboarded={onboarded} onSetOnboarded={() => { setOnboarded(true); localStorage.setItem('onboarded', 'true'); }}
           onReset={() => { setOnboarded(false); localStorage.removeItem('onboarded'); }}
           onPlanDate={(date) => { setSelectedDate(date); setOnboarded(true); localStorage.setItem('onboarded', 'true'); setScreen('results'); }}
@@ -333,15 +198,14 @@ export default function App() {
           animate={animate} texture={style.texture}
           onBack={() => setScreen('home')} onSwap={swap}
           onEditFrom={() => openPicker('from')} onEditTo={() => openPicker('to')}
-          onOpenTrip={openTrip} tick={tick} userLoc={userLoc}
+          onOpenTrip={openTrip} tick={tick}
         />
       )}
       {screen === 'detail' && trip && (
         <DetailScreen
           trip={trip} from={from}
           animate={animate} texture={style.texture}
-          onBack={() => setScreen(prevScreen)} tick={tick} userLoc={userLoc} driveMins={driveMins} driveMinsFast={driveMinsFast}
-          transportMode={transportModes[from]}
+          onBack={() => setScreen(prevScreen)} tick={tick}
         />
       )}
 
