@@ -30,6 +30,8 @@ export interface FerryLoop {
    vestgardenInn: string | null;
    tenvikInn: string | null;
    bussTenvik: string | null;
+   rowType?: 'normal' | 'booking' | 'engo';
+   note?: string | null;
 }
 
 export const monFriLoops: FerryLoop[] = [

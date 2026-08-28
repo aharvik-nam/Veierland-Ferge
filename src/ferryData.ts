@@ -219,7 +219,15 @@ export function findTripsForDay(dayType: 'monfri' | 'sat' | 'sun', dateObj: Date
     const startStop = best[0].stopId;
     const hasEngo = best.some(ev => ev.stopId === 'engo');
 
-    if (hasEngo && !isEngoSeason) {
+    // Admin-set row type overrides for booking and Engø departures
+    if (loop.rowType === 'booking' && !warnings.some(w => w.type === 'booking')) {
+      warnings.push({ type: 'booking', deadline: '18:00', text: loop.note || 'Må forhåndsbestilles. Ring fergen for å bestille.' });
+    }
+    if (loop.rowType === 'engo' && !warnings.some(w => w.type === 'engo')) {
+      warnings.push({ type: 'engo', text: loop.note || 'Rød avgang via Engø. Ring fergen for å forhåndsbestille.' });
+    }
+
+    if (hasEngo && !isEngoSeason && !warnings.some(w => w.type === 'engo')) {
       warnings.push({ type: 'engo', text: 'Rød avgang via Engø — kjøres normalt kun 1. april–28. sep. Ring fergen for å forhåndsbestille.' });
     }
     if (isSummerSeason(dateObj)) {
