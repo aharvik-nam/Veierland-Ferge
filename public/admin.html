@@ -44,79 +44,6 @@
   --inpBorder: #A8CADA;
   --inpFocus: #0B8BAD;
 }
-/* ── DARK TOKENS ── */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0C1A27;
-    --surface: #122030;
-    --surfaceAlt: #0E1922;
-    --card: #182C3E;
-    --border: #264560;
-    --accent: #2FC4DF;
-    --accentFg: #061018;
-    --accentSoft: rgba(47,196,223,0.12);
-    --text: #BED9E6;
-    --textDim: #4E7A90;
-    --good: #3DBF90;
-    --warn: #E2AA50;
-    --danger: #E06060;
-    --sidebar: #070F1A;
-    --sidebarSurface: #0E1E30;
-    --sidebarText: #80B8D0;
-    --sidebarDim: #365870;
-    --sidebarAccent: #2FC4DF;
-    --sidebarActive: rgba(47,196,223,0.14);
-    --header: #040C16;
-    --headerText: #80C0D8;
-    --tblHead: #162C40;
-    --tblRow: #122030;
-    --tblAlt: #0E1A28;
-    --tblOut: rgba(47,196,223,0.06);
-    --tblIn: rgba(61,191,144,0.06);
-    --tblTangen: rgba(226,170,80,0.08);
-    --tblTangenTxt: #C8A030;
-    --tblBooking: rgba(224,96,96,0.10);
-    --tblEngo: rgba(47,196,223,0.10);
-    --inp: #0C1A27;
-    --inpBorder: #264560;
-    --inpFocus: #2FC4DF;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0C1A27;
-  --surface: #122030;
-  --surfaceAlt: #0E1922;
-  --card: #182C3E;
-  --border: #264560;
-  --accent: #2FC4DF;
-  --accentFg: #061018;
-  --accentSoft: rgba(47,196,223,0.12);
-  --text: #BED9E6;
-  --textDim: #4E7A90;
-  --good: #3DBF90;
-  --warn: #E2AA50;
-  --danger: #E06060;
-  --sidebar: #070F1A;
-  --sidebarSurface: #0E1E30;
-  --sidebarText: #80B8D0;
-  --sidebarDim: #365870;
-  --sidebarAccent: #2FC4DF;
-  --sidebarActive: rgba(47,196,223,0.14);
-  --header: #040C16;
-  --headerText: #80C0D8;
-  --tblHead: #162C40;
-  --tblRow: #122030;
-  --tblAlt: #0E1A28;
-  --tblOut: rgba(47,196,223,0.06);
-  --tblIn: rgba(61,191,144,0.06);
-  --tblTangen: rgba(226,170,80,0.09);
-  --tblTangenTxt: #B8902A;
-  --tblBooking: rgba(224,96,96,0.10);
-  --tblEngo: rgba(47,196,223,0.10);
-  --inp: #0C1A27;
-  --inpBorder: #264560;
-  --inpFocus: #2FC4DF;
-}
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -657,8 +584,10 @@ const LS_AUTH = 'vf_admin_sess';
 
 let state = { seasons: [], currentId: null, currentDay: 'monFri' };
 
-const COL_FIELDS = ['bussTbg','tenvikUt','vestgardenUt','engoUt','tangenUt','tangenInn','engoInn','vestgardenInn','tenvikInn','bussTenvik'];
+const COL_FIELDS    = ['bussTbg','tenvikUt','vestgardenUt','engoUt','tangenUt','tangenInn','engoInn','vestgardenInn','tenvikInn','bussTenvik'];
 const TANGEN_FIELDS = new Set(['tangenUt','tangenInn']);
+const OUT_FIELDS_SET = new Set(['bussTbg','tenvikUt','vestgardenUt','engoUt','tangenUt']);
+const IN_FIELDS_SET  = new Set(['tangenInn','engoInn','vestgardenInn','tenvikInn','bussTenvik']);
 
 // ─── AUTH ────────────────────────────────────────────────────────────────────
 
@@ -874,9 +803,6 @@ function curLoops() {
   if (!s) return [];
   return s.loops[state.currentDay] ?? [];
 }
-
-const OUT_FIELDS_SET = new Set(['bussTbg','tenvikUt','vestgardenUt','engoUt','tangenUt']);
-const IN_FIELDS_SET  = new Set(['tangenInn','engoInn','vestgardenInn','tenvikInn','bussTenvik']);
 
 function rowDir(loop) {
   const hasOut = COL_FIELDS.filter(f => OUT_FIELDS_SET.has(f)).some(f => loop[f]);
