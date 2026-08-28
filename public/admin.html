@@ -349,7 +349,7 @@ thead th {
 thead th.th-out { background: color-mix(in srgb, var(--tblOut) 120%, var(--tblHead)); }
 thead th.th-in  { background: color-mix(in srgb, var(--tblIn) 120%, var(--tblHead)); }
 thead th.th-dir {
-  font-size: 10px; letter-spacing: 0.20em;
+  font-size: 13px; letter-spacing: 0.16em;
   border-bottom: 2px solid var(--border);
   padding: 9px 6px;
 }
@@ -592,7 +592,7 @@ tbody tr.row-engo:hover td { background: color-mix(in srgb, var(--accent) 11%, v
                 <th rowspan="2" style="width:32px"></th>
               </tr>
               <tr>
-                <th class="th-out">Buss Tbg</th>
+                <th class="th-out th-ext">Buss Tbg</th>
                 <th class="th-out">Tenvik</th>
                 <th class="th-out">Vestg.</th>
                 <th class="th-out">Engø</th>
@@ -701,7 +701,7 @@ let state = { seasons: [], currentId: null, currentDay: 'monFri' };
 
 const COL_FIELDS    = ['bussTbg','tenvikUt','vestgardenUt','engoUt','tangenUt','tangenInn','engoInn','vestgardenInn','tenvikInn','bussTenvik'];
 const TANGEN_FIELDS = new Set(['tangenUt','tangenInn']);
-const EXT_FIELDS    = new Set(['bussTenvik']);
+const EXT_FIELDS    = new Set(['bussTbg','bussTenvik']);
 const OUT_FIELDS_SET = new Set(['bussTbg','tenvikUt','vestgardenUt','engoUt','tangenUt']);
 const IN_FIELDS_SET  = new Set(['tangenInn','engoInn','vestgardenInn','tenvikInn','bussTenvik']);
 
