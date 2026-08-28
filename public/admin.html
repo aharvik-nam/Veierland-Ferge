@@ -51,7 +51,9 @@
 
   --grpOut: rgba(12,130,166,0.28);
   --grpTangen: rgba(168,114,24,0.35);
+  --grpTangenMid: rgba(168,114,24,0.55);
   --grpIn: rgba(26,138,100,0.28);
+  --tblExt: rgba(78,113,138,0.10);
 
   --inp: #FFFFFF;
   --inpBorder: #A2C2D4;
@@ -374,6 +376,13 @@ tbody tr:nth-child(even) td { background: var(--tblAlt); }
 tbody tr:hover td { background: var(--accentSoft) !important; }
 tbody td { padding: 5px 3px; text-align: center; vertical-align: middle; }
 tbody td.td-tangen { background: var(--tblTangen) !important; }
+tbody td.td-ext { background: var(--tblExt) !important; }
+tbody td.td-ext .tinp { color: var(--textDim); }
+thead th.th-ext { background: rgba(78,113,138,0.12); color: var(--textDim); font-style: italic; }
+
+/* Divider between the two Tangen cells (Ankommer / Avgår) */
+thead tr:nth-child(2) th:nth-child(5) { border-right: 3px solid var(--grpTangenMid); }
+tbody td:nth-child(7) { border-right: 3px solid var(--grpTangenMid); }
 
 .tinp {
   font-family: 'IBM Plex Mono', monospace; font-size: 16px;
@@ -592,7 +601,7 @@ tbody tr.row-engo:hover td { background: color-mix(in srgb, var(--accent) 11%, v
                 <th class="th-in">Engø</th>
                 <th class="th-in">Vestg.</th>
                 <th class="th-in">Tenvik</th>
-                <th class="th-in">Buss Tenv</th>
+                <th class="th-in th-ext">Buss Tenv</th>
               </tr>
             </thead>
             <tbody id="tbl-body"></tbody>
@@ -692,6 +701,7 @@ let state = { seasons: [], currentId: null, currentDay: 'monFri' };
 
 const COL_FIELDS    = ['bussTbg','tenvikUt','vestgardenUt','engoUt','tangenUt','tangenInn','engoInn','vestgardenInn','tenvikInn','bussTenvik'];
 const TANGEN_FIELDS = new Set(['tangenUt','tangenInn']);
+const EXT_FIELDS    = new Set(['bussTenvik']);
 const OUT_FIELDS_SET = new Set(['bussTbg','tenvikUt','vestgardenUt','engoUt','tangenUt']);
 const IN_FIELDS_SET  = new Set(['tangenInn','engoInn','vestgardenInn','tenvikInn','bussTenvik']);
 
@@ -927,7 +937,7 @@ function renderTable() {
     const selCls = t === 'booking' ? 't-booking' : t === 'engo' ? 't-engo' : '';
     const cells = COL_FIELDS.map((f, ci) => {
       const val = loop[f] ?? '';
-      const cls = TANGEN_FIELDS.has(f) ? ' class="td-tangen"' : '';
+      const cls = TANGEN_FIELDS.has(f) ? ' class="td-tangen"' : EXT_FIELDS.has(f) ? ' class="td-ext"' : '';
       return `<td${cls}><input type="text" class="tinp" value="${esc(val)}" placeholder="–"
         maxlength="5" data-ri="${ri}" data-fi="${ci}" data-field="${f}"
         onchange="updateCell(${ri},'${f}',this.value)"
