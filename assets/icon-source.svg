@@ -1,75 +1,107 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+
   <!-- Background -->
-  <rect width="1024" height="1024" rx="180" fill="#0A1620"/>
+  <rect width="1024" height="1024" rx="200" fill="#0A1620"/>
 
-  <!-- Water -->
-  <ellipse cx="512" cy="820" rx="440" ry="60" fill="#0C2A3C" opacity="0.7"/>
-  <path d="M72 800 Q200 775 330 800 Q460 825 512 805 Q564 785 694 810 Q824 835 952 810 L952 870 Q824 895 694 870 Q564 845 512 865 Q460 885 330 860 Q200 835 72 860 Z" fill="#102840" opacity="0.8"/>
+  <!-- ── FERRY SILHOUETTE (red) ── -->
+  <g fill="#E60000">
 
-  <!-- Hull -->
-  <path d="M160 700 Q200 720 512 720 Q824 720 864 700 L840 770 Q700 800 512 800 Q324 800 184 770 Z" fill="#1A8A64"/>
-  <path d="M184 770 Q324 800 512 800 Q700 800 840 770 L864 780 Q700 815 512 815 Q324 815 160 780 Z" fill="#157850"/>
+    <!-- Main hull body -->
+    <path d="
+      M 105,670
+      Q 102,740 128,768
+      L 195,782
+      L 822,782
+      Q 886,778 928,748
+      Q 956,720 960,690
+      L 960,562
+      Q 942,548 912,546
+      L 186,546
+      Q 152,550 130,570
+      L 112,635
+      Q 105,650 105,670
+      Z
+    "/>
 
-  <!-- Main deck -->
-  <rect x="230" y="560" width="564" height="145" rx="14" fill="#162840"/>
-  <rect x="230" y="560" width="564" height="145" rx="14" fill="none" stroke="#1E3F5A" stroke-width="3"/>
+    <!-- Stern propulsion bump (bottom-left protrusion) -->
+    <path d="
+      M 88,650 L 105,650 L 105,670
+      Q 102,740 128,768
+      L 98,768 Q 78,752 76,726
+      L 76,658 Q 76,650 88,650 Z
+    "/>
 
-  <!-- Windows row -->
-  <rect x="270" y="585" width="64" height="44" rx="8" fill="#38C8E8" opacity="0.25"/>
-  <rect x="352" y="585" width="64" height="44" rx="8" fill="#38C8E8" opacity="0.25"/>
-  <rect x="434" y="585" width="64" height="44" rx="8" fill="#38C8E8" opacity="0.25"/>
-  <rect x="516" y="585" width="64" height="44" rx="8" fill="#38C8E8" opacity="0.25"/>
-  <rect x="598" y="585" width="64" height="44" rx="8" fill="#38C8E8" opacity="0.25"/>
-  <rect x="680" y="585" width="64" height="44" rx="8" fill="#38C8E8" opacity="0.25"/>
+    <!-- Bow ramp diagonal (right side) -->
+    <path d="
+      M 912,546 L 960,562 L 960,546 L 944,528
+      Q 926,518 912,528 Z
+    "/>
 
-  <!-- Bright window highlights -->
-  <rect x="274" y="589" width="56" height="36" rx="6" fill="none" stroke="#38C8E8" stroke-width="2"/>
-  <rect x="356" y="589" width="56" height="36" rx="6" fill="none" stroke="#38C8E8" stroke-width="2"/>
-  <rect x="438" y="589" width="56" height="36" rx="6" fill="none" stroke="#38C8E8" stroke-width="2"/>
-  <rect x="520" y="589" width="56" height="36" rx="6" fill="none" stroke="#38C8E8" stroke-width="2"/>
-  <rect x="602" y="589" width="56" height="36" rx="6" fill="none" stroke="#38C8E8" stroke-width="2"/>
-  <rect x="684" y="589" width="56" height="36" rx="6" fill="none" stroke="#38C8E8" stroke-width="2"/>
+    <!-- Main deck superstructure -->
+    <path d="
+      M 172,546 L 172,444
+      Q 172,432 186,432
+      L 626,432 Q 640,432 640,444
+      L 640,546 Z
+    "/>
 
-  <!-- Deck railing -->
-  <line x1="240" y1="560" x2="784" y2="560" stroke="#1E4060" stroke-width="4"/>
-  <line x1="240" y1="700" x2="784" y2="700" stroke="#1E4060" stroke-width="4"/>
+    <!-- Bridge / wheelhouse -->
+    <path d="
+      M 554,432 L 554,340
+      Q 554,328 567,328
+      L 748,328 Q 762,328 762,340
+      L 762,432 Z
+    "/>
 
-  <!-- Superstructure / bridge -->
-  <rect x="340" y="430" width="344" height="138" rx="12" fill="#0C2030"/>
-  <rect x="340" y="430" width="344" height="138" rx="12" fill="none" stroke="#1A3A54" stroke-width="2.5"/>
+    <!-- Mast column -->
+    <rect x="638" y="188" width="22" height="148" rx="6"/>
+    <!-- Cross-arm -->
+    <rect x="582" y="264" width="134" height="16" rx="5"/>
+    <!-- Radar platform -->
+    <rect x="628" y="250" width="42" height="20" rx="4"/>
+    <!-- Top antenna -->
+    <rect x="644" y="182" width="10" height="48" rx="4"/>
+
+    <!-- Secondary radar arm on bridge -->
+    <rect x="658" y="298" width="16" height="36" rx="4"/>
+    <rect x="636" y="298" width="60" height="13" rx="4"/>
+    <rect x="648" y="288" width="36" height="13" rx="5"/>
+
+    <!-- Flag pole -->
+    <rect x="228" y="378" width="13" height="68" rx="3"/>
+
+    <!-- Bow navigation post -->
+    <rect x="914" y="490" width="13" height="60" rx="3"/>
+    <rect x="906" y="500" width="30" height="11" rx="3"/>
+
+  </g>
+
+  <!-- ── WHITE CUTOUTS ── -->
+
+  <!-- Main deck — 3 horizontal window/railing slots -->
+  <rect x="196" y="458" width="406" height="26" rx="5" fill="#0A1620"/>
+  <rect x="196" y="499" width="406" height="26" rx="5" fill="#0A1620"/>
+  <rect x="196" y="537" width="406" height="6"  rx="2" fill="#0A1620"/>
+
+  <!-- Vertical dividers between window panels (red struts) -->
+  <rect x="328" y="458" width="13" height="67" fill="#E60000"/>
+  <rect x="464" y="458" width="13" height="67" fill="#E60000"/>
 
   <!-- Bridge windows -->
-  <rect x="368" y="452" width="80" height="56" rx="9" fill="#38C8E8" opacity="0.18"/>
-  <rect x="472" y="452" width="80" height="56" rx="9" fill="#38C8E8" opacity="0.18"/>
-  <rect x="576" y="452" width="80" height="56" rx="9" fill="#38C8E8" opacity="0.18"/>
-  <rect x="372" y="456" width="72" height="48" rx="7" fill="none" stroke="#38C8E8" stroke-width="2"/>
-  <rect x="476" y="456" width="72" height="48" rx="7" fill="none" stroke="#38C8E8" stroke-width="2"/>
-  <rect x="580" y="456" width="72" height="48" rx="7" fill="none" stroke="#38C8E8" stroke-width="2"/>
+  <rect x="572" y="350" width="58" height="52" rx="7" fill="#0A1620"/>
+  <rect x="648" y="350" width="58" height="52" rx="7" fill="#0A1620"/>
+  <rect x="716" y="350" width="32" height="52" rx="5" fill="#0A1620"/>
 
-  <!-- Funnel / chimney -->
-  <rect x="460" y="340" width="80" height="100" rx="10" fill="#1A3A54"/>
-  <rect x="448" y="328" width="104" height="24" rx="8" fill="#243C54"/>
+  <!-- ── NORWEGIAN FLAG ── -->
+  <!-- White base -->
+  <rect x="240" y="380" width="52" height="34" rx="2" fill="white"/>
+  <!-- Red field -->
+  <rect x="240" y="380" width="52" height="34" rx="2" fill="#E60000"/>
+  <!-- White cross -->
+  <rect x="240" y="391" width="52" height="11" fill="white"/>
+  <rect x="255" y="380" width="10" height="34" fill="white"/>
+  <!-- Blue cross (inside white) -->
+  <rect x="240" y="393" width="52" height="7" fill="#003087"/>
+  <rect x="257" y="380" width="6" height="34" fill="#003087"/>
 
-  <!-- Smoke puffs -->
-  <circle cx="490" cy="290" r="28" fill="#1A2E3E" opacity="0.5"/>
-  <circle cx="518" cy="268" r="22" fill="#1A2E3E" opacity="0.4"/>
-  <circle cx="540" cy="250" r="16" fill="#1A2E3E" opacity="0.3"/>
-
-  <!-- Mast -->
-  <line x1="500" y1="340" x2="500" y2="220" stroke="#1E4060" stroke-width="6"/>
-  <line x1="430" y1="270" x2="570" y2="270" stroke="#1E4060" stroke-width="4"/>
-
-  <!-- Navigation light -->
-  <circle cx="500" cy="220" r="12" fill="#38C8E8"/>
-  <circle cx="500" cy="220" r="7" fill="#A8F0FF"/>
-
-  <!-- Flag / pennant -->
-  <polygon points="500,228 560,250 500,272" fill="#1A8A64"/>
-
-  <!-- Anchor symbol on hull -->
-  <circle cx="512" cy="758" r="22" fill="#1E3A52" opacity="0.8"/>
-  <text x="512" y="766" text-anchor="middle" font-size="26" fill="#38C8E8" font-family="serif" opacity="0.9">⚓</text>
-
-  <!-- Waterline stripe -->
-  <rect x="175" y="696" width="674" height="8" rx="2" fill="#38C8E8" opacity="0.25"/>
 </svg>
