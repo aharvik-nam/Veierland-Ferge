@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="180" fill="#0A1620"/>
+
+  <!-- Water -->
+  <ellipse cx="512" cy="820" rx="440" ry="60" fill="#0C2A3C" opacity="0.7"/>
+  <path d="M72 800 Q200 775 330 800 Q460 825 512 805 Q564 785 694 810 Q824 835 952 810 L952 870 Q824 895 694 870 Q564 845 512 865 Q460 885 330 860 Q200 835 72 860 Z" fill="#102840" opacity="0.8"/>
+
+  <!-- Hull -->
+  <path d="M160 700 Q200 720 512 720 Q824 720 864 700 L840 770 Q700 800 512 800 Q324 800 184 770 Z" fill="#1A8A64"/>
+  <path d="M184 770 Q324 800 512 800 Q700 800 840 770 L864 780 Q700 815 512 815 Q324 815 160 780 Z" fill="#157850"/>
+
+  <!-- Main deck -->
+  <rect x="230" y="560" width="564" height="145" rx="14" fill="#162840"/>
+  <rect x="230" y="560" width="564" height="145" rx="14" fill="none" stroke="#1E3F5A" stroke-width="3"/>
+
+  <!-- Windows row -->
+  <rect x="270" y="585" width="64" height="44" rx="8" fill="#38C8E8" opacity="0.25"/>
+  <rect x="352" y="585" width="64" height="44" rx="8" fill="#38C8E8" opacity="0.25"/>
+  <rect x="434" y="585" width="64" height="44" rx="8" fill="#38C8E8" opacity="0.25"/>
+  <rect x="516" y="585" width="64" height="44" rx="8" fill="#38C8E8" opacity="0.25"/>
+  <rect x="598" y="585" width="64" height="44" rx="8" fill="#38C8E8" opacity="0.25"/>
+  <rect x="680" y="585" width="64" height="44" rx="8" fill="#38C8E8" opacity="0.25"/>
+
+  <!-- Bright window highlights -->
+  <rect x="274" y="589" width="56" height="36" rx="6" fill="none" stroke="#38C8E8" stroke-width="2"/>
+  <rect x="356" y="589" width="56" height="36" rx="6" fill="none" stroke="#38C8E8" stroke-width="2"/>
+  <rect x="438" y="589" width="56" height="36" rx="6" fill="none" stroke="#38C8E8" stroke-width="2"/>
+  <rect x="520" y="589" width="56" height="36" rx="6" fill="none" stroke="#38C8E8" stroke-width="2"/>
+  <rect x="602" y="589" width="56" height="36" rx="6" fill="none" stroke="#38C8E8" stroke-width="2"/>
+  <rect x="684" y="589" width="56" height="36" rx="6" fill="none" stroke="#38C8E8" stroke-width="2"/>
+
+  <!-- Deck railing -->
+  <line x1="240" y1="560" x2="784" y2="560" stroke="#1E4060" stroke-width="4"/>
+  <line x1="240" y1="700" x2="784" y2="700" stroke="#1E4060" stroke-width="4"/>
+
+  <!-- Superstructure / bridge -->
+  <rect x="340" y="430" width="344" height="138" rx="12" fill="#0C2030"/>
+  <rect x="340" y="430" width="344" height="138" rx="12" fill="none" stroke="#1A3A54" stroke-width="2.5"/>
+
+  <!-- Bridge windows -->
+  <rect x="368" y="452" width="80" height="56" rx="9" fill="#38C8E8" opacity="0.18"/>
+  <rect x="472" y="452" width="80" height="56" rx="9" fill="#38C8E8" opacity="0.18"/>
+  <rect x="576" y="452" width="80" height="56" rx="9" fill="#38C8E8" opacity="0.18"/>
+  <rect x="372" y="456" width="72" height="48" rx="7" fill="none" stroke="#38C8E8" stroke-width="2"/>
+  <rect x="476" y="456" width="72" height="48" rx="7" fill="none" stroke="#38C8E8" stroke-width="2"/>
+  <rect x="580" y="456" width="72" height="48" rx="7" fill="none" stroke="#38C8E8" stroke-width="2"/>
+
+  <!-- Funnel / chimney -->
+  <rect x="460" y="340" width="80" height="100" rx="10" fill="#1A3A54"/>
+  <rect x="448" y="328" width="104" height="24" rx="8" fill="#243C54"/>
+
+  <!-- Smoke puffs -->
+  <circle cx="490" cy="290" r="28" fill="#1A2E3E" opacity="0.5"/>
+  <circle cx="518" cy="268" r="22" fill="#1A2E3E" opacity="0.4"/>
+  <circle cx="540" cy="250" r="16" fill="#1A2E3E" opacity="0.3"/>
+
+  <!-- Mast -->
+  <line x1="500" y1="340" x2="500" y2="220" stroke="#1E4060" stroke-width="6"/>
+  <line x1="430" y1="270" x2="570" y2="270" stroke="#1E4060" stroke-width="4"/>
+
+  <!-- Navigation light -->
+  <circle cx="500" cy="220" r="12" fill="#38C8E8"/>
+  <circle cx="500" cy="220" r="7" fill="#A8F0FF"/>
+
+  <!-- Flag / pennant -->
+  <polygon points="500,228 560,250 500,272" fill="#1A8A64"/>
+
+  <!-- Anchor symbol on hull -->
+  <circle cx="512" cy="758" r="22" fill="#1E3A52" opacity="0.8"/>
+  <text x="512" y="766" text-anchor="middle" font-size="26" fill="#38C8E8" font-family="serif" opacity="0.9">⚓</text>
+
+  <!-- Waterline stripe -->
+  <rect x="175" y="696" width="674" height="8" rx="2" fill="#38C8E8" opacity="0.25"/>
+</svg>

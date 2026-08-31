@@ -6,3 +6,7 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Capacitor native projects (generated — add ios/ and android/ when ready to commit)
+ios/
+android/
