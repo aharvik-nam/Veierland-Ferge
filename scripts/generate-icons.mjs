@@ -7,12 +7,12 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 const root  = join(__dir, '..');
 
 // Source image — original ferry JPG (white background, red silhouette)
-const SRC = 'C:/Users/AndreasHarvik/Downloads/FergeIkon.jpg';
+const SRC = 'C:/Users/AndreasHarvik/Downloads/fergeikon (2).jpg';
 
 mkdirSync(join(root, 'assets'), { recursive: true });
 
 // Copy original into assets for reference
-copyFileSync(SRC, join(root, 'assets', 'FergeIkon.jpg'));
+copyFileSync(SRC, join(root, 'assets', 'FergeIkon.jpg')); // cached copy
 
 const WHITE = { r: 255, g: 255, b: 255 };
 const NAVY  = { r: 10,  g: 22,  b: 32  };
