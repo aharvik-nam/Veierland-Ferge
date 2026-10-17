@@ -218,6 +218,8 @@ export function findTripsForDay(dayType: 'monfri' | 'sat' | 'sun', dateObj: Date
       }
     }
     if (!best) return;
+    // Ankomst og avgang på samme kai (f.eks. Tangen inn/ut) vises som ett stopp
+    best = best.filter((ev, i) => i === best!.length - 1 || ev.stopId !== best![i + 1].stopId);
 
     const warnings: TripWarning[] = [];
     const startTime = best[0].time;
