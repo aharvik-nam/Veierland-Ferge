@@ -52,22 +52,22 @@ function angleDiff(a: number, b: number): number {
   return d > 180 ? 360 - d : d;
 }
 
-function ferryStatus(pos: FerryPos, stops: StopId[]): { text: string; far: boolean } {
+function ferryStatus(pos: FerryPos, stops: StopId[]): { text: string; far: boolean; target: StopId | null } {
   const dists = stops.map(s => ({ s, km: haversineKm(pos.lat, pos.lng, stopCoords[s].lat, stopCoords[s].lng) }));
   const nearest = dists.reduce((a, b) => (b.km < a.km ? b : a));
-  if (nearest.km > 6) return { text: 'Utenfor ruteområdet', far: true };
+  if (nearest.km > 6) return { text: 'Utenfor ruteområdet', far: true, target: null };
 
   const moving = pos.sog != null && pos.sog >= 1.5;
   if (!moving) {
-    return { text: nearest.km < 0.35 ? `Ligger ved ${stopsMap[nearest.s]}` : 'Ligger stille', far: false };
+    return { text: nearest.km < 0.35 ? `Ligger ved ${stopsMap[nearest.s]}` : 'Ligger stille', far: false, target: null };
   }
   const course = pos.cog ?? pos.heading;
-  if (course == null) return { text: 'Underveis', far: false };
+  if (course == null) return { text: 'Underveis', far: false, target: null };
   // Nærmeste kai foran baugen (kaiene ligger nesten på linje, så ta den første)
   const target = dists
     .filter(d => d.km > 0.2 && angleDiff(course, bearingDeg(pos.lat, pos.lng, stopCoords[d.s].lat, stopCoords[d.s].lng)) < 50)
     .sort((a, b) => a.km - b.km)[0];
-  return { text: target ? `På vei mot ${stopsMap[target.s]}` : 'Underveis', far: false };
+  return { text: target ? `På vei mot ${stopsMap[target.s]}` : 'Underveis', far: false, target: target?.s ?? null };
 }
 
 function ageLabel(time: string | null): { short: string; stale: boolean } {
@@ -78,113 +78,62 @@ function ageLabel(time: string | null): { short: string; stale: boolean } {
   return { short: `${Math.floor(mins / 60)} t siden`, stale: true };
 }
 
-// Kartverkets gråtonekart (CC BY 4.0), Web Mercator-fliser
-const TILE_URL = (z: number, x: number, y: number) =>
-  `https://cache.kartverket.no/v1/wmts/1.0.0/topograatone/default/webmercator/${z}/${y}/${x}.png`;
-const VW = 440, VH = 210, MARGIN = 22;
-
-function project(lat: number, lng: number, z: number): { x: number; y: number } {
-  const n = 256 * 2 ** z;
-  const s = Math.sin(lat * Math.PI / 180);
-  return { x: (lng + 180) / 360 * n, y: (0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)) * n };
-}
-
-function FerryMarker({ pos, scale }: { pos: FerryPos; scale: number }) {
-  const raw = pos.cog ?? pos.heading;
-  // Kartet vises med sør opp, så kursen snus 180°
-  const course = raw == null ? null : (raw + 180) % 360;
-  const moving = pos.sog != null && pos.sog >= 1.5 && course != null;
-  return (
-    <g>
-      <circle r={7 * scale} fill="var(--accent)" opacity={0.3}>
-        <animate attributeName="r" values={`${5 * scale};${11 * scale};${5 * scale}`} dur="2.4s" repeatCount="indefinite" />
-        <animate attributeName="opacity" values="0.4;0;0.4" dur="2.4s" repeatCount="indefinite" />
-      </circle>
-      {moving
-        ? <path d="M0,-6 L4.2,4.5 L0,2.4 L-4.2,4.5 Z" fill="var(--accent)" stroke="var(--deep)" strokeWidth={0.8} transform={`rotate(${course}) scale(${scale})`} />
-        : <circle r={4 * scale} fill="var(--accent)" stroke="var(--deep)" strokeWidth={scale} />}
-    </g>
-  );
-}
-
-// Ekte kart med kaiene og ferga plassert etter posisjon
-function TileMap({ pos, stops, showFerry, onFail }: { pos: FerryPos; stops: StopId[]; showFerry: boolean; onFail: () => void }) {
-  const pts: { lat: number; lng: number }[] = stops.map(s => stopCoords[s]);
-  if (showFerry) pts.push({ lat: pos.lat, lng: pos.lng });
-  // Største zoom der alle punktene får plass
-  let z = 14, proj = pts.map(p => project(p.lat, p.lng, z));
-  for (; z > 9; z--) {
-    proj = pts.map(p => project(p.lat, p.lng, z));
-    const w = Math.max(...proj.map(p => p.x)) - Math.min(...proj.map(p => p.x));
-    const h = Math.max(...proj.map(p => p.y)) - Math.min(...proj.map(p => p.y));
-    if (w <= VW - 2 * MARGIN && h <= VH - 2 * MARGIN) break;
+// Hvor langt langs ruten ferga er (0 = første kai, 1 = siste), ut fra nærmeste strekning
+function routeFraction(pos: FerryPos, line: StopId[]): number {
+  const km = (lat: number, lng: number) => ({ x: lng * Math.cos(59.16 * Math.PI / 180) * 111.32, y: lat * 110.57 });
+  const p = km(pos.lat, pos.lng);
+  let best = { d: Infinity, u: 0 };
+  for (let i = 0; i < line.length - 1; i++) {
+    const a = km(stopCoords[line[i]].lat, stopCoords[line[i]].lng);
+    const b = km(stopCoords[line[i + 1]].lat, stopCoords[line[i + 1]].lng);
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy)));
+    const d = Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+    if (d < best.d) best = { d, u: (i + t) / (line.length - 1) };
   }
-  const cx = (Math.max(...proj.map(p => p.x)) + Math.min(...proj.map(p => p.x))) / 2;
-  const cy = (Math.max(...proj.map(p => p.y)) + Math.min(...proj.map(p => p.y))) / 2;
-  const x0 = cx - VW / 2, y0 = cy - VH / 2;
-  const tiles: { x: number; y: number }[] = [];
-  for (let tx = Math.floor(x0 / 256); tx <= Math.floor((x0 + VW) / 256); tx++)
-    for (let ty = Math.floor(y0 / 256); ty <= Math.floor((y0 + VH) / 256); ty++) tiles.push({ x: tx, y: ty });
-  // Kartet roteres 180° (sør opp) så Tenvik havner nederst og Engø øverst.
-  // Markørene speiles om midtpunktet i stedet, så teksten står rett vei.
-  const flip = (p: { x: number; y: number }) => ({ x: 2 * cx - p.x, y: 2 * cy - p.y });
-  const stopPts = stops.map((s, i) => ({ s, ...flip(proj[i]) }));
-  const fp = flip(project(pos.lat, pos.lng, z));
-
-  return (
-    <svg viewBox={`${x0} ${y0} ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice" width="100%" height="100%" style={{ display: 'block' }}>
-      <g transform={`rotate(180 ${cx} ${cy})`}>
-        {tiles.map(t => (
-          <image key={`${t.x}-${t.y}`} href={TILE_URL(z, t.x, t.y)} x={t.x * 256} y={t.y * 256} width={256} height={256} onError={onFail} />
-        ))}
-      </g>
-      {stopPts.map(p => {
-        const right = p.x < cx + VW / 4;
-        return (
-          <g key={p.s}>
-            <circle cx={p.x} cy={p.y} r={4.5} fill="#fff" stroke="var(--deep)" strokeWidth={2} />
-            <text x={p.x + (right ? 8 : -8)} y={p.y + 4} textAnchor={right ? 'start' : 'end'} fontSize={12} fontWeight={700} fill="var(--deep)" stroke="#fff" strokeWidth={3} paintOrder="stroke" strokeLinejoin="round" fontFamily="'Space Grotesk', sans-serif">{stopsMap[p.s]}</text>
-          </g>
-        );
-      })}
-      {showFerry && <g transform={`translate(${fp.x} ${fp.y})`}><FerryMarker pos={pos} scale={1.5} /></g>}
-    </svg>
-  );
+  return best.u;
 }
 
-// Reserve hvis kartflisene ikke lastes: skjematisk plassering av kaiene
-function SchematicMap({ pos, stops, showFerry }: { pos: FerryPos; stops: StopId[]; showFerry: boolean }) {
-  const kx = Math.cos(59.16 * Math.PI / 180);
-  const pts = stops.map(s => ({ x: stopCoords[s].lng * kx, y: -stopCoords[s].lat }));
-  const fp = { x: pos.lng * kx, y: -pos.lat };
-  const all = showFerry ? [...pts, fp] : pts;
-  const minX = Math.min(...all.map(p => p.x)), maxX = Math.max(...all.map(p => p.x));
-  const minY = Math.min(...all.map(p => p.y)), maxY = Math.max(...all.map(p => p.y));
-  const span = Math.max((maxX - minX) / 2, maxY - minY) * 1.4 || 0.01;
-  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
-  const toV = (p: { x: number; y: number }) => ({ x: 100 - (p.x - cx) / span * 100, y: 50 - (p.y - cy) / span * 100 }); // sør opp
-  const vs = pts.map(toV);
-  const vf = toV(fp);
+// Ruten som en rett linje: Engø til venstre, Tenvik til høyre, ferga plassert langs linja
+function RouteLine({ pos, line, target, showFerry }: { pos: FerryPos; line: StopId[]; target: StopId | null; showFerry: boolean }) {
+  const X0 = 24, X1 = 296;
+  const xs = line.map((_, i) => X0 + (X1 - X0) * i / (line.length - 1));
+  const u = routeFraction(pos, line);
+  const fx = X0 + (X1 - X0) * u;
+  const ti = target ? line.indexOf(target) : -1;
+  const dir = ti < 0 ? 0 : xs[ti] > fx ? 1 : -1; // 1 = mot høyre, -1 = mot venstre, 0 = ligger stille
 
   return (
-    <svg viewBox="0 0 200 100" width="100%" height="100%" style={{ display: 'block' }}>
-      {vs.map((p, i) => (
-        <g key={stops[i]}>
-          <circle cx={p.x} cy={p.y} r={3.2} fill="var(--deep)" stroke="var(--onDeep)" strokeWidth={1.4} />
-          <text x={p.x + (p.x > 120 ? -5 : 5)} y={p.y + 3} textAnchor={p.x > 120 ? 'end' : 'start'} fontSize={8.5} fontWeight={600} fill="var(--onDeepDim)" fontFamily="'Space Grotesk', sans-serif">{stopsMap[stops[i]]}</text>
+    <svg viewBox="0 0 320 64" width="100%" height="64" style={{ display: 'block', overflow: 'visible' }}>
+      <line x1={X0} y1={24} x2={X1} y2={24} stroke="var(--onDeepDim)" strokeWidth={2} strokeDasharray="4 5" strokeLinecap="round" opacity={0.7} />
+      {line.map((s, i) => (
+        <g key={s}>
+          <circle cx={xs[i]} cy={24} r={5.5} fill="var(--deep)" stroke="var(--onDeep)" strokeWidth={2} />
+          <text x={xs[i]} y={52} textAnchor="middle" fontSize={12} fontWeight={600} fill="var(--onDeepDim)" fontFamily="'Space Grotesk', sans-serif">{stopsMap[s]}</text>
         </g>
       ))}
-      {showFerry && <g transform={`translate(${vf.x} ${vf.y})`}><FerryMarker pos={pos} scale={1} /></g>}
+      {showFerry && (
+        <g transform={`translate(${fx} 24)`}>
+          <circle r={10} fill="var(--accent)" opacity={0.3}>
+            <animate attributeName="r" values="7;15;7" dur="2.4s" repeatCount="indefinite" />
+            <animate attributeName="opacity" values="0.4;0;0.4" dur="2.4s" repeatCount="indefinite" />
+          </circle>
+          {dir === 0
+            ? <circle r={6.5} fill="var(--accent)" stroke="var(--deep)" strokeWidth={1.5} />
+            : <path d="M0,-9 L6.3,6.8 L0,3.6 L-6.3,6.8 Z" fill="var(--accent)" stroke="var(--deep)" strokeWidth={1.2} transform={`rotate(${dir * 90})`} />}
+        </g>
+      )}
     </svg>
   );
 }
 
 export function FerryLive() {
   const pos = useFerryPosition();
-  const [tilesFailed, setTilesFailed] = useState(false);
   if (!pos) return null;
 
-  const stops: StopId[] = isMaintenancePeriod(getOsloDate()) ? ['tenvik', 'tangen', 'engo'] : ['tenvik', 'vestgarden', 'tangen', 'engo'];
+  const humla = isMaintenancePeriod(getOsloDate());
+  const stops: StopId[] = humla ? ['tenvik', 'tangen', 'engo'] : ['tenvik', 'vestgarden', 'tangen', 'engo'];
+  const line: StopId[] = humla ? ['engo', 'tangen', 'tenvik'] : ['engo', 'tangen', 'vestgarden', 'tenvik'];
   const status = ferryStatus(pos, stops);
   const age = ageLabel(pos.time);
   const moving = pos.sog != null && pos.sog >= 1.5;
@@ -194,9 +143,9 @@ export function FerryLive() {
       href={`https://maps.google.com/?q=${pos.lat},${pos.lng}`}
       target="_blank"
       rel="noopener noreferrer"
-      style={{ marginTop: 12, display: 'block', padding: 12, borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', textDecoration: 'none' }}
+      style={{ marginTop: 12, display: 'block', padding: '12px 14px 10px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', textDecoration: 'none' }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10, padding: '2px 4px 10px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10, padding: '2px 2px 12px' }}>
         <div style={{ minWidth: 0 }}>
           <Label color="var(--onDeepDim)" style={{ fontSize: 9 }}>Ferga nå · {ferryName(getOsloDate())}</Label>
           <div style={{ marginTop: 5, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 17, color: 'var(--onDeep)', lineHeight: 1.2 }}>
@@ -209,15 +158,7 @@ export function FerryLive() {
           <span style={{ whiteSpace: 'nowrap' }}>{age.short}</span>
         </div>
       </div>
-      <div style={{ position: 'relative', height: 165, borderRadius: 'var(--radSm)', background: tilesFailed ? 'rgba(0,0,0,0.18)' : '#e9e9e6', overflow: 'hidden' }}>
-        {tilesFailed
-          ? <SchematicMap pos={pos} stops={stops} showFerry={!status.far} />
-          : <TileMap pos={pos} stops={stops} showFerry={!status.far} onFail={() => setTilesFailed(true)} />}
-        <span title="Nord" style={{ position: 'absolute', left: 6, bottom: 4, display: 'flex', alignItems: 'center', gap: 2, padding: '1px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.75)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 9, color: '#333' }}>N ↓</span>
-        {!tilesFailed && (
-          <span style={{ position: 'absolute', right: 6, bottom: 4, padding: '1px 5px', borderRadius: 4, background: 'rgba(255,255,255,0.75)', fontFamily: "'Space Grotesk', sans-serif", fontSize: 9, color: '#333' }}>© Kartverket</span>
-        )}
-      </div>
+      <RouteLine pos={pos} line={line} target={status.target} showFerry={!status.far} />
     </a>
   );
 }
