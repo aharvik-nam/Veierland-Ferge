@@ -155,6 +155,8 @@ export function StopPicker({ open, title, selected, exclude, which, onPick, onCl
   const allStops: StopId[] = ['buss_tbg', 'tenvik', 'vestgarden', 'engo', 'tangen', 'buss_tenv'];
   // Only show the relevant bus stop based on direction
   const stops = allStops.filter(s => {
+    // Vestgården anløpes ikke mens M/F Humla seiler
+    if (s === 'vestgarden' && isMaintenancePeriod(getOsloDate())) return false;
     if (which === 'from' && s === 'buss_tenv') return false;
     if (which === 'to' && s === 'buss_tbg') return false;
     return true;
@@ -170,9 +172,7 @@ export function StopPicker({ open, title, selected, exclude, which, onPick, onCl
         <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
           {stops.map(s => {
             const isSel = s === selected;
-            // Vestgården anløpes ikke mens M/F Humla seiler
-            const closed = s === 'vestgarden' && isMaintenancePeriod(getOsloDate());
-            const isDisabled = s === exclude || closed;
+            const isDisabled = s === exclude;
             return (
               <button key={s} disabled={isDisabled} onClick={() => onPick(s)} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '13px 14px', borderRadius: 'var(--radSm)', border: isSel ? '1.5px solid var(--accent)' : '1.5px solid var(--line)', background: isSel ? 'color-mix(in srgb, var(--accent) 8%, var(--surface))' : 'var(--surface)', cursor: isDisabled ? 'not-allowed' : 'pointer', opacity: isDisabled ? 0.32 : 1, textAlign: 'left', width: '100%', transition: 'all 0.15s' }}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--surfaceAlt)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -180,7 +180,7 @@ export function StopPicker({ open, title, selected, exclude, which, onPick, onCl
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 16, color: 'var(--ink)' }}>{stopsMap[s]}</div>
-                  <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 11.5, color: 'var(--inkDim)', marginTop: 1 }}>{closed ? 'Utgår til ca. 1. mars' : kindLabel[stopKind[s]]}</div>
+                  <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 11.5, color: 'var(--inkDim)', marginTop: 1 }}>{kindLabel[stopKind[s]]}</div>
                 </div>
                 {isSel && <Icon name="check" size={20} color="var(--accent)" stroke={2.6} />}
               </button>
