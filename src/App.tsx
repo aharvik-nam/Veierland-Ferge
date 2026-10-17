@@ -184,7 +184,7 @@ export default function App() {
           from={from} to={to} weather={weather}
           animate={animate} texture={style.texture}
           onEditFrom={() => openPicker('from')} onEditTo={() => openPicker('to')} onSwap={swap}
-          onSeeAll={() => { setSelectedDate(ymd(getOsloDate())); setScreen('results'); }}
+          onSeeAll={(date) => { setSelectedDate(date); setScreen('results'); }}
           onOpenTrip={openTrip} tick={tick}
           onOpenWeather={() => setWeatherOpen(true)}
           onboarded={onboarded} onSetOnboarded={() => { setOnboarded(true); localStorage.setItem('onboarded', 'true'); }}

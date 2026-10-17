@@ -1,6 +1,6 @@
 import React from 'react';
 import { Icon, weatherProps, FerryGlyph, WaveField, ChartTexture } from './Icons';
-import { stopsMap, stopShort, stopKind, stopTravel, fmtCountdown, bookingStatus } from '../ferryData';
+import { stopsMap, stopShort, stopKind, stopTravel, fmtCountdown, bookingStatus, isMaintenancePeriod, getOsloDate } from '../ferryData';
 import type { StopId, Weather, Trip } from '../types';
 
 // ── Label ────────────────────────────────────────────────────
@@ -170,7 +170,9 @@ export function StopPicker({ open, title, selected, exclude, which, onPick, onCl
         <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
           {stops.map(s => {
             const isSel = s === selected;
-            const isDisabled = s === exclude;
+            // Vestgården anløpes ikke mens M/F Humla seiler
+            const closed = s === 'vestgarden' && isMaintenancePeriod(getOsloDate());
+            const isDisabled = s === exclude || closed;
             return (
               <button key={s} disabled={isDisabled} onClick={() => onPick(s)} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '13px 14px', borderRadius: 'var(--radSm)', border: isSel ? '1.5px solid var(--accent)' : '1.5px solid var(--line)', background: isSel ? 'color-mix(in srgb, var(--accent) 8%, var(--surface))' : 'var(--surface)', cursor: isDisabled ? 'not-allowed' : 'pointer', opacity: isDisabled ? 0.32 : 1, textAlign: 'left', width: '100%', transition: 'all 0.15s' }}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--surfaceAlt)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -178,7 +180,7 @@ export function StopPicker({ open, title, selected, exclude, which, onPick, onCl
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 16, color: 'var(--ink)' }}>{stopsMap[s]}</div>
-                  <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 11.5, color: 'var(--inkDim)', marginTop: 1 }}>{kindLabel[stopKind[s]]}</div>
+                  <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 11.5, color: 'var(--inkDim)', marginTop: 1 }}>{closed ? 'Utgår til ca. 1. mars' : kindLabel[stopKind[s]]}</div>
                 </div>
                 {isSel && <Icon name="check" size={20} color="var(--accent)" stroke={2.6} />}
               </button>
@@ -220,6 +222,13 @@ export function RouteCard({ from, to, onEditFrom, onEditTo, onSwap }: { from: St
 }
 
 // ── TripCard ─────────────────────────────────────────────────
+function viaLabel(trip: Trip): string {
+  const via = trip.subpath.slice(1, -1);
+  if (via.length === 0) return 'Direkte';
+  if (via.length === 1) return `via ${stopShort[via[0].stopId]}`;
+  return `${via.length} stopp underveis`;
+}
+
 export function TripCard({ trip, isNext, countdown, onClick }: { trip: Trip; isNext: boolean; countdown: number | null; onClick: () => void }) {
   const bs = bookingStatus(trip);
   const engo = trip.warnings.find(w => w.type === 'engo');
@@ -256,7 +265,7 @@ export function TripCard({ trip, isNext, countdown, onClick }: { trip: Trip; isN
             <div style={{ flex: 1, height: 1.5, background: 'var(--line)' }} />
             <Icon name="arrowRight" size={15} color="var(--inkDim)" stroke={2} />
           </div>
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 9.5, letterSpacing: '0.06em', color: 'var(--inkDim)', opacity: 0.7 }}>{trip.subpath.length} stopp</span>
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 9.5, letterSpacing: '0.06em', color: 'var(--inkDim)', opacity: 0.7 }}>{viaLabel(trip)}</span>
         </div>
         <div style={{ textAlign: 'center' }}>
           <NumTime size={34} color="var(--accent)">{trip.endTime}</NumTime>

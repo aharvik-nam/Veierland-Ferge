@@ -23,7 +23,7 @@ export const stopKind: Record<StopId, 'buss' | 'fastland' | 'øy'> = {
   buss_tbg: "buss",
   tenvik: "fastland",
   vestgarden: "øy",
-  engo: "øy",
+  engo: "fastland",
   tangen: "øy",
   buss_tenv: "buss",
 };

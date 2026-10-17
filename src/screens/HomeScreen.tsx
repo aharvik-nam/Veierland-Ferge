@@ -74,7 +74,7 @@ interface HomeScreenProps {
   onEditFrom: () => void;
   onEditTo: () => void;
   onSwap: () => void;
-  onSeeAll: () => void;
+  onSeeAll: (date: string) => void;
   onOpenTrip: (trip: Trip) => void;
   tick: number;
   onOpenWeather: () => void;
@@ -84,7 +84,7 @@ interface HomeScreenProps {
   onPlanDate: (date: string) => void;
 }
 
-export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll: _onSeeAll, onOpenTrip, tick: _tick, onOpenWeather, onboarded, onSetOnboarded, onReset, onPlanDate }: HomeScreenProps) {
+export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, onOpenWeather, onboarded, onSetOnboarded, onReset, onPlanDate }: HomeScreenProps) {
   const [heroIndex, setHeroIndex] = useState(0);
   const [planCal, setPlanCal] = useState(false);
   const [planDate, setPlanDate] = useState<string | null>(null);
@@ -185,7 +185,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
 
   return (
     <div style={{ minHeight: '100dvh', background: 'linear-gradient(180deg, var(--deep) 0%, var(--deep2) 55%, var(--deep) 100%)', position: 'relative' }}>
-      <div style={{ position: 'relative', padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 18px 30px' }}>
+      <div style={{ position: 'relative', padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 18px calc(env(safe-area-inset-bottom, 0px) + 96px)' }}>
         {/* header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 22 }}>
           <button onClick={onReset} style={{ display: 'flex', alignItems: 'center', gap: 11, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
@@ -254,7 +254,10 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
                 </div>
               );
             })()}
-            <div style={{ padding: '18px 20px 20px' }} />
+            <button onClick={() => onSeeAll(dep.dateStr)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 20px', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14.5, color: 'var(--ink)' }}>Se alle avganger {dep.dayLabel.toLowerCase()}</span>
+              <Icon name="chevronRight" size={18} color="var(--inkDim)" stroke={2} />
+            </button>
           </div>
         ) : (
           <div style={{ marginTop: 18, padding: 30, borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.06)', textAlign: 'center' }}>
