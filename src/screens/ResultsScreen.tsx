@@ -248,7 +248,7 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
           const isSummer = isSummerSeason(selDate);
           return (
             <a
-              href={isSummer ? '/rutetabell.png' : '/rutetabell-hoest.png'}
+              href={isSummer ? '/rutetabell.png' : '/rutetabell.html'}
               target="_blank"
               rel="noopener noreferrer"
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'var(--surface)', border: '1px solid var(--line)', cursor: 'pointer', textDecoration: 'none', marginTop: 4 }}

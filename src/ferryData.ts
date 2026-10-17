@@ -160,7 +160,8 @@ function getAdminSeason(dateObj: Date): { monFri: FerryLoop[], sat: FerryLoop[],
       const to = s.dateTo || '9999-12-31';
       return dateStr >= from && dateStr <= to;
     });
-    if (!season) season = data.seasons.find((s: { isDefault?: boolean }) => s.isDefault);
+    // En standardsesong fra admin skal ikke overstyre M/F Humla-rutene
+    if (!season && !isMaintenancePeriod(dateObj)) season = data.seasons.find((s: { isDefault?: boolean }) => s.isDefault);
     if (!season) return null;
     return { monFri: season.loops?.monFri ?? [], sat: season.loops?.sat ?? [], sun: season.loops?.sun ?? [] };
   } catch { return null; }

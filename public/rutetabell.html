@@ -201,7 +201,7 @@ body {
   <a class="topbar-back" href="/">
     ← Tilbake til appen
   </a>
-  <span class="topbar-title">M/F Jutøya · Rutetider</span>
+  <span class="topbar-title" id="topbar-title">M/F Jutøya · Rutetider</span>
   <button class="topbar-print" onclick="window.print()">🖨 Skriv ut</button>
 </div>
 
@@ -210,8 +210,8 @@ body {
   <!-- Header -->
   <div class="header">
     <div class="header-left">
-      <div class="boat-eyebrow">Daglige avganger · Tenvik – Veierland – Engø</div>
-      <div class="boat-name">Rutetider for<br>M/F Jutøya</div>
+      <div class="boat-eyebrow" id="boat-eyebrow">Daglige avganger · Tenvik – Veierland – Engø</div>
+      <div class="boat-name" id="boat-name">Rutetider for<br>M/F Jutøya</div>
       <div class="boat-sub">Vestfold og Telemark</div>
       <a class="phone-link" href="tel:91888219">📞 TLF. 918 88 219</a>
     </div>
@@ -258,22 +258,77 @@ function esc(s) {
 
 // ─── DATA LOADING ─────────────────────────────────────────────────────────────
 
+// M/F Humla (erstatningsferge) — samme rutetider som appen (src/data.ts)
+const HUMLA_SEASON = {
+  builtin: true,
+  name: 'M/F Humla · 17. okt. 2026 – ca. 1. mars 2027',
+  dateFrom: '2026-10-17',
+  dateTo: '2027-02-28',
+  loops: {
+    monFri: [
+      {"id": "hmf-0", "tangenInn": "06:00", "tenvikInn": "06:20", "bussTenvik": "06:43"},
+      {"id": "hmf-1", "tenvikUt": "06:20", "tangenUt": "06:40", "tangenInn": "06:40", "tenvikInn": "07:00", "bussTenvik": "07:08"},
+      {"id": "hmf-2", "bussTbg": "06:40", "tenvikUt": "07:15", "tangenVia": "07:30", "engoUt": "07:40", "tangenUt": "07:50", "tangenInn": "07:50", "tenvikInn": "08:05", "bussTenvik": "08:13"},
+      {"id": "hmf-3", "bussTbg": "07:45", "tenvikUt": "08:15", "tangenUt": "08:35", "tangenInn": "08:35", "tenvikInn": "08:55", "bussTenvik": "09:13"},
+      {"id": "hmf-4", "bussTbg": "08:45", "tenvikUt": "09:15", "tangenUt": "09:35", "tangenInn": "09:35", "tenvikInn": "09:55", "bussTenvik": "10:13"},
+      {"id": "hmf-5", "tenvikUt": "10:05", "tangenUt": "10:25", "tangenInn": "10:25", "tenvikInn": "10:45", "bussTenvik": "11:13"},
+      {"id": "hmf-6", "bussTbg": "10:45", "tenvikUt": "11:15", "tangenUt": "11:35", "tangenInn": "11:35", "tenvikInn": "11:55", "bussTenvik": "12:13"},
+      {"id": "hmf-7", "bussTbg": "13:15", "tenvikUt": "13:45", "tangenUt": "14:05", "tangenInn": "14:05", "tenvikInn": "14:25", "bussTenvik": "14:43"},
+      {"id": "hmf-8", "bussTbg": "14:15", "tenvikUt": "14:45", "tangenUt": "15:05", "tangenInn": "15:05", "tenvikInn": "15:25", "bussTenvik": "15:43"},
+      {"id": "hmf-9", "bussTbg": "14:45", "tenvikUt": "15:25", "tangenUt": "15:45", "tangenInn": "15:45", "tenvikInn": "16:05", "bussTenvik": "16:13"},
+      {"id": "hmf-10", "bussTbg": "15:45", "tenvikUt": "16:15", "tangenVia": "16:30", "engoUt": "16:40", "tangenUt": "16:50", "tangenInn": "16:50", "tenvikInn": "17:10", "bussTenvik": "17:13"},
+      {"id": "hmf-11", "bussTbg": "16:45", "tenvikUt": "17:10", "tangenUt": "17:30", "tangenInn": "17:30", "tenvikInn": "17:50", "bussTenvik": "17:58"},
+      {"id": "hmf-12", "bussTbg": "18:30", "tenvikUt": "19:00", "tangenUt": "19:20", "tangenInn": "19:20", "tenvikInn": "19:40", "bussTenvik": "19:58"},
+      {"id": "hmf-13", "bussTbg": "19:30", "tenvikUt": "20:00", "tangenUt": "20:20"},
+      {"id": "hmf-14", "tangenInn": "20:20", "tenvikInn": "20:40", "bussTenvik": "20:58", "rowType": "booking"},
+      {"id": "hmf-15", "tenvikUt": "21:45", "tangenUt": "22:05", "rowType": "booking"}
+    ],
+    sat: [
+      {"id": "hsa-0", "tangenInn": "07:50", "tenvikInn": "08:10", "rowType": "booking"},
+      {"id": "hsa-1", "tenvikUt": "08:10", "tangenUt": "08:30", "tangenInn": "08:30", "tenvikInn": "08:50", "bussTenvik": "08:58"},
+      {"id": "hsa-2", "bussTbg": "08:30", "tenvikUt": "09:00", "tangenUt": "09:20", "tangenInn": "09:20", "tenvikInn": "09:40", "bussTenvik": "09:58"},
+      {"id": "hsa-3", "bussTbg": "09:30", "tenvikUt": "09:50", "tangenVia": "10:10", "engoUt": "10:20", "tangenUt": "10:30", "tangenInn": "10:30", "tenvikInn": "10:50", "bussTenvik": "10:58", "rowType": "engo"},
+      {"id": "hsa-4", "bussTbg": "10:30", "tenvikUt": "11:00", "tangenUt": "11:20", "tangenInn": "11:20", "tenvikInn": "11:40", "bussTenvik": "11:58"},
+      {"id": "hsa-5", "bussTbg": "11:30", "tenvikUt": "12:00", "tangenUt": "12:20", "tangenInn": "12:20", "tenvikInn": "12:40", "bussTenvik": "12:58"},
+      {"id": "hsa-6", "bussTbg": "12:30", "tenvikUt": "13:00", "tangenVia": "13:20", "engoUt": "13:30", "tangenUt": "13:40", "tangenInn": "13:40", "tenvikInn": "14:00", "rowType": "engo"},
+      {"id": "hsa-7", "bussTbg": "14:30", "tenvikUt": "15:00", "tangenUt": "15:20", "tangenInn": "15:20", "tenvikInn": "15:40", "bussTenvik": "15:58"},
+      {"id": "hsa-8", "bussTbg": "16:30", "tenvikUt": "17:00", "tangenVia": "17:20", "engoUt": "17:30", "tangenUt": "17:40", "tangenInn": "17:40", "tenvikInn": "18:00", "rowType": "engo"},
+      {"id": "hsa-9", "bussTbg": "17:30", "tenvikUt": "18:15", "tangenUt": "18:35", "tangenInn": "18:35", "tenvikInn": "18:55", "bussTenvik": "18:58"}
+    ],
+    sun: [
+      {"id": "hsu-1", "tenvikUt": "10:30", "tangenVia": "10:50", "engoUt": "11:00", "tangenUt": "11:10", "tangenInn": "11:10", "tenvikInn": "11:30", "rowType": "engo"},
+      {"id": "hsu-2", "tenvikUt": "11:40", "tangenVia": "12:00", "engoUt": "12:10", "tangenUt": "12:20", "tangenInn": "12:20", "tenvikInn": "12:40", "bussTenvik": "12:58", "rowType": "engo"},
+      {"id": "hsu-3", "bussTbg": "12:30", "tenvikUt": "13:00", "tangenUt": "13:20", "tangenInn": "13:20", "tenvikInn": "13:40"},
+      {"id": "hsu-4", "tenvikUt": "14:00", "tangenVia": "14:20", "engoUt": "14:30", "tangenUt": "14:40", "tangenInn": "14:40", "tenvikInn": "15:00", "rowType": "engo"},
+      {"id": "hsu-5", "tenvikUt": "16:00", "tangenUt": "16:20", "tangenInn": "16:20", "tenvikInn": "16:40", "bussTenvik": "16:58"},
+      {"id": "hsu-6", "bussTbg": "16:30", "tenvikUt": "17:00", "tangenVia": "17:20", "engoUt": "17:30", "tangenUt": "17:40", "tangenInn": "17:40", "tenvikInn": "18:00", "rowType": "engo"},
+      {"id": "hsu-7", "bussTbg": "18:30", "tenvikUt": "19:00", "tangenUt": "19:20", "tangenInn": "19:20", "tenvikInn": "19:40"},
+      {"id": "hsu-8", "tenvikUt": "20:00", "tangenUt": "20:20"},
+      {"id": "hsu-9", "tangenInn": "20:20", "tenvikInn": "20:40", "rowType": "booking"},
+      {"id": "hsu-10", "tenvikUt": "21:30", "tangenUt": "21:50", "rowType": "booking"}
+    ]
+  }
+};
+
 function getActiveSeason() {
+  const today = getOsloDateStr();
+  const inHumla = today >= HUMLA_SEASON.dateFrom && today <= HUMLA_SEASON.dateTo;
   try {
     const raw = localStorage.getItem('vf_timetable');
-    if (!raw) return null;
+    if (!raw) return inHumla ? HUMLA_SEASON : null;
     const data = JSON.parse(raw);
-    if (!Array.isArray(data.seasons) || !data.seasons.length) return null;
-    const today = getOsloDateStr();
+    if (!Array.isArray(data.seasons) || !data.seasons.length) return inHumla ? HUMLA_SEASON : null;
     let s = data.seasons.find(function(s) {
+      if (!s.dateFrom && !s.dateTo) return false;
       const from = s.dateFrom || '0000-01-01';
       const to   = s.dateTo   || '9999-12-31';
       return today >= from && today <= to;
     });
+    if (!s && inHumla) return HUMLA_SEASON;
     if (!s) s = data.seasons.find(function(s) { return s.isDefault; });
     if (!s) s = data.seasons[0];
     return s;
-  } catch(e) { return null; }
+  } catch(e) { return inHumla ? HUMLA_SEASON : null; }
 }
 
 function getNotices() {
@@ -301,16 +356,30 @@ const FRA_STOPS = [
   { label: 'Buss fra Tenv', field: 'bussTenvik',     cls: 'row-ext'  },
 ];
 
+// M/F Humla: Tenvik – Tangen – (Engø) – Tangen, Vestgården utgår
+const HUMLA_TIL_STOPS = [
+  { label: 'Buss fra Tbg.', field: 'bussTbg',  cls: 'row-ext'  },
+  { label: 'Fra Tenvik',    field: 'tenvikUt', cls: ''         },
+  { label: 'Tangen',        field: function(l) { return l.engoUt ? l.tangenVia : l.tangenUt; }, cls: '' },
+  { label: 'Engø',          field: 'engoUt',   cls: 'row-engo' },
+  { label: 'Tangen',        field: 'tangenUt', cls: ''         },
+];
+const HUMLA_FRA_STOPS = [
+  { label: 'Fra Tangen',    field: 'tangenInn',  cls: ''        },
+  { label: 'Til Tenvik',    field: 'tenvikInn',  cls: ''        },
+  { label: 'Buss fra Tenv', field: 'bussTenvik', cls: 'row-ext' },
+];
+
 function renderTable(loops, stops) {
   if (!loops || !loops.length) return '<p style="padding:14px 16px;color:#4E718A;font-size:15px">Ingen avganger registrert.</p>';
 
   var rows = stops.map(function(stop) {
     var cells = loops.map(function(loop) {
-      var t = loop[stop.field];
+      var t = typeof stop.field === 'function' ? stop.field(loop) : loop[stop.field];
       var cls = '';
       if (!t) {
         cls = 't-empty';
-      } else if (loop.rowType === 'booking') {
+      } else if (loop.rowType === 'booking' || (loop.rowType === 'engo' && stop.cls === 'row-engo')) {
         cls = 't-booking';
       } else if (stop.cls === 'row-engo') {
         cls = 't-engo';
@@ -363,6 +432,20 @@ function noticeIcon(type) {
     el.style.display = '';
   }
 
+  if (season.builtin) {
+    document.title = 'Rutetider — M/F Humla';
+    document.getElementById('boat-name').innerHTML = 'Rutetider for<br>M/F Humla';
+    document.getElementById('boat-eyebrow').textContent = 'Kun Tenvik – Tangen – Tenvik (Engø)';
+    document.getElementById('topbar-title').textContent = 'M/F Humla · Rutetider';
+    document.getElementById('engo-note').innerHTML =
+      '⚠️ <strong>VIKTIG INFO TIL ENGØ:</strong> Røde enkeltavganger til/fra Engø kan forhåndsbestilles ved å ringe fergen på 918 88 219.<br>' +
+      '<strong>ALL RETUR TIL ENGØ GÅR FRA TANGEN!</strong>';
+    notices = [
+      { type: 'warning', text: 'M/F Jutøya er på verksted. M/F HUMLA seiler fom. 17. oktober til ca. 1. mars. VESTGÅRDEN UTGÅR i hele perioden. Kun passasjerer og håndbagasje — ikke varer og last.' },
+      { type: 'info', text: 'Mandag–fredag og søndag: Avgang 20:20 fra Tangen til Tenvik MÅ bestilles før 18:00. Siste avgang fra Tenvik til Tangen (21:45 hverdager, 21:30 søndag) MÅ bestilles før 18:00. Lørdag: Avgang Tangen 07:50 MÅ bestilles kvelden før innen 20:00. Bestillingsavganger står i rødt.' }
+    ].concat(notices);
+  }
+
   // Notices
   var noticeEl = document.getElementById('notices');
   if (notices.length) {
@@ -383,9 +466,15 @@ function noticeIcon(type) {
     return;
   }
 
-  ttEl.innerHTML =
-    renderSection('TIL VEIERLAND', 'Tønsberg – Tenvik – Vestgården – Engø – Tangen', 'til', season, TIL_STOPS) +
-    renderSection('FRA VEIERLAND', 'Tangen – Vestgården – Tenvik – Tønsberg', 'fra', season, FRA_STOPS);
+  if (season.builtin) {
+    ttEl.innerHTML =
+      renderSection('TIL VEIERLAND MED M/F HUMLA', 'Tønsberg – Tenvik – Tangen – Engø – Tangen', 'til', season, HUMLA_TIL_STOPS) +
+      renderSection('FRA VEIERLAND MED M/F HUMLA', 'Tangen – Tenvik – Tønsberg', 'fra', season, HUMLA_FRA_STOPS);
+  } else {
+    ttEl.innerHTML =
+      renderSection('TIL VEIERLAND', 'Tønsberg – Tenvik – Vestgården – Engø – Tangen', 'til', season, TIL_STOPS) +
+      renderSection('FRA VEIERLAND', 'Tangen – Vestgården – Tenvik – Tønsberg', 'fra', season, FRA_STOPS);
+  }
 
   // Show Engø note if any loop has engo stops
   var allLoops = (season.loops.monFri || []).concat(season.loops.sat || []).concat(season.loops.sun || []);
