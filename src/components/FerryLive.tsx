@@ -90,7 +90,9 @@ function project(lat: number, lng: number, z: number): { x: number; y: number } 
 }
 
 function FerryMarker({ pos, scale }: { pos: FerryPos; scale: number }) {
-  const course = pos.cog ?? pos.heading;
+  const raw = pos.cog ?? pos.heading;
+  // Kartet vises med sør opp, så kursen snus 180°
+  const course = raw == null ? null : (raw + 180) % 360;
   const moving = pos.sog != null && pos.sog >= 1.5 && course != null;
   return (
     <g>
@@ -123,14 +125,19 @@ function TileMap({ pos, stops, showFerry, onFail }: { pos: FerryPos; stops: Stop
   const tiles: { x: number; y: number }[] = [];
   for (let tx = Math.floor(x0 / 256); tx <= Math.floor((x0 + VW) / 256); tx++)
     for (let ty = Math.floor(y0 / 256); ty <= Math.floor((y0 + VH) / 256); ty++) tiles.push({ x: tx, y: ty });
-  const stopPts = stops.map((s, i) => ({ s, ...proj[i] }));
-  const fp = project(pos.lat, pos.lng, z);
+  // Kartet roteres 180° (sør opp) så Tenvik havner nederst og Engø øverst.
+  // Markørene speiles om midtpunktet i stedet, så teksten står rett vei.
+  const flip = (p: { x: number; y: number }) => ({ x: 2 * cx - p.x, y: 2 * cy - p.y });
+  const stopPts = stops.map((s, i) => ({ s, ...flip(proj[i]) }));
+  const fp = flip(project(pos.lat, pos.lng, z));
 
   return (
     <svg viewBox={`${x0} ${y0} ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice" width="100%" height="100%" style={{ display: 'block' }}>
-      {tiles.map(t => (
-        <image key={`${t.x}-${t.y}`} href={TILE_URL(z, t.x, t.y)} x={t.x * 256} y={t.y * 256} width={256} height={256} onError={onFail} />
-      ))}
+      <g transform={`rotate(180 ${cx} ${cy})`}>
+        {tiles.map(t => (
+          <image key={`${t.x}-${t.y}`} href={TILE_URL(z, t.x, t.y)} x={t.x * 256} y={t.y * 256} width={256} height={256} onError={onFail} />
+        ))}
+      </g>
       {stopPts.map(p => {
         const right = p.x < cx + VW / 4;
         return (
@@ -155,7 +162,7 @@ function SchematicMap({ pos, stops, showFerry }: { pos: FerryPos; stops: StopId[
   const minY = Math.min(...all.map(p => p.y)), maxY = Math.max(...all.map(p => p.y));
   const span = Math.max((maxX - minX) / 2, maxY - minY) * 1.4 || 0.01;
   const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
-  const toV = (p: { x: number; y: number }) => ({ x: 100 + (p.x - cx) / span * 100, y: 50 + (p.y - cy) / span * 100 });
+  const toV = (p: { x: number; y: number }) => ({ x: 100 - (p.x - cx) / span * 100, y: 50 - (p.y - cy) / span * 100 }); // sør opp
   const vs = pts.map(toV);
   const vf = toV(fp);
 
@@ -206,6 +213,7 @@ export function FerryLive() {
         {tilesFailed
           ? <SchematicMap pos={pos} stops={stops} showFerry={!status.far} />
           : <TileMap pos={pos} stops={stops} showFerry={!status.far} onFail={() => setTilesFailed(true)} />}
+        <span title="Nord" style={{ position: 'absolute', left: 6, bottom: 4, display: 'flex', alignItems: 'center', gap: 2, padding: '1px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.75)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 9, color: '#333' }}>N ↓</span>
         {!tilesFailed && (
           <span style={{ position: 'absolute', right: 6, bottom: 4, padding: '1px 5px', borderRadius: 4, background: 'rgba(255,255,255,0.75)', fontFamily: "'Space Grotesk', sans-serif", fontSize: 9, color: '#333' }}>© Kartverket</span>
         )}
