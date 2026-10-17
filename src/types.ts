@@ -46,6 +46,8 @@ export interface Theme {
   good: string;
   warn: string;
   bad: string;
+  onStatus?: string; // tekst/ikon på good/warn/bad-flater (standard hvit)
+  waves?: [string, string, string]; // bølgefarger i mørke felt (standard hvit med lav opasitet)
   swatch: string[];
 }
 

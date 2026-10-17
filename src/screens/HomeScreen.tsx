@@ -267,8 +267,8 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
                   </div>
                   {!bs.passed && (
                     <a href="tel:91888219" style={{ marginTop: 4, marginLeft: 24, display: 'inline-flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 'var(--radSm)', background: 'var(--bad)', textDecoration: 'none', alignSelf: 'flex-start' }}>
-                      <Icon name="phone" size={14} color="#fff" stroke={2} />
-                      <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13, color: '#fff' }}>Ring · 918 88 219</span>
+                      <Icon name="phone" size={14} color="var(--onStatus)" stroke={2} />
+                      <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13, color: 'var(--onStatus)' }}>Ring · 918 88 219</span>
                     </a>
                   )}
                 </div>

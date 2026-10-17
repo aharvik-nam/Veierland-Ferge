@@ -72,7 +72,7 @@ export function StatusSignal({ status }: { status: { level: 'good' | 'warn' | 'b
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 'var(--radSm)', background: 'var(--surface)', border: `1.5px solid ${c}`, position: 'relative', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: c }} />
       <div style={{ width: 32, height: 32, borderRadius: 99, background: c, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginLeft: 4 }}>
-        <Icon name={ic as 'check' | 'alert' | 'x'} size={18} color="#fff" stroke={2.6} />
+        <Icon name={ic as 'check' | 'alert' | 'x'} size={18} color="var(--onStatus)" stroke={2.6} />
       </div>
       <div style={{ minWidth: 0 }}>
         <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14.5, color: c, lineHeight: 1.1 }}>{status.label}</div>
@@ -132,7 +132,7 @@ export function DeepBand({ children, animate, texture, style = {}, waves = true,
     <div style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(160deg, var(--deep) 0%, var(--deep2) 130%)', ...style }}>
       <ChartTexture on={texture} />
       {children}
-      {waves && <WaveField height={waveHeight} animate={animate} />}
+      {waves && <WaveField height={waveHeight} animate={animate} colors={['var(--wave1)', 'var(--wave2)', 'var(--wave3)']} />}
       {ferry && (
         <div style={{ position: 'absolute', bottom: Math.round(waveHeight / 5), left: 0, width: ferrySize + 8, animation: animate ? 'ferryGlide 14s ease-in-out infinite' : 'none' }}>
           <div style={{ animation: animate ? 'ferryBob 3.2s ease-in-out infinite' : 'none' }}>
@@ -277,8 +277,8 @@ export function TripCard({ trip, isNext, countdown, onClick }: { trip: Trip; isN
       </div>
       {bs.required && !bs.passed && (
         <a href="tel:91888219" onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '10px 16px', background: 'var(--bad)', textDecoration: 'none', borderTop: '1px solid color-mix(in srgb, var(--bad) 40%, transparent)' }}>
-          <Icon name="phone" size={15} color="#fff" stroke={2} />
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13, color: '#fff' }}>Ring fergen · 918 88 219</span>
+          <Icon name="phone" size={15} color="var(--onStatus)" stroke={2} />
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13, color: 'var(--onStatus)' }}>Ring fergen · 918 88 219</span>
         </a>
       )}
       {engo && !bs.required && (
