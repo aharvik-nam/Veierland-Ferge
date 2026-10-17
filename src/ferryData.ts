@@ -239,17 +239,7 @@ export function findTripsForDay(dayType: 'monfri' | 'sat' | 'sun', dateObj: Date
       warnings.push({ type: 'engo', text: 'Rød avgang via Engø — kjøres normalt kun 1. april–28. sep. Ring fergen for å forhåndsbestille.' });
     }
     if (humla) {
-      // M/F Humla: kveldsavganger må bestilles før 18:00, lørdag morgen kvelden før
-      if (dayType === 'monfri' || dayType === 'sun') {
-        if ((startStop === 'tangen' && startTime >= '20:20') ||
-            (startStop === 'tenvik' && startTime >= '21:30')) {
-          warnings.push({ type: 'booking', deadline: '18:00', text: 'Må forhåndsbestilles senest kl. 18:00 på avreisedagen.' });
-        }
-      } else if (dayType === 'sat') {
-        if (startStop === 'tangen' && startTime <= '07:50') {
-          warnings.push({ type: 'booking', deadline: 'kvelden før, 20:00', text: 'Må forhåndsbestilles kvelden før, innen kl. 20:00.' });
-        }
-      }
+      // M/F Humla: ingen bestillingsavganger i rutetabellen
     } else if (isSummerSeason(dateObj)) {
       // Sommerruter: siste tur krever bestilling innen kl. 20:00 samme dag
       if (dayType === 'monfri') {

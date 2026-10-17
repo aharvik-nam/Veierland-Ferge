@@ -129,8 +129,7 @@ export const summerSunLoops: FerryLoop[] = [
 
 // ── M/F HUMLA: erstatningsferge fom. 17. okt. 2026 til ca. 1. mars 2027 ──
 // Kun Tenvik–Tangen–(Engø)–Tangen. Vestgården utgår. Kun passasjerer og håndbagasje.
-// Røde Engø-avganger (lør/søn) må forhåndsbestilles. Ankomst Tangen for siste
-// bestillingsavgang fra Tenvik (21:45 / 21:30) er beregnet (+20 min), ikke oppgitt.
+// Røde Engø-avganger (lør/søn) må forhåndsbestilles.
 
 export const humlaMonFriLoops: FerryLoop[] = [
   { id: "hmf-0", bussTbg: null, tenvikUt: null, vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: null, tangenInn: "06:00", engoInn: null, vestgardenInn: null, tenvikInn: "06:20", bussTenvik: "06:43" },
@@ -146,13 +145,10 @@ export const humlaMonFriLoops: FerryLoop[] = [
   { id: "hmf-10", bussTbg: "15:45", tenvikUt: "16:15", vestgardenUt: null, tangenVia: "16:30", engoUt: "16:40", tangenUt: "16:50", tangenInn: "16:50", engoInn: null, vestgardenInn: null, tenvikInn: "17:10", bussTenvik: "17:13" },
   { id: "hmf-11", bussTbg: "16:45", tenvikUt: "17:10", vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: "17:30", tangenInn: "17:30", engoInn: null, vestgardenInn: null, tenvikInn: "17:50", bussTenvik: "17:58" },
   { id: "hmf-12", bussTbg: "18:30", tenvikUt: "19:00", vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: "19:20", tangenInn: "19:20", engoInn: null, vestgardenInn: null, tenvikInn: "19:40", bussTenvik: "19:58" },
-  { id: "hmf-13", bussTbg: "19:30", tenvikUt: "20:00", vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: "20:20", tangenInn: null, engoInn: null, vestgardenInn: null, tenvikInn: null, bussTenvik: null },
-  { id: "hmf-14", bussTbg: null, tenvikUt: null, vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: null, tangenInn: "20:20", engoInn: null, vestgardenInn: null, tenvikInn: "20:40", bussTenvik: "20:58" },
-  { id: "hmf-15", bussTbg: null, tenvikUt: "21:45", vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: "22:05", tangenInn: null, engoInn: null, vestgardenInn: null, tenvikInn: null, bussTenvik: null }
+  { id: "hmf-13", bussTbg: "19:30", tenvikUt: "20:00", vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: "20:20", tangenInn: null, engoInn: null, vestgardenInn: null, tenvikInn: null, bussTenvik: null }
 ];
 
 export const humlaSatLoops: FerryLoop[] = [
-  { id: "hsa-0", bussTbg: null, tenvikUt: null, vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: null, tangenInn: "07:50", engoInn: null, vestgardenInn: null, tenvikInn: "08:10", bussTenvik: null },
   { id: "hsa-1", bussTbg: null, tenvikUt: "08:10", vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: "08:30", tangenInn: "08:30", engoInn: null, vestgardenInn: null, tenvikInn: "08:50", bussTenvik: "08:58" },
   { id: "hsa-2", bussTbg: "08:30", tenvikUt: "09:00", vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: "09:20", tangenInn: "09:20", engoInn: null, vestgardenInn: null, tenvikInn: "09:40", bussTenvik: "09:58" },
   { id: "hsa-3", bussTbg: "09:30", tenvikUt: "09:50", vestgardenUt: null, tangenVia: "10:10", engoUt: "10:20", tangenUt: "10:30", tangenInn: "10:30", engoInn: null, vestgardenInn: null, tenvikInn: "10:50", bussTenvik: "10:58", rowType: "engo" },
@@ -172,17 +168,12 @@ export const humlaSunLoops: FerryLoop[] = [
   { id: "hsu-5", bussTbg: null, tenvikUt: "16:00", vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: "16:20", tangenInn: "16:20", engoInn: null, vestgardenInn: null, tenvikInn: "16:40", bussTenvik: "16:58" },
   { id: "hsu-6", bussTbg: "16:30", tenvikUt: "17:00", vestgardenUt: null, tangenVia: "17:20", engoUt: "17:30", tangenUt: "17:40", tangenInn: "17:40", engoInn: null, vestgardenInn: null, tenvikInn: "18:00", bussTenvik: null, rowType: "engo" },
   { id: "hsu-7", bussTbg: "18:30", tenvikUt: "19:00", vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: "19:20", tangenInn: "19:20", engoInn: null, vestgardenInn: null, tenvikInn: "19:40", bussTenvik: null },
-  { id: "hsu-8", bussTbg: null, tenvikUt: "20:00", vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: "20:20", tangenInn: null, engoInn: null, vestgardenInn: null, tenvikInn: null, bussTenvik: null },
-  { id: "hsu-9", bussTbg: null, tenvikUt: null, vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: null, tangenInn: "20:20", engoInn: null, vestgardenInn: null, tenvikInn: "20:40", bussTenvik: null },
-  { id: "hsu-10", bussTbg: null, tenvikUt: "21:30", vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: "21:50", tangenInn: null, engoInn: null, vestgardenInn: null, tenvikInn: null, bussTenvik: null }
+  { id: "hsu-8", bussTbg: null, tenvikUt: "20:00", vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: "20:20", tangenInn: null, engoInn: null, vestgardenInn: null, tenvikInn: null, bussTenvik: null }
 ];
 
 export const rules = [
   { text: "OBS: M/F Jutøya er på verksted. M/F HUMLA seiler fom. 17. oktober 2026 til ca. 1. mars 2027 — kun Tenvik–Tangen–Tenvik (Engø). VESTGÅRDEN UTGÅR i hele perioden. Kun passasjerer og håndbagasje — ikke varer og last.", alert: true },
   { text: "ALL RETUR TIL ENGØ GÅR FRA TANGEN!", alert: true },
   { text: "Røde enkeltavganger til/fra Engø (lørdag og søndag) kan forhåndsbestilles ved å ringe fergen." },
-  { text: "Mandag–fredag: Avgang 20:20 fra Tangen til Tenvik MÅ bestilles før 18:00. Siste avgang 21:45 fra Tenvik til Tangen MÅ bestilles før 18:00." },
-  { text: "Søndag: Avgang 20:20 fra Tangen til Tenvik MÅ bestilles før 18:00. Siste avgang 21:30 fra Tenvik til Tangen MÅ bestilles før 18:00." },
-  { text: "Lørdag: Avgang Tangen 07:50 MÅ bestilles kvelden før innen 20:00." },
   { text: "Telefon Fergen: 91888219" }
 ];

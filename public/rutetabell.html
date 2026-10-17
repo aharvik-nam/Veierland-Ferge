@@ -279,12 +279,9 @@ const HUMLA_SEASON = {
       {"id": "hmf-10", "bussTbg": "15:45", "tenvikUt": "16:15", "tangenVia": "16:30", "engoUt": "16:40", "tangenUt": "16:50", "tangenInn": "16:50", "tenvikInn": "17:10", "bussTenvik": "17:13"},
       {"id": "hmf-11", "bussTbg": "16:45", "tenvikUt": "17:10", "tangenUt": "17:30", "tangenInn": "17:30", "tenvikInn": "17:50", "bussTenvik": "17:58"},
       {"id": "hmf-12", "bussTbg": "18:30", "tenvikUt": "19:00", "tangenUt": "19:20", "tangenInn": "19:20", "tenvikInn": "19:40", "bussTenvik": "19:58"},
-      {"id": "hmf-13", "bussTbg": "19:30", "tenvikUt": "20:00", "tangenUt": "20:20"},
-      {"id": "hmf-14", "tangenInn": "20:20", "tenvikInn": "20:40", "bussTenvik": "20:58", "rowType": "booking"},
-      {"id": "hmf-15", "tenvikUt": "21:45", "tangenUt": "22:05", "rowType": "booking"}
+      {"id": "hmf-13", "bussTbg": "19:30", "tenvikUt": "20:00", "tangenUt": "20:20"}
     ],
     sat: [
-      {"id": "hsa-0", "tangenInn": "07:50", "tenvikInn": "08:10", "rowType": "booking"},
       {"id": "hsa-1", "tenvikUt": "08:10", "tangenUt": "08:30", "tangenInn": "08:30", "tenvikInn": "08:50", "bussTenvik": "08:58"},
       {"id": "hsa-2", "bussTbg": "08:30", "tenvikUt": "09:00", "tangenUt": "09:20", "tangenInn": "09:20", "tenvikInn": "09:40", "bussTenvik": "09:58"},
       {"id": "hsa-3", "bussTbg": "09:30", "tenvikUt": "09:50", "tangenVia": "10:10", "engoUt": "10:20", "tangenUt": "10:30", "tangenInn": "10:30", "tenvikInn": "10:50", "bussTenvik": "10:58", "rowType": "engo"},
@@ -303,9 +300,7 @@ const HUMLA_SEASON = {
       {"id": "hsu-5", "tenvikUt": "16:00", "tangenUt": "16:20", "tangenInn": "16:20", "tenvikInn": "16:40", "bussTenvik": "16:58"},
       {"id": "hsu-6", "bussTbg": "16:30", "tenvikUt": "17:00", "tangenVia": "17:20", "engoUt": "17:30", "tangenUt": "17:40", "tangenInn": "17:40", "tenvikInn": "18:00", "rowType": "engo"},
       {"id": "hsu-7", "bussTbg": "18:30", "tenvikUt": "19:00", "tangenUt": "19:20", "tangenInn": "19:20", "tenvikInn": "19:40"},
-      {"id": "hsu-8", "tenvikUt": "20:00", "tangenUt": "20:20"},
-      {"id": "hsu-9", "tangenInn": "20:20", "tenvikInn": "20:40", "rowType": "booking"},
-      {"id": "hsu-10", "tenvikUt": "21:30", "tangenUt": "21:50", "rowType": "booking"}
+      {"id": "hsu-8", "tenvikUt": "20:00", "tangenUt": "20:20"}
     ]
   }
 };
@@ -442,7 +437,7 @@ function noticeIcon(type) {
       '<strong>ALL RETUR TIL ENGØ GÅR FRA TANGEN!</strong>';
     notices = [
       { type: 'warning', text: 'M/F Jutøya er på verksted. M/F HUMLA seiler fom. 17. oktober til ca. 1. mars. VESTGÅRDEN UTGÅR i hele perioden. Kun passasjerer og håndbagasje — ikke varer og last.' },
-      { type: 'info', text: 'Mandag–fredag og søndag: Avgang 20:20 fra Tangen til Tenvik MÅ bestilles før 18:00. Siste avgang fra Tenvik til Tangen (21:45 hverdager, 21:30 søndag) MÅ bestilles før 18:00. Lørdag: Avgang Tangen 07:50 MÅ bestilles kvelden før innen 20:00. Bestillingsavganger står i rødt.' }
+      { type: 'info', text: 'Røde Engø-avganger (lørdag og søndag) må forhåndsbestilles ved å ringe fergen.' }
     ].concat(notices);
   }
 
