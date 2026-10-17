@@ -91,7 +91,7 @@ export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick
         )}
       </DeepBand>
 
-      <div style={{ padding: '18px 18px calc(env(safe-area-inset-bottom, 0px) + 96px)', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ padding: '18px 18px calc(env(safe-area-inset-bottom, 0px) + 28px)', display: 'flex', flexDirection: 'column', gap: 16 }}>
         {(booking || engo) && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {booking && (

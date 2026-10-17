@@ -24,7 +24,7 @@ function yrSymbolToCode(sym: string): number {
   return 2;
 }
 
-function SettingsSheet({ open, theme, style: stylePref, animate, onTheme, onStyle, onAnimate, onClose }: {
+function SettingsSheet({ open, theme, style: stylePref, animate, onTheme, onStyle, onAnimate, onTour, onClose }: {
   open: boolean;
   theme: ThemeKey;
   style: StyleKey;
@@ -32,6 +32,7 @@ function SettingsSheet({ open, theme, style: stylePref, animate, onTheme, onStyl
   onTheme: (t: ThemeKey) => void;
   onStyle: (s: StyleKey) => void;
   onAnimate: (v: boolean) => void;
+  onTour: () => void;
   onClose: () => void;
 }) {
   const themeKeys: ThemeKey[] = ['fjord', 'driftwood', 'midnattsol', 'lanterne'];
@@ -79,6 +80,13 @@ function SettingsSheet({ open, theme, style: stylePref, animate, onTheme, onStyl
           <div style={{ width: 44, height: 26, borderRadius: 99, background: animate ? 'var(--accent)' : 'var(--line)', position: 'relative', transition: 'background 0.2s' }}>
             <div style={{ position: 'absolute', top: 3, left: animate ? 21 : 3, width: 20, height: 20, borderRadius: 99, background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
           </div>
+        </button>
+
+        <button onClick={onTour} style={{ marginTop: 8, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 14, border: '1.5px solid var(--line)', background: 'var(--surfaceAlt)', cursor: 'pointer' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 14, color: 'var(--ink)' }}>
+            <Icon name="info" size={18} color="var(--inkDim)" stroke={2} />Vis hvordan appen fungerer
+          </span>
+          <Icon name="chevronRight" size={17} color="var(--inkDim)" stroke={2} />
         </button>
       </div>
     </div>
@@ -202,6 +210,7 @@ export default function App() {
           onOpenWeather={() => setWeatherOpen(true)}
           onboarded={onboarded} onSetOnboarded={() => { setOnboarded(true); localStorage.setItem('onboarded', 'true'); }}
           onReset={() => { setOnboarded(false); localStorage.removeItem('onboarded'); }}
+          onOpenSettings={() => setSettingsOpen(true)}
           onPlanDate={(date) => { setSelectedDate(date); setOnboarded(true); localStorage.setItem('onboarded', 'true'); setScreen('results'); }}
         />
       )}
@@ -212,6 +221,7 @@ export default function App() {
           onBack={() => setScreen('home')} onSwap={swap}
           onEditFrom={() => openPicker('from')} onEditTo={() => openPicker('to')}
           onOpenTrip={openTrip} tick={tick}
+          onOpenSettings={() => setSettingsOpen(true)}
         />
       )}
       {screen === 'detail' && trip && (
@@ -221,22 +231,6 @@ export default function App() {
           onBack={() => setScreen(prevScreen)} tick={tick}
         />
       )}
-
-      {/* FABs */}
-      <div style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)', right: 'calc(max(0px, (100vw - 430px) / 2) + 20px)', display: 'flex', gap: 10, zIndex: 70 }}>
-        <button
-          onClick={() => setTourOpen(true)}
-          style={{ width: 48, height: 48, borderRadius: 99, background: 'var(--deep)', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 24px rgba(0,0,0,0.35)' }}
-        >
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 20, color: 'var(--onDeep)', lineHeight: 1 }}>?</span>
-        </button>
-        <button
-          onClick={() => setSettingsOpen(true)}
-          style={{ width: 48, height: 48, borderRadius: 99, background: 'var(--deep)', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 24px rgba(0,0,0,0.35)' }}
-        >
-          <Icon name="settings" size={20} color="var(--onDeep)" stroke={1.8} />
-        </button>
-      </div>
 
       <StopPicker
         open={picker.open}
@@ -258,6 +252,7 @@ export default function App() {
         onTheme={k => { setThemeKey(k); localStorage.setItem('themeKey', k); }}
         onStyle={s => { setStyleKey(s); localStorage.setItem('styleKey', s); }}
         onAnimate={v => { setAnimate(v); localStorage.setItem('animate', String(v)); }}
+        onTour={() => { setSettingsOpen(false); setTourOpen(true); }}
         onClose={() => setSettingsOpen(false)}
       />
     </div>

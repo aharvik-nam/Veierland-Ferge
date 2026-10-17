@@ -4,6 +4,7 @@ import { Icon } from '../components/Icons';
 import { DeepBand, WeatherChip, RouteCard, NumTime, Label } from '../components/Atoms';
 import { nextDepartures, minsUntil, fmtCountdown, ymd, getOsloDate, parseYmd, stopsMap, bookingStatus, isSummerSeason, isMaintenancePeriod, ferryName } from '../ferryData';
 import { FerryLive } from '../components/FerryLive';
+import { HumlaNotice } from '../components/HumlaNotice';
 import type { StopId, Weather, Trip } from '../types';
 
 const PLAN_MONTHS = ['januar','februar','mars','april','mai','juni','juli','august','september','oktober','november','desember'];
@@ -82,9 +83,10 @@ interface HomeScreenProps {
   onSetOnboarded: () => void;
   onReset: () => void;
   onPlanDate: (date: string) => void;
+  onOpenSettings: () => void;
 }
 
-export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, onOpenWeather, onboarded, onSetOnboarded, onReset, onPlanDate }: HomeScreenProps) {
+export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onSeeAll, onOpenTrip, tick: _tick, onOpenWeather, onboarded, onSetOnboarded, onReset, onPlanDate, onOpenSettings }: HomeScreenProps) {
   const [planCal, setPlanCal] = useState(false);
   const [planDate, setPlanDate] = useState<string | null>(null);
   const [adminNotices, setAdminNotices] = useState<Array<{id: string; text: string; type: string; active: boolean}>>([]);
@@ -116,7 +118,12 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
               <Label color="var(--onDeepDim)" style={{ fontSize: 9.5 }}>{ferryName(getOsloDate())} · Ferge</Label>
             </div>
           </div>
-          <WeatherChip weather={weather} onDeep onClick={onOpenWeather} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <WeatherChip weather={weather} onDeep onClick={onOpenWeather} />
+            <button onClick={onOpenSettings} aria-label="Innstillinger" style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+              <Icon name="settings" size={18} color="var(--onDeep)" stroke={1.9} />
+            </button>
+          </div>
         </div>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 22px calc(env(safe-area-inset-bottom, 0px) + 40px)', gap: 14 }}>
@@ -157,15 +164,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
             );
           })}
 
-          {isMaintenancePeriod(getOsloDate()) && (
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 'var(--rad)', background: 'rgba(220,50,50,0.15)', border: '1px solid rgba(220,50,50,0.35)' }}>
-              <Icon name="alert" size={15} color="#ff6b6b" stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
-              <div>
-                <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: '#ff6b6b', marginBottom: 2 }}>M/F Humla seiler · 17. okt. – ca. 1. mars</div>
-                <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--onDeepDim)', lineHeight: 1.4 }}>Kun Tenvik–Tangen (Engø). Vestgården utgår. Kun passasjerer og håndbagasje.</div>
-              </div>
-            </div>
-          )}
+          <HumlaNotice date={getOsloDate()} variant="deep" />
         </div>
       </div>
       <PlanCalendar
@@ -181,7 +180,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
   return (
     <>
     <div style={{ minHeight: '100dvh', background: 'linear-gradient(180deg, var(--deep) 0%, var(--deep2) 55%, var(--deep) 100%)', position: 'relative' }}>
-      <div style={{ position: 'relative', padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 18px calc(env(safe-area-inset-bottom, 0px) + 96px)' }}>
+      <div style={{ position: 'relative', padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 18px calc(env(safe-area-inset-bottom, 0px) + 32px)' }}>
         {/* header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 22 }}>
           <button onClick={onReset} style={{ display: 'flex', alignItems: 'center', gap: 11, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
@@ -191,7 +190,12 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
               <Label color="var(--onDeepDim)" style={{ fontSize: 9.5 }}>{ferryName(getOsloDate())} · Ferge</Label>
             </div>
           </button>
-          <WeatherChip weather={weather} onDeep onClick={onOpenWeather} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <WeatherChip weather={weather} onDeep onClick={onOpenWeather} />
+            <button onClick={onOpenSettings} aria-label="Innstillinger" style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+              <Icon name="settings" size={18} color="var(--onDeep)" stroke={1.9} />
+            </button>
+          </div>
         </div>
 
         {/* compact route bar */}
@@ -302,7 +306,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
           </div>
         )}
 
-        <FerryLive />
+        <FerryLive dep={dep} />
 
         <a
           href="/rutetabell.html"
@@ -329,15 +333,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
           );
         })}
 
-        {isMaintenancePeriod(getOsloDate()) && (
-          <div style={{ marginTop: 8, display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 'var(--rad)', background: 'rgba(220,50,50,0.15)', border: '1px solid rgba(220,50,50,0.35)' }}>
-            <Icon name="alert" size={15} color="#ff6b6b" stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
-            <div>
-              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: '#ff6b6b', marginBottom: 2 }}>M/F Humla seiler · 17. okt. – ca. 1. mars</div>
-              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--onDeepDim)', lineHeight: 1.4 }}>Kun Tenvik–Tangen (Engø). Vestgården utgår. Kun passasjerer og håndbagasje.</div>
-            </div>
-          </div>
-        )}
+        <HumlaNotice date={getOsloDate()} variant="deep" style={{ marginTop: 8 }} />
       </div>
     </div>
     <PlanCalendar

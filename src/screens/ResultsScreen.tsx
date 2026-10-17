@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Icon } from '../components/Icons';
 import { DeepBand, StopDot, Label, TripCard } from '../components/Atoms';
 import { findTripsForDay, dayTypeOf, parseYmd, parseTime, minsUntil, ymd, getOsloDate, stopShort, isSummerSeason, isMaintenancePeriod, NO_DAYS_EXPORT as NO_DAYS, NO_MONTHS_EXPORT } from '../ferryData';
+import { HumlaNotice } from '../components/HumlaNotice';
 import type { StopId, Trip } from '../types';
 
 function cap(s: string): string { return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -148,9 +149,10 @@ interface ResultsScreenProps {
   onEditTo: () => void;
   onOpenTrip: (trip: Trip) => void;
   tick: number;
+  onOpenSettings: () => void;
 }
 
-export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, texture, onBack, onSwap, onEditFrom, onEditTo, onOpenTrip, tick: _tick }: ResultsScreenProps) {
+export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, texture, onBack, onSwap, onEditFrom, onEditTo, onOpenTrip, tick: _tick, onOpenSettings }: ResultsScreenProps) {
   const todayStr = ymd(getOsloDate());
   const isToday = selectedDate === todayStr;
   const selDate = parseYmd(selectedDate);
@@ -178,7 +180,10 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
             <button onClick={onBack} style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <Icon name="chevronLeft" size={20} color="var(--onDeep)" stroke={2.2} />
             </button>
-            <div style={{ fontFamily: 'var(--num)', fontSize: 26, color: 'var(--onDeep)' }}>Avganger</div>
+            <div style={{ fontFamily: 'var(--num)', fontSize: 26, color: 'var(--onDeep)', flex: 1 }}>Avganger</div>
+            <button onClick={onOpenSettings} aria-label="Innstillinger" style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+              <Icon name="settings" size={18} color="var(--onDeep)" stroke={1.9} />
+            </button>
           </div>
           <div data-tour="results-route-bar" style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radSm)', padding: '10px 14px' }}>
             <button onClick={onEditFrom} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
@@ -205,19 +210,11 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
             </span>
           </div>
         )}
-        {isMaintenancePeriod(selDate) && (
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, margin: '8px 18px 0', padding: '12px 14px', borderRadius: 'var(--radSm)', background: 'color-mix(in srgb, var(--bad) 12%, var(--surface))', border: '1px solid color-mix(in srgb, var(--bad) 30%, transparent)' }}>
-            <Icon name="alert" size={15} color="var(--bad)" stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
-            <div>
-              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: 'var(--bad)', marginBottom: 2 }}>M/F Humla seiler · 17. okt. – ca. 1. mars</div>
-              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--inkDim)', lineHeight: 1.4 }}>Kun Tenvik–Tangen (Engø). Vestgården utgår. Kun passasjerer og håndbagasje.</div>
-            </div>
-          </div>
-        )}
+        <HumlaNotice date={selDate} variant="light" style={{ margin: '8px 18px 0' }} />
       </div>
 
       {/* scrollable trip list */}
-      <div data-tour="trip-list" ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 18px calc(env(safe-area-inset-bottom, 0px) + 96px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div data-tour="trip-list" ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 18px calc(env(safe-area-inset-bottom, 0px) + 28px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
         {isMaintenancePeriod(selDate) && (from === 'vestgarden' || to === 'vestgarden') ? (
           <div style={{ marginTop: 30, padding: 36, borderRadius: 'var(--rad)', background: 'var(--surface)', border: '1px dashed color-mix(in srgb, var(--bad) 40%, transparent)', textAlign: 'center' }}>

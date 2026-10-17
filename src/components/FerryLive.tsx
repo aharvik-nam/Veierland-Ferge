@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Label } from './Atoms';
 import { Icon } from './Icons';
-import { stopCoords, stopsMap, haversineKm, isMaintenancePeriod, getOsloDate, ferryName } from '../ferryData';
-import type { StopId } from '../types';
+import { stopCoords, stopsMap, stopKind, haversineKm, isMaintenancePeriod, getOsloDate, ferryName, minsUntil, fmtCountdown } from '../ferryData';
+import type { StopId, Trip } from '../types';
 
 interface FerryPos {
   lat: number;
@@ -78,6 +78,27 @@ function ageLabel(time: string | null): { short: string; stale: boolean } {
   return { short: `${Math.floor(mins / 60)} t siden`, stale: true };
 }
 
+// Hva ferga betyr for avgangen brukeren ser på: er den på vei til kaia, og rekker den det?
+function departureNote(pos: FerryPos, dep: Trip | null | undefined, target: StopId | null, line: StopId[]): { stop: StopId; text: string; late: boolean } | null {
+  if (!dep) return null;
+  const board = dep.subpath.find(e => stopKind[e.stopId] !== 'buss');
+  if (!board || !line.includes(board.stopId)) return null;
+  const minsToDep = minsUntil(dep.dateStr, board.time);
+  if (minsToDep < -2 || minsToDep > 120) return null; // bare relevant når avgangen er nær
+
+  const stop = board.stopId;
+  const name = stopsMap[stop];
+  const km = haversineKm(pos.lat, pos.lng, stopCoords[stop].lat, stopCoords[stop].lng);
+  const moving = pos.sog != null && pos.sog >= 1.5;
+  if (km < 0.35 && !moving) return { stop, text: `Ligger klar ved ${name} til avgangen ${board.time}`, late: false };
+  if (moving && target === stop) {
+    const eta = Math.max(1, Math.round(km / (pos.sog! * 1.852) * 60));
+    const late = eta > minsToDep + 3;
+    return { stop, text: `Er ved ${name} om ca. ${fmtCountdown(eta)}${late ? ' – avgangen kan bli litt forsinket' : ` · din avgang ${board.time}`}`, late };
+  }
+  return { stop, text: `Din avgang fra ${name} kl. ${board.time}`, late: false };
+}
+
 // Hvor langt langs ruten ferga er (0 = første kai, 1 = siste), ut fra nærmeste strekning
 function routeFraction(pos: FerryPos, line: StopId[]): number {
   const km = (lat: number, lng: number) => ({ x: lng * Math.cos(59.16 * Math.PI / 180) * 111.32, y: lat * 110.57 });
@@ -95,7 +116,7 @@ function routeFraction(pos: FerryPos, line: StopId[]): number {
 }
 
 // Ruten som en rett linje: Tenvik til venstre, Engø til høyre, ferga plassert langs linja
-function RouteLine({ pos, line, target, showFerry }: { pos: FerryPos; line: StopId[]; target: StopId | null; showFerry: boolean }) {
+function RouteLine({ pos, line, target, showFerry, highlight }: { pos: FerryPos; line: StopId[]; target: StopId | null; showFerry: boolean; highlight: StopId | null }) {
   const X0 = 24, X1 = 296;
   const xs = line.map((_, i) => X0 + (X1 - X0) * i / (line.length - 1));
   const u = routeFraction(pos, line);
@@ -108,8 +129,9 @@ function RouteLine({ pos, line, target, showFerry }: { pos: FerryPos; line: Stop
       <line x1={X0} y1={24} x2={X1} y2={24} stroke="var(--onDeepDim)" strokeWidth={2} strokeDasharray="4 5" strokeLinecap="round" opacity={0.7} />
       {line.map((s, i) => (
         <g key={s}>
+          {s === highlight && <circle cx={xs[i]} cy={24} r={10} fill="none" stroke="var(--accent2)" strokeWidth={2} />}
           <circle cx={xs[i]} cy={24} r={5.5} fill="var(--deep)" stroke="var(--onDeep)" strokeWidth={2} />
-          <text x={xs[i]} y={52} textAnchor="middle" fontSize={12} fontWeight={600} fill="var(--onDeepDim)" fontFamily="'Space Grotesk', sans-serif">{stopsMap[s]}</text>
+          <text x={xs[i]} y={52} textAnchor="middle" fontSize={12} fontWeight={s === highlight ? 700 : 600} fill={s === highlight ? 'var(--onDeep)' : 'var(--onDeepDim)'} fontFamily="'Space Grotesk', sans-serif">{stopsMap[s]}</text>
         </g>
       ))}
       {showFerry && (
@@ -127,7 +149,7 @@ function RouteLine({ pos, line, target, showFerry }: { pos: FerryPos; line: Stop
   );
 }
 
-export function FerryLive() {
+export function FerryLive({ dep }: { dep?: Trip | null }) {
   const pos = useFerryPosition();
   if (!pos) return null;
 
@@ -137,6 +159,7 @@ export function FerryLive() {
   const status = ferryStatus(pos, stops);
   const age = ageLabel(pos.time);
   const moving = pos.sog != null && pos.sog >= 1.5;
+  const note = status.far ? null : departureNote(pos, dep, status.target, line);
 
   return (
     <a
@@ -158,7 +181,13 @@ export function FerryLive() {
           <span style={{ whiteSpace: 'nowrap' }}>{age.short}</span>
         </div>
       </div>
-      <RouteLine pos={pos} line={line} target={status.target} showFerry={!status.far} />
+      <RouteLine pos={pos} line={line} target={status.target} showFerry={!status.far} highlight={note?.stop ?? null} />
+      {note && (
+        <div style={{ marginTop: 8, padding: '9px 12px', borderRadius: 'var(--radSm)', background: note.late ? 'color-mix(in srgb, var(--warn) 18%, transparent)' : 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 8, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, color: note.late ? 'var(--warn)' : 'var(--onDeep)', lineHeight: 1.35 }}>
+          <Icon name={note.late ? 'alert' : 'clock'} size={14} color="currentColor" stroke={2.2} style={{ flexShrink: 0 }} />
+          <span>{note.text}</span>
+        </div>
+      )}
     </a>
   );
 }
