@@ -147,6 +147,10 @@ export function isMaintenancePeriod(dateObj: Date): boolean {
   return s >= '2026-10-17' && s <= '2027-02-28';
 }
 
+export function ferryName(dateObj: Date): string {
+  return isMaintenancePeriod(dateObj) ? 'M/F Humla' : 'M/F Jutøya';
+}
+
 function getAdminSeason(dateObj: Date): { monFri: FerryLoop[], sat: FerryLoop[], sun: FerryLoop[] } | null {
   try {
     const raw = localStorage.getItem('vf_timetable');

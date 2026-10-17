@@ -3,7 +3,7 @@ import { Icon, CompassMark, weatherProps, FerryGlyph, WaveField } from '../compo
 import { Label, NumTime, WeatherChip, StopDot } from '../components/Atoms';
 import {
   findTripsForDay, dayTypeOf, parseTime, minsUntil, fmtCountdown,
-  ymd, getOsloDate, stopsMap, stopShort, isSummerSeason, bookingStatus,
+  ymd, getOsloDate, stopsMap, stopShort, isSummerSeason, bookingStatus, ferryName,
   NO_DAYS_EXPORT as NO_DAYS, NO_MONTHS_EXPORT as NO_MONTHS,
 } from '../ferryData';
 import type { StopId, Weather } from '../types';
@@ -232,7 +232,7 @@ export function Dashboard({ weather, forecast, animate, tick, from, to, onEditFr
             <CompassMark size={40} color="var(--onDeep)" opacity={0.85} />
             <div>
               <div style={{ fontFamily: 'var(--num)', fontSize: 28, color: 'var(--onDeep)', lineHeight: 0.95 }}>Veierland</div>
-              <Label color="var(--onDeepDim)" style={{ fontSize: 10 }}>M/F Jutøya · Ferge · {dateLabel}</Label>
+              <Label color="var(--onDeepDim)" style={{ fontSize: 10 }}>{ferryName(now)} · Ferge · {dateLabel}</Label>
             </div>
             {isSummerSeason(now) && (
               <span style={{ marginLeft: 6, padding: '4px 12px', borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 11, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>

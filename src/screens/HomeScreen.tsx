@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { CompassMark } from '../components/Icons';
 import { Icon } from '../components/Icons';
 import { DeepBand, WeatherChip, RouteCard, NumTime, Label } from '../components/Atoms';
-import { nextDepartures, prevDeparture, minsUntil, fmtCountdown, ymd, getOsloDate, parseYmd, stopsMap, bookingStatus, isSummerSeason, isMaintenancePeriod } from '../ferryData';
+import { nextDepartures, prevDeparture, minsUntil, fmtCountdown, ymd, getOsloDate, parseYmd, stopsMap, bookingStatus, isSummerSeason, isMaintenancePeriod, ferryName } from '../ferryData';
+import { FerryLive } from '../components/FerryLive';
 import type { StopId, Weather, Trip } from '../types';
 
 const PLAN_MONTHS = ['januar','februar','mars','april','mai','juni','juli','august','september','oktober','november','desember'];
@@ -117,7 +118,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
             <CompassMark size={34} color="var(--onDeep)" opacity={0.85} />
             <div>
               <div style={{ fontFamily: 'var(--num)', fontSize: 25, color: 'var(--onDeep)', lineHeight: 0.9 }}>Veierland</div>
-              <Label color="var(--onDeepDim)" style={{ fontSize: 9.5 }}>M/F Jutøya · Ferge</Label>
+              <Label color="var(--onDeepDim)" style={{ fontSize: 9.5 }}>{ferryName(getOsloDate())} · Ferge</Label>
             </div>
           </div>
           <WeatherChip weather={weather} onDeep onClick={onOpenWeather} />
@@ -191,7 +192,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
             <CompassMark size={34} color="var(--onDeep)" opacity={0.85} />
             <div style={{ textAlign: 'left' }}>
               <div style={{ fontFamily: 'var(--num)', fontSize: 25, color: 'var(--onDeep)', lineHeight: 0.9 }}>Veierland</div>
-              <Label color="var(--onDeepDim)" style={{ fontSize: 9.5 }}>M/F Jutøya · Ferge</Label>
+              <Label color="var(--onDeepDim)" style={{ fontSize: 9.5 }}>{ferryName(getOsloDate())} · Ferge</Label>
             </div>
           </button>
           <WeatherChip weather={weather} onDeep onClick={onOpenWeather} />
@@ -307,6 +308,8 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
             })}
           </div>
         )}
+
+        <FerryLive />
 
         <a
           href="/rutetabell.html"
