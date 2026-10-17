@@ -140,7 +140,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
               <Icon name="calendar" size={18} color="var(--onDeep)" stroke={1.9} />
-              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)' }}>Klassisk rutetabell</span>
+              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)' }}>Hele rutetabellen</span>
             </span>
             <Icon name="chevronRight" size={17} color="var(--onDeepDim)" stroke={2} />
           </a>
@@ -179,6 +179,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
   }
 
   return (
+    <>
     <div style={{ minHeight: '100dvh', background: 'linear-gradient(180deg, var(--deep) 0%, var(--deep2) 55%, var(--deep) 100%)', position: 'relative' }}>
       <div style={{ position: 'relative', padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 18px calc(env(safe-area-inset-bottom, 0px) + 96px)' }}>
         {/* header */}
@@ -202,6 +203,22 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
             <Icon name="swap" size={13} color="var(--accentInk)" stroke={2.2} />
           </button>
         </div>
+
+        {/* planlegg: velg dag direkte fra forsiden */}
+        {(() => {
+          const today = getOsloDate();
+          const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+          const chip: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, flex: 1, minWidth: 0, padding: '10px 8px', borderRadius: 99, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13.5, color: 'var(--onDeep)', whiteSpace: 'nowrap' };
+          return (
+            <div data-tour="rutetabell-btn" style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button onClick={() => onPlanDate(ymd(today))} style={chip}>I dag</button>
+              <button onClick={() => onPlanDate(ymd(tomorrow))} style={chip}>I morgen</button>
+              <button onClick={() => setPlanCal(true)} style={chip}>
+                <Icon name="calendar" size={15} color="var(--onDeep)" stroke={2} style={{ flexShrink: 0 }} />Velg dato
+              </button>
+            </div>
+          );
+        })()}
 
         {/* next departure hero */}
         {dep ? (
@@ -295,7 +312,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
             <Icon name="calendar" size={19} color="var(--onDeep)" stroke={1.9} />
-            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)' }}>Klassisk rutetabell</span>
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)' }}>Hele rutetabellen</span>
           </span>
           <Icon name="chevronRight" size={18} color="var(--onDeepDim)" stroke={2} />
         </a>
@@ -323,5 +340,12 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
         )}
       </div>
     </div>
+    <PlanCalendar
+      open={planCal}
+      selected={planDate ?? ymd(getOsloDate())}
+      onSelect={(ds) => { setPlanDate(ds); onPlanDate(ds); }}
+      onClose={() => setPlanCal(false)}
+    />
+    </>
   );
 }

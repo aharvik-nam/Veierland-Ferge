@@ -178,7 +178,7 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
             <button onClick={onBack} style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <Icon name="chevronLeft" size={20} color="var(--onDeep)" stroke={2.2} />
             </button>
-            <div style={{ fontFamily: 'var(--num)', fontSize: 26, color: 'var(--onDeep)' }}>Rutetabell</div>
+            <div style={{ fontFamily: 'var(--num)', fontSize: 26, color: 'var(--onDeep)' }}>Avganger</div>
           </div>
           <div data-tour="results-route-bar" style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radSm)', padding: '10px 14px' }}>
             <button onClick={onEditFrom} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
@@ -256,7 +256,7 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
               <span style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
                 <Icon name="calendar" size={19} color="var(--inkDim)" stroke={1.9} />
                 <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>
-                  {isSummer ? 'Klassisk rutetabell (sommer)' : 'Klassisk rutetabell'}
+                  {isSummer ? 'Hele rutetabellen (sommer)' : 'Hele rutetabellen'}
                 </span>
               </span>
               <Icon name="chevronRight" size={18} color="var(--inkDim)" stroke={2} />

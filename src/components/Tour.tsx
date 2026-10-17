@@ -40,7 +40,7 @@ const TOURS: Record<TourScreen, TourStep[]> = {
     },
     {
       title: 'Neste avgang',
-      body: 'Her vises neste ferge med nedtelling i minutter. «Se reisedetaljer» viser full ruteinfo med alle stopp, varighet og eventuelle bookingkrav for den avgangen.',
+      body: 'Her vises neste ferge med klokkeslett og nedtelling. Trykk på avgangen for alle stopp og eventuelle bestillingskrav, eller «Se alle avganger» for hele dagen.',
       selector: 'hero-card',
     },
     {
@@ -54,8 +54,8 @@ const TOURS: Record<TourScreen, TourStep[]> = {
       selector: 'status-signal',
     },
     {
-      title: 'Rutetabell',
-      body: 'Se alle avganger for valgt rute. Du kan bla mellom de neste 7 dagene, eller angi en spesifikk dato for å planlegge turen fremover.',
+      title: 'Planlegg reise',
+      body: 'Se alle avganger for valgt strekning i dag eller i morgen — eller velg en annen dato for å planlegge turen fremover.',
       selector: 'rutetabell-btn',
     },
   ],
