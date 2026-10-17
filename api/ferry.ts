@@ -3,7 +3,14 @@
 // (gratis API-klient på barentswatch.no, tilgang til AIS). FERRY_MMSI overstyrer fartøyet.
 
 // M/F Humla = GO VAKKER RANDI, erstatningsferge mens M/F Jutøya er på verksted
-const DEFAULT_MMSI = '257281900';
+const HUMLA_MMSI = '257281900';
+const JUTOYA_MMSI = '257207800';
+const HUMLA_FROM = '2026-10-17', HUMLA_TO = '2027-02-28'; // samme periode som isMaintenancePeriod
+
+function defaultMmsi(): string {
+  const today = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Oslo' }).slice(0, 10);
+  return today >= HUMLA_FROM && today <= HUMLA_TO ? HUMLA_MMSI : JUTOYA_MMSI;
+}
 
 const TOKEN_URL = 'https://id.barentswatch.no/connect/token';
 const AIS_BASE = 'https://live.ais.barentswatch.no';
@@ -86,7 +93,7 @@ export async function GET(): Promise<Response> {
   const clientSecret = process.env.BARENTSWATCH_CLIENT_SECRET;
   if (!clientId || !clientSecret) return json({ error: 'not_configured' }, 503, 300);
 
-  const mmsi = Number(process.env.FERRY_MMSI || DEFAULT_MMSI);
+  const mmsi = Number(process.env.FERRY_MMSI || defaultMmsi());
   try {
     const token = await getToken(clientId, clientSecret);
     const pos = await fetchPosition(token, mmsi);
