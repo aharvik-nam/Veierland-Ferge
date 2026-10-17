@@ -94,7 +94,7 @@ function routeFraction(pos: FerryPos, line: StopId[]): number {
   return best.u;
 }
 
-// Ruten som en rett linje: Engø til venstre, Tenvik til høyre, ferga plassert langs linja
+// Ruten som en rett linje: Tenvik til venstre, Engø til høyre, ferga plassert langs linja
 function RouteLine({ pos, line, target, showFerry }: { pos: FerryPos; line: StopId[]; target: StopId | null; showFerry: boolean }) {
   const X0 = 24, X1 = 296;
   const xs = line.map((_, i) => X0 + (X1 - X0) * i / (line.length - 1));
@@ -133,7 +133,7 @@ export function FerryLive() {
 
   const humla = isMaintenancePeriod(getOsloDate());
   const stops: StopId[] = humla ? ['tenvik', 'tangen', 'engo'] : ['tenvik', 'vestgarden', 'tangen', 'engo'];
-  const line: StopId[] = humla ? ['engo', 'tangen', 'tenvik'] : ['engo', 'tangen', 'vestgarden', 'tenvik'];
+  const line: StopId[] = humla ? ['tenvik', 'tangen', 'engo'] : ['tenvik', 'vestgarden', 'tangen', 'engo'];
   const status = ferryStatus(pos, stops);
   const age = ageLabel(pos.time);
   const moving = pos.sog != null && pos.sog >= 1.5;
