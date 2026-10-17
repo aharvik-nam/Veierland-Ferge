@@ -85,6 +85,15 @@ function SettingsSheet({ open, theme, style: stylePref, animate, onTheme, onStyl
   );
 }
 
+const STOP_IDS: StopId[] = ['buss_tbg', 'tenvik', 'vestgarden', 'engo', 'tangen', 'buss_tenv'];
+function savedStop(key: string, fallback: StopId): StopId {
+  let v: string | null = null;
+  try { v = localStorage.getItem(key); } catch { /* privat modus */ }
+  if (!v || !STOP_IDS.includes(v as StopId)) return fallback;
+  if (v === 'vestgarden' && isMaintenancePeriod(getOsloDate())) return 'tangen';
+  return v as StopId;
+}
+
 export default function App() {
   const [onboarded, setOnboarded] = useState(() => localStorage.getItem('onboarded') === 'true');
   const [themeKey, setThemeKey] = useState<ThemeKey>(() => (localStorage.getItem('themeKey') as ThemeKey) || 'midnattsol');
@@ -96,8 +105,12 @@ export default function App() {
 
   const [screen, setScreen] = useState<Screen>('home');
   const [prevScreen, setPrevScreen] = useState<Screen>('home');
-  const [from, setFrom] = useState<StopId>('tenvik');
-  const [to, setTo] = useState<StopId>(() => isMaintenancePeriod(getOsloDate()) ? 'tangen' : 'vestgarden');
+  // Husk siste valgte strekning; Vestgården byttes ut mens den ikke anløpes
+  const [from, setFrom] = useState<StopId>(() => savedStop('routeFrom', 'tenvik'));
+  const [to, setTo] = useState<StopId>(() => savedStop('routeTo', 'tangen'));
+  useEffect(() => {
+    try { localStorage.setItem('routeFrom', from); localStorage.setItem('routeTo', to); } catch { /* privat modus */ }
+  }, [from, to]);
   const [selectedDate, setSelectedDate] = useState(ymd(getOsloDate()));
   const [trip, setTrip] = useState<Trip | null>(null);
   const [picker, setPicker] = useState<{ open: boolean; which: 'from' | 'to' | null }>({ open: false, which: null });

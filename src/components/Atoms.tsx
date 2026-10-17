@@ -118,23 +118,25 @@ export function TravelChips({ stop, onDeep = false, showCar: showCarProp, showWa
 }
 
 // ── DeepBand ─────────────────────────────────────────────────
-export function DeepBand({ children, animate, texture, style = {}, waves = true, ferry = false }: {
+export function DeepBand({ children, animate, texture, style = {}, waves = true, ferry = false, waveHeight = 70, ferrySize = 56 }: {
   children: React.ReactNode;
   animate: boolean;
   texture: boolean;
   style?: React.CSSProperties;
   waves?: boolean;
   ferry?: boolean;
+  waveHeight?: number;
+  ferrySize?: number;
 }) {
   return (
     <div style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(160deg, var(--deep) 0%, var(--deep2) 130%)', ...style }}>
       <ChartTexture on={texture} />
       {children}
-      {waves && <WaveField height={70} animate={animate} />}
+      {waves && <WaveField height={waveHeight} animate={animate} />}
       {ferry && (
-        <div style={{ position: 'absolute', bottom: 14, left: 0, width: 64, animation: animate ? 'ferryGlide 14s ease-in-out infinite' : 'none' }}>
+        <div style={{ position: 'absolute', bottom: Math.round(waveHeight / 5), left: 0, width: ferrySize + 8, animation: animate ? 'ferryGlide 14s ease-in-out infinite' : 'none' }}>
           <div style={{ animation: animate ? 'ferryBob 3.2s ease-in-out infinite' : 'none' }}>
-            <FerryGlyph size={56} hull="var(--accent)" cabin="var(--onDeep)" />
+            <FerryGlyph size={ferrySize} hull="var(--accent)" cabin="var(--onDeep)" />
           </div>
         </div>
       )}

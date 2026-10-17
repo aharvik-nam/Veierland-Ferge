@@ -44,8 +44,8 @@ const TOURS: Record<TourScreen, TourStep[]> = {
       selector: 'hero-card',
     },
     {
-      title: 'Bla mellom avganger',
-      body: 'Trykk «Neste avgang» for å se fergen etter den som vises. Trykk «Forrige avgang» for å bla tilbake — eller åpne detaljer for en avgang som allerede har gått.',
+      title: 'De neste avgangene',
+      body: 'Under «Deretter» ser du de neste avgangene etter den store. Trykk på en avgang for å se detaljer.',
       selector: 'mini-cards',
     },
     {
