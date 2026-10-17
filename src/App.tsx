@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { THEMES, STYLES, themeVars } from './theme';
-import { ymd, getOsloDate } from './ferryData';
+import { ymd, getOsloDate, isMaintenancePeriod } from './ferryData';
 import { HomeScreen } from './screens/HomeScreen';
 import { ResultsScreen } from './screens/ResultsScreen';
 import { DetailScreen } from './screens/DetailScreen';
@@ -97,7 +97,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>('home');
   const [prevScreen, setPrevScreen] = useState<Screen>('home');
   const [from, setFrom] = useState<StopId>('tenvik');
-  const [to, setTo] = useState<StopId>('vestgarden');
+  const [to, setTo] = useState<StopId>(() => isMaintenancePeriod(getOsloDate()) ? 'tangen' : 'vestgarden');
   const [selectedDate, setSelectedDate] = useState(ymd(getOsloDate()));
   const [trip, setTrip] = useState<Trip | null>(null);
   const [picker, setPicker] = useState<{ open: boolean; which: 'from' | 'to' | null }>({ open: false, which: null });

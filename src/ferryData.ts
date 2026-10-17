@@ -1,5 +1,5 @@
 import type { StopId, Trip, TripEvent, TripWarning } from './types';
-import { monFriLoops, satLoops, sunLoops, summerMonFriLoops, summerSatLoops, summerSunLoops } from './data';
+import { monFriLoops, satLoops, sunLoops, summerMonFriLoops, summerSatLoops, summerSunLoops, humlaMonFriLoops, humlaSatLoops, humlaSunLoops } from './data';
 
 export const stopsMap: Record<StopId, string> = {
   buss_tbg: "Buss fra Tønsberg",
@@ -73,7 +73,7 @@ export const stopTravel: Record<StopId, { drive: number; walk: number; showCar: 
 };
 
 const sequenceKeys = [
-  'bussTbg', 'tenvikUt', 'vestgardenUt', 'engoUt', 'tangenUt',
+  'bussTbg', 'tenvikUt', 'vestgardenUt', 'tangenVia', 'engoUt', 'tangenUt',
   'tangenInn', 'engoInn', 'vestgardenInn', 'tenvikInn', 'bussTenvik'
 ] as const;
 
@@ -82,7 +82,7 @@ function getStopIdForKey(k: string): StopId | null {
   if (k === 'tenvikUt' || k === 'tenvikInn') return 'tenvik';
   if (k === 'vestgardenUt' || k === 'vestgardenInn') return 'vestgarden';
   if (k === 'engoUt' || k === 'engoInn') return 'engo';
-  if (k === 'tangenUt' || k === 'tangenInn') return 'tangen';
+  if (k === 'tangenVia' || k === 'tangenUt' || k === 'tangenInn') return 'tangen';
   if (k === 'bussTenvik') return 'buss_tenv';
   return null;
 }
@@ -140,12 +140,11 @@ export function isSummerSeason(dateObj: Date): boolean {
   return false;
 }
 
-// Verkstedopphold ca. 1. sep – 1. des 2026: kun Tenvik ↔ Vestgården, erstatningsfartøy
+// M/F Jutøya på verksted: M/F Humla seiler fom. 17. okt. 2026 til ca. 1. mars 2027.
+// Kun Tenvik–Tangen–(Engø)–Tangen, Vestgården utgår.
 export function isMaintenancePeriod(dateObj: Date): boolean {
-  const y = dateObj.getFullYear(), m = dateObj.getMonth() + 1, d = dateObj.getDate();
-  if (y === 2026 && (m === 10 || m === 11 || m === 12)) return true;
-  if (y === 2027 && m === 1 && d <= 1) return true;
-  return false;
+  const s = ymd(dateObj);
+  return s >= '2026-10-17' && s <= '2027-02-28';
 }
 
 function getAdminSeason(dateObj: Date): { monFri: FerryLoop[], sat: FerryLoop[], sun: FerryLoop[] } | null {
@@ -174,6 +173,11 @@ function loopsFor(dayType: string, dateObj: Date): any[] {
     if (dayType === 'sat') return admin.sat;
     if (dayType === 'sun') return admin.sun;
     return admin.monFri;
+  }
+  if (isMaintenancePeriod(dateObj)) {
+    if (dayType === 'sat') return humlaSatLoops;
+    if (dayType === 'sun') return humlaSunLoops;
+    return humlaMonFriLoops;
   }
   const summer = isSummerSeason(dateObj);
   if (dayType === 'sat') return summer ? summerSatLoops : satLoops;
@@ -223,14 +227,27 @@ export function findTripsForDay(dayType: 'monfri' | 'sat' | 'sun', dateObj: Date
     if (loop.rowType === 'booking' && !warnings.some(w => w.type === 'booking')) {
       warnings.push({ type: 'booking', deadline: '18:00', text: loop.note || 'Må forhåndsbestilles. Ring fergen for å bestille.' });
     }
-    if (loop.rowType === 'engo' && !warnings.some(w => w.type === 'engo')) {
+    if (loop.rowType === 'engo' && hasEngo && !warnings.some(w => w.type === 'engo')) {
       warnings.push({ type: 'engo', text: loop.note || 'Rød avgang via Engø. Ring fergen for å forhåndsbestille.' });
     }
 
-    if (hasEngo && !isEngoSeason && !warnings.some(w => w.type === 'engo')) {
+    const humla = isMaintenancePeriod(dateObj);
+    if (hasEngo && !isEngoSeason && !humla && !warnings.some(w => w.type === 'engo')) {
       warnings.push({ type: 'engo', text: 'Rød avgang via Engø — kjøres normalt kun 1. april–28. sep. Ring fergen for å forhåndsbestille.' });
     }
-    if (isSummerSeason(dateObj)) {
+    if (humla) {
+      // M/F Humla: kveldsavganger må bestilles før 18:00, lørdag morgen kvelden før
+      if (dayType === 'monfri' || dayType === 'sun') {
+        if ((startStop === 'tangen' && startTime >= '20:20') ||
+            (startStop === 'tenvik' && startTime >= '21:30')) {
+          warnings.push({ type: 'booking', deadline: '18:00', text: 'Må forhåndsbestilles senest kl. 18:00 på avreisedagen.' });
+        }
+      } else if (dayType === 'sat') {
+        if (startStop === 'tangen' && startTime <= '07:50') {
+          warnings.push({ type: 'booking', deadline: 'kvelden før, 20:00', text: 'Må forhåndsbestilles kvelden før, innen kl. 20:00.' });
+        }
+      }
+    } else if (isSummerSeason(dateObj)) {
       // Sommerruter: siste tur krever bestilling innen kl. 20:00 samme dag
       if (dayType === 'monfri') {
         if ((startStop === 'tenvik' && startTime >= '21:45') ||

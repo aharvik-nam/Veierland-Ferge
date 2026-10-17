@@ -165,8 +165,8 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 'var(--rad)', background: 'rgba(220,50,50,0.15)', border: '1px solid rgba(220,50,50,0.35)' }}>
               <Icon name="alert" size={15} color="#ff6b6b" stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
               <div>
-                <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: '#ff6b6b', marginBottom: 2 }}>M/F Jutøya til verksted · ca. 1. sep – 1. des.</div>
-                <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--onDeepDim)', lineHeight: 1.4 }}>Erstatningsfartøy: kun Tenvik og Vestgården. Ingen last, sykler eller varer.</div>
+                <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: '#ff6b6b', marginBottom: 2 }}>M/F Humla seiler · 17. okt. – ca. 1. mars</div>
+                <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--onDeepDim)', lineHeight: 1.4 }}>Kun Tenvik–Tangen (Engø). Vestgården utgår. Kun passasjerer og håndbagasje.</div>
               </div>
             </div>
           )}
@@ -337,8 +337,8 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
           <div style={{ marginTop: 8, display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 'var(--rad)', background: 'rgba(220,50,50,0.15)', border: '1px solid rgba(220,50,50,0.35)' }}>
             <Icon name="alert" size={15} color="#ff6b6b" stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
             <div>
-              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: '#ff6b6b', marginBottom: 2 }}>M/F Jutøya til verksted · ca. 1. sep – 1. des.</div>
-              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--onDeepDim)', lineHeight: 1.4 }}>Erstatningsfartøy: kun Tenvik og Vestgården. Ingen last, sykler eller varer.</div>
+              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: '#ff6b6b', marginBottom: 2 }}>M/F Humla seiler · 17. okt. – ca. 1. mars</div>
+              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--onDeepDim)', lineHeight: 1.4 }}>Kun Tenvik–Tangen (Engø). Vestgården utgår. Kun passasjerer og håndbagasje.</div>
             </div>
           </div>
         )}

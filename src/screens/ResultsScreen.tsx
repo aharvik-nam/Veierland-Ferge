@@ -209,8 +209,8 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, margin: '8px 18px 0', padding: '12px 14px', borderRadius: 'var(--radSm)', background: 'color-mix(in srgb, var(--bad) 12%, var(--surface))', border: '1px solid color-mix(in srgb, var(--bad) 30%, transparent)' }}>
             <Icon name="alert" size={15} color="var(--bad)" stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
             <div>
-              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: 'var(--bad)', marginBottom: 2 }}>M/F Jutøya til verksted · ca. 1. sep – 1. des.</div>
-              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--inkDim)', lineHeight: 1.4 }}>Erstatningsfartøy: kun Tenvik og Vestgården. Ingen last, sykler eller varer.</div>
+              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: 'var(--bad)', marginBottom: 2 }}>M/F Humla seiler · 17. okt. – ca. 1. mars</div>
+              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12, color: 'var(--inkDim)', lineHeight: 1.4 }}>Kun Tenvik–Tangen (Engø). Vestgården utgår. Kun passasjerer og håndbagasje.</div>
             </div>
           </div>
         )}
@@ -219,12 +219,12 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
       {/* scrollable trip list */}
       <div data-tour="trip-list" ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 18px calc(env(safe-area-inset-bottom, 0px) + 96px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-        {isMaintenancePeriod(selDate) && (from === 'tangen' || to === 'tangen' || from === 'engo' || to === 'engo') ? (
+        {isMaintenancePeriod(selDate) && (from === 'vestgarden' || to === 'vestgarden') ? (
           <div style={{ marginTop: 30, padding: 36, borderRadius: 'var(--rad)', background: 'var(--surface)', border: '1px dashed color-mix(in srgb, var(--bad) 40%, transparent)', textAlign: 'center' }}>
             <Icon name="alert" size={32} color="var(--bad)" />
             <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--bad)', marginTop: 12 }}>Midlertidig stengt</div>
             <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12.5, color: 'var(--inkDim)', marginTop: 6, lineHeight: 1.45 }}>
-              Tangen og Engø er ute av drift ca. 1. sep – 1. des. 2026 mens M/F Jutøya er til verksted.
+              Vestgården utgår mens M/F Humla seiler (17. okt. 2026 – ca. 1. mars 2027). Bruk Tangen.
             </div>
           </div>
         ) : trips.length === 0 ? (
