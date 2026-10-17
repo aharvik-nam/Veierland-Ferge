@@ -136,13 +136,13 @@ function RouteLine({ pos, line, target, showFerry, highlight }: { pos: FerryPos;
       ))}
       {showFerry && (
         <g transform={`translate(${fx} 24)`}>
-          <circle r={10} fill="var(--accent)" opacity={0.3}>
+          <circle r={10} fill="var(--accentOnDeep)" opacity={0.3}>
             <animate attributeName="r" values="7;15;7" dur="2.4s" repeatCount="indefinite" />
             <animate attributeName="opacity" values="0.4;0;0.4" dur="2.4s" repeatCount="indefinite" />
           </circle>
           {dir === 0
-            ? <circle r={6.5} fill="var(--accent)" stroke="var(--deep)" strokeWidth={1.5} />
-            : <path d="M0,-9 L6.3,6.8 L0,3.6 L-6.3,6.8 Z" fill="var(--accent)" stroke="var(--deep)" strokeWidth={1.2} transform={`rotate(${dir * 90})`} />}
+            ? <circle r={6.5} fill="var(--accentOnDeep)" stroke="var(--deep)" strokeWidth={1.5} />
+            : <path d="M0,-9 L6.3,6.8 L0,3.6 L-6.3,6.8 Z" fill="var(--accentOnDeep)" stroke="var(--deep)" strokeWidth={1.2} transform={`rotate(${dir * 90})`} />}
         </g>
       )}
     </svg>
@@ -176,14 +176,14 @@ export function FerryLive({ dep }: { dep?: Trip | null }) {
             {moving && !status.far && <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--onDeepDim)' }}> · {pos.sog!.toFixed(0)} knop</span>}
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 11, color: age.stale ? 'var(--warn)' : 'var(--onDeepDim)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 11, color: age.stale ? 'color-mix(in srgb, var(--warn) 55%, white)' : 'var(--onDeepDim)' }}>
           <Icon name="clock" size={12} color="currentColor" stroke={2} />
           <span style={{ whiteSpace: 'nowrap' }}>{age.short}</span>
         </div>
       </div>
       <RouteLine pos={pos} line={line} target={status.target} showFerry={!status.far} highlight={note?.stop ?? null} />
       {note && (
-        <div style={{ marginTop: 8, padding: '9px 12px', borderRadius: 'var(--radSm)', background: note.late ? 'color-mix(in srgb, var(--warn) 18%, transparent)' : 'color-mix(in srgb, var(--accent) 16%, transparent)', display: 'flex', alignItems: 'center', gap: 8, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, color: note.late ? 'var(--warn)' : 'var(--accent)', lineHeight: 1.35 }}>
+        <div style={{ marginTop: 8, padding: '9px 12px', borderRadius: 'var(--radSm)', background: note.late ? 'color-mix(in srgb, var(--warn) 20%, transparent)' : 'color-mix(in srgb, var(--accentOnDeep) 16%, transparent)', display: 'flex', alignItems: 'center', gap: 8, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, color: note.late ? 'color-mix(in srgb, var(--warn) 55%, white)' : 'var(--accentOnDeep)', lineHeight: 1.35 }}>
           <Icon name={note.late ? 'alert' : 'clock'} size={14} color="currentColor" stroke={2.2} style={{ flexShrink: 0 }} />
           <span>{note.text}</span>
         </div>

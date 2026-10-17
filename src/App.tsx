@@ -104,7 +104,7 @@ function savedStop(key: string, fallback: StopId): StopId {
 
 export default function App() {
   const [onboarded, setOnboarded] = useState(() => localStorage.getItem('onboarded') === 'true');
-  const [themeKey, setThemeKey] = useState<ThemeKey>(() => (localStorage.getItem('themeKey') as ThemeKey) || 'midnattsol');
+  const [themeKey, setThemeKey] = useState<ThemeKey>(() => (localStorage.getItem('themeKey') as ThemeKey) || 'fjord');
   const [styleKey, setStyleKey] = useState<StyleKey>(() => (localStorage.getItem('styleKey') as StyleKey) || 'sjokart');
   const [animate, setAnimate] = useState(() => localStorage.getItem('animate') !== 'false');
   const [settingsOpen, setSettingsOpen] = useState(false);

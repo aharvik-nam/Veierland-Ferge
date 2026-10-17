@@ -41,6 +41,7 @@ export interface Theme {
   line: string;
   accent: string;
   accentInk: string;
+  accentOnDeep: string; // lysere aksent for tekst og markører på mørk bakgrunn
   accent2: string;
   good: string;
   warn: string;

@@ -23,7 +23,7 @@ export function NumTime({ children, size = 40, color = 'var(--ink)', style = {} 
 
 // ── StopDot ──────────────────────────────────────────────────
 export function StopDot({ role, size = 11 }: { role: 'from' | 'to' | 'via'; size?: number }) {
-  const fill = role === 'to' ? 'var(--accent)' : role === 'from' ? 'var(--accent2)' : 'transparent';
+  const fill = role === 'to' ? 'var(--accentOnDeep)' : role === 'from' ? 'var(--accent2)' : 'transparent';
   return (
     <span style={{
       width: size, height: size, borderRadius: 99, background: fill,
@@ -136,7 +136,7 @@ export function DeepBand({ children, animate, texture, style = {}, waves = true,
       {ferry && (
         <div style={{ position: 'absolute', bottom: Math.round(waveHeight / 5), left: 0, width: ferrySize + 8, animation: animate ? 'ferryGlide 14s ease-in-out infinite' : 'none' }}>
           <div style={{ animation: animate ? 'ferryBob 3.2s ease-in-out infinite' : 'none' }}>
-            <FerryGlyph size={ferrySize} hull="var(--accent)" cabin="var(--onDeep)" />
+            <FerryGlyph size={ferrySize} hull="var(--accentOnDeep)" cabin="var(--onDeep)" />
           </div>
         </div>
       )}

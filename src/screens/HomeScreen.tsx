@@ -5,6 +5,7 @@ import { DeepBand, WeatherChip, RouteCard, NumTime, Label } from '../components/
 import { nextDepartures, minsUntil, fmtCountdown, ymd, getOsloDate, parseYmd, stopsMap, stopShort, bookingStatus, isSummerSeason, isMaintenancePeriod, ferryName } from '../ferryData';
 import { FerryLive } from '../components/FerryLive';
 import { HumlaNotice } from '../components/HumlaNotice';
+import { rutetabellUrl } from '../theme';
 import type { StopId, Weather, Trip } from '../types';
 
 const PLAN_MONTHS = ['januar','februar','mars','april','mai','juni','juli','august','september','oktober','november','desember'];
@@ -134,13 +135,13 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
             <Icon name="arrowRight" size={18} color="var(--accentInk)" stroke={2.2} />
           </button>
 
-          <button onClick={() => setPlanCal(true)} style={{ width: '100%', padding: '16px', borderRadius: 'var(--rad)', background: 'transparent', border: '2px solid var(--accent)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-            <Icon name="calendar" size={18} color="var(--accent)" stroke={2.2} />
-            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 16, color: 'var(--accent)' }}>{planDate ? formatPlanDate(planDate) : 'Planlegg reise'}</span>
+          <button onClick={() => setPlanCal(true)} style={{ width: '100%', padding: '16px', borderRadius: 'var(--rad)', background: 'transparent', border: '2px solid var(--accentOnDeep)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <Icon name="calendar" size={18} color="var(--accentOnDeep)" stroke={2.2} />
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 16, color: 'var(--accentOnDeep)' }}>{planDate ? formatPlanDate(planDate) : 'Planlegg reise'}</span>
           </button>
 
           <a
-            href="/rutetabell.html"
+            href={rutetabellUrl()}
             target="_blank"
             rel="noopener noreferrer"
             style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', textDecoration: 'none', boxSizing: 'border-box' }}
@@ -241,7 +242,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
                 <div style={{ marginTop: 6, display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
                   <NumTime size={64} color="var(--onDeep)">{dep.startTime}</NumTime>
                   {countdown != null && countdown > 0 && (
-                    <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 17, color: 'var(--accent)', whiteSpace: 'nowrap' }}>om {fmtCountdown(countdown)}</span>
+                    <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 17, color: 'var(--accentOnDeep)', whiteSpace: 'nowrap' }}>om {fmtCountdown(countdown)}</span>
                   )}
                 </div>
                 <div style={{ marginTop: 6, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 14, color: 'var(--onDeepDim)' }}>
@@ -314,7 +315,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
         <FerryLive dep={dep} />
 
         <a
-          href="/rutetabell.html"
+          href={rutetabellUrl()}
           target="_blank"
           rel="noopener noreferrer"
           style={{ marginTop: 16, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', textDecoration: 'none', boxSizing: 'border-box' }}

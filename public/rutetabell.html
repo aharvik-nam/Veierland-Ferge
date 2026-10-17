@@ -17,9 +17,13 @@
     lanterne:   { deep: '#102539', deep2: '#1C476B', onDeep: '#E9F1F8', onDeepDim: 'rgba(233,241,248,0.60)', surface: '#FFFFFF', surfaceAlt: '#EDF2F8', ink: '#112338', inkDim: '#5A6B7E', line: 'rgba(17,35,56,0.10)', accent: '#D31E36', accentInk: '#FFF1F2', accent2: '#2E6E9E', bad: '#D31E36' }
   };
   var RADIUS = { sjokart: 26, tavle: 13, mykt: 34 };
-  var key = 'midnattsol', style = 'sjokart';
+  // Tema fra lenken (appen sender det med), ellers fra lagring, ellers Fjord
+  var key = 'fjord', style = 'sjokart';
   try { key = localStorage.getItem('themeKey') || key; style = localStorage.getItem('styleKey') || style; } catch (e) {}
-  var t = THEMES[key] || THEMES.midnattsol, r = RADIUS[style] || 26, s = document.documentElement.style;
+  var q = new URLSearchParams(location.search);
+  if (q.get('theme')) key = q.get('theme');
+  if (q.get('style')) style = q.get('style');
+  var t = THEMES[key] || THEMES.fjord, r = RADIUS[style] || 26, s = document.documentElement.style;
   for (var k in t) s.setProperty('--' + k, t[k]);
   s.setProperty('--rad', r + 'px');
   s.setProperty('--radSm', Math.max(8, r - 10) + 'px');

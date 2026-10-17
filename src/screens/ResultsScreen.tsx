@@ -3,6 +3,7 @@ import { Icon } from '../components/Icons';
 import { DeepBand, StopDot, Label, TripCard } from '../components/Atoms';
 import { findTripsForDay, dayTypeOf, parseYmd, parseTime, minsUntil, ymd, getOsloDate, stopShort, isSummerSeason, isMaintenancePeriod, NO_DAYS_EXPORT as NO_DAYS, NO_MONTHS_EXPORT } from '../ferryData';
 import { HumlaNotice } from '../components/HumlaNotice';
+import { rutetabellUrl } from '../theme';
 import type { StopId, Trip } from '../types';
 
 function cap(s: string): string { return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -245,7 +246,7 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
           const isSummer = isSummerSeason(selDate);
           return (
             <a
-              href={isSummer ? '/rutetabell.png' : '/rutetabell.html'}
+              href={isSummer ? '/rutetabell.png' : rutetabellUrl()}
               target="_blank"
               rel="noopener noreferrer"
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'var(--surface)', border: '1px solid var(--line)', cursor: 'pointer', textDecoration: 'none', marginTop: 4 }}
