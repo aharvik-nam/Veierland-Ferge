@@ -89,7 +89,10 @@ async function fetchPosition(token: string, mmsi: number): Promise<AisMessage | 
 }
 
 export async function GET(): Promise<Response> {
-  const clientId = process.env.BARENTSWATCH_CLIENT_ID;
+  // Tåler både «navn@epost.no:Klient» og den URL-kodede varianten fra BarentsWatch
+  const rawId = process.env.BARENTSWATCH_CLIENT_ID?.trim();
+  let clientId = rawId;
+  try { if (rawId?.includes('%')) clientId = decodeURIComponent(rawId); } catch { /* bruk som den er */ }
   const clientSecret = process.env.BARENTSWATCH_CLIENT_SECRET;
   if (!clientId || !clientSecret) return json({ error: 'not_configured' }, 503, 300);
 
