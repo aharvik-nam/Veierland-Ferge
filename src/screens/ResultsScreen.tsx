@@ -191,7 +191,7 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
               <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>{stopShort[from]}</span>
             </button>
             <button onClick={onSwap} style={{ width: 30, height: 30, borderRadius: 99, background: 'var(--accent)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-              <Icon name="swap" size={15} color="var(--accentInk)" stroke={2.2} />
+              <Icon name="swapH" size={15} color="var(--accentInk)" stroke={2.2} />
             </button>
             <button onClick={onEditTo} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
               <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>{stopShort[to]}</span>

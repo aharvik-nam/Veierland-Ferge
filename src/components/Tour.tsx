@@ -35,7 +35,7 @@ const TOURS: Record<TourScreen, TourStep[]> = {
   home: [
     {
       title: 'Bytt rute raskt',
-      body: 'Trykk på linjen for å endre avreisested. Pil-knappen til høyre snur ruten — nyttig når du er på vei tilbake fra øya.',
+      body: 'Trykk på avreise- eller ankomststedet for å endre det. Knappen i midten bytter retning — nyttig når du er på vei tilbake fra øya.',
       selector: 'compact-route-bar',
     },
     {

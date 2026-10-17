@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CompassMark } from '../components/Icons';
 import { Icon } from '../components/Icons';
 import { DeepBand, WeatherChip, RouteCard, NumTime, Label } from '../components/Atoms';
-import { nextDepartures, minsUntil, fmtCountdown, ymd, getOsloDate, parseYmd, stopsMap, bookingStatus, isSummerSeason, isMaintenancePeriod, ferryName } from '../ferryData';
+import { nextDepartures, minsUntil, fmtCountdown, ymd, getOsloDate, parseYmd, stopsMap, stopShort, bookingStatus, isSummerSeason, isMaintenancePeriod, ferryName } from '../ferryData';
 import { FerryLive } from '../components/FerryLive';
 import { HumlaNotice } from '../components/HumlaNotice';
 import type { StopId, Weather, Trip } from '../types';
@@ -199,12 +199,17 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
         </div>
 
         {/* compact route bar */}
-        <div data-tour="compact-route-bar" onClick={onEditFrom} role="button" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radSm)', padding: '10px 14px', cursor: 'pointer' }}>
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--onDeep)', whiteSpace: 'nowrap' }}>{stopsMap[from]}</span>
-          <Icon name="arrowRight" size={14} color="var(--onDeepDim)" stroke={2} style={{ flexShrink: 0 }} />
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--onDeep)', whiteSpace: 'nowrap', flex: 1, textAlign: 'right' }}>{stopsMap[to]}</span>
-          <button onClick={e => { e.stopPropagation(); onSwap(); }} style={{ marginLeft: 6, width: 28, height: 28, borderRadius: 99, background: 'var(--accent)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-            <Icon name="swap" size={13} color="var(--accentInk)" stroke={2.2} />
+        <div data-tour="compact-route-bar" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radSm)', padding: '6px 6px' }}>
+          <button onClick={onEditFrom} aria-label="Endre avreisested" style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 8px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stopShort[from]}</span>
+            <Icon name="chevronDown" size={14} color="var(--onDeepDim)" stroke={2} style={{ flexShrink: 0 }} />
+          </button>
+          <button onClick={onSwap} aria-label="Bytt avreise og ankomst" style={{ width: 36, height: 36, borderRadius: 99, background: 'var(--accent)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+            <Icon name="swapH" size={17} color="var(--accentInk)" stroke={2.2} />
+          </button>
+          <button onClick={onEditTo} aria-label="Endre ankomststed" style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, padding: '8px 8px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'right' }}>
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stopShort[to]}</span>
+            <Icon name="chevronDown" size={14} color="var(--onDeepDim)" stroke={2} style={{ flexShrink: 0 }} />
           </button>
         </div>
 
