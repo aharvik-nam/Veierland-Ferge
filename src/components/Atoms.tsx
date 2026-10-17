@@ -214,8 +214,8 @@ export function RouteCard({ from, to, onEditFrom, onEditTo, onSwap }: { from: St
           <div style={{ width: 2, height: 22, background: 'repeating-linear-gradient(var(--onDeepDim) 0 3px, transparent 3px 7px)' }} />
         </div>
         <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.10)' }} />
-        <button onClick={onSwap} style={{ width: 40, height: 40, borderRadius: 99, background: 'var(--accent)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,0.25)' }}>
-          <Icon name="swap" size={19} color="var(--accentInk)" stroke={2.2} />
+        <button onClick={onSwap} aria-label="Bytt avreise og ankomst" style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,0.25)' }}>
+          <Icon name="swap" size={19} color="var(--onDeep)" stroke={2.2} />
         </button>
       </div>
       <Row role="to" stop={to} onEdit={onEditTo} />
@@ -270,7 +270,7 @@ export function TripCard({ trip, isNext, countdown, onClick }: { trip: Trip; isN
           <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 9.5, letterSpacing: '0.06em', color: 'var(--inkDim)', opacity: 0.7 }}>{viaLabel(trip)}</span>
         </div>
         <div style={{ textAlign: 'center' }}>
-          <NumTime size={34} color="var(--accent)">{trip.endTime}</NumTime>
+          <NumTime size={30} color="var(--inkDim)">{trip.endTime}</NumTime>
           <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 10.5, color: 'var(--inkDim)', marginTop: 3 }}>{stopShort[trip.subpath[trip.subpath.length - 1].stopId]}</div>
         </div>
         <Icon name="chevronRight" size={18} color="var(--inkDim)" stroke={2} style={{ opacity: 0.5 }} />
@@ -282,9 +282,9 @@ export function TripCard({ trip, isNext, countdown, onClick }: { trip: Trip; isN
         </a>
       )}
       {engo && !bs.required && (
-        <div style={{ padding: '8px 16px', background: 'color-mix(in srgb, var(--accent) 8%, var(--surface))', borderTop: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Icon name="info" size={14} color="var(--accent)" stroke={2} />
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 11, color: 'var(--accent)' }}>Rød avgang via Engø</span>
+        <div style={{ padding: '8px 16px', background: 'color-mix(in srgb, var(--bad) 8%, var(--surface))', borderTop: '1px solid color-mix(in srgb, var(--bad) 20%, transparent)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Icon name="phone" size={14} color="var(--bad)" stroke={2} />
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 11.5, color: 'var(--bad)' }}>Engø-anløp må forhåndsbestilles – ring fergen</span>
         </div>
       )}
     </button>

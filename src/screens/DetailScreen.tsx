@@ -29,7 +29,7 @@ function RouteTimeline({ trip, animate }: { trip: Trip; animate: boolean }) {
               </div>
               <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                 <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: first || last ? 700 : 600, fontSize: first || last ? 16 : 14.5, color: first || last ? 'var(--ink)' : 'var(--inkDim)' }}>{ev.name}</span>
-                <NumTime size={first || last ? 26 : 21} color={last ? 'var(--accent)' : first ? 'var(--ink)' : 'var(--inkDim)'}>{ev.time}</NumTime>
+                <NumTime size={first || last ? 26 : 21} color={first || last ? 'var(--ink)' : 'var(--inkDim)'}>{ev.time}</NumTime>
               </div>
             </div>
           );
@@ -74,7 +74,7 @@ export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick
           </div>
           <div style={{ textAlign: 'right', flexShrink: 0 }}>
             <Label color="var(--onDeepDim)" style={{ fontSize: 10 }}>{stopShort[endStop]}</Label>
-            <NumTime size={40} color="var(--accent)" style={{ display: 'block', marginTop: 2 }}>{trip.endTime}</NumTime>
+            <NumTime size={40} color="var(--onDeepDim)" style={{ display: 'block', marginTop: 2 }}>{trip.endTime}</NumTime>
           </div>
         </div>
         {countdown != null && countdown >= 0 && (
@@ -104,10 +104,10 @@ export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick
               </div>
             )}
             {engo && (
-              <div style={{ display: 'flex', gap: 11, padding: '14px', borderRadius: 'var(--radSm)', background: 'color-mix(in srgb, var(--accent) 9%, var(--surface))', border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)' }}>
-                <Icon name="info" size={19} color="var(--accent)" stroke={2} style={{ flexShrink: 0, marginTop: 1 }} />
+              <div style={{ display: 'flex', gap: 11, padding: '14px', borderRadius: 'var(--radSm)', background: 'color-mix(in srgb, var(--bad) 9%, var(--surface))', border: '1px solid color-mix(in srgb, var(--bad) 25%, transparent)' }}>
+                <Icon name="phone" size={19} color="var(--bad)" stroke={2} style={{ flexShrink: 0, marginTop: 1 }} />
                 <div>
-                  <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13.5, color: 'var(--accent)' }}>Rød avgang via Engø</div>
+                  <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13.5, color: 'var(--bad)' }}>Engø-anløp må forhåndsbestilles</div>
                   <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12.5, color: 'var(--inkDim)', marginTop: 3, lineHeight: 1.4 }}>{engo.text}</div>
                 </div>
               </div>

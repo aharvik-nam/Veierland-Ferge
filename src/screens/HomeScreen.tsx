@@ -204,8 +204,8 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
             <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stopShort[from]}</span>
             <Icon name="chevronDown" size={14} color="var(--onDeepDim)" stroke={2} style={{ flexShrink: 0 }} />
           </button>
-          <button onClick={onSwap} aria-label="Bytt avreise og ankomst" style={{ width: 36, height: 36, borderRadius: 99, background: 'var(--accent)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-            <Icon name="swapH" size={17} color="var(--accentInk)" stroke={2.2} />
+          <button onClick={onSwap} aria-label="Bytt avreise og ankomst" style={{ width: 36, height: 36, borderRadius: 99, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+            <Icon name="swapH" size={17} color="var(--onDeep)" stroke={2.2} />
           </button>
           <button onClick={onEditTo} aria-label="Endre ankomststed" style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, padding: '8px 8px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'right' }}>
             <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stopShort[to]}</span>

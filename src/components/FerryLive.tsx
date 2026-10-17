@@ -173,7 +173,7 @@ export function FerryLive({ dep }: { dep?: Trip | null }) {
           <Label color="var(--onDeepDim)" style={{ fontSize: 9 }}>Ferga nå · {ferryName(getOsloDate())}</Label>
           <div style={{ marginTop: 5, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 17, color: 'var(--onDeep)', lineHeight: 1.2 }}>
             {status.text}
-            {moving && !status.far && <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--accent)' }}> · {pos.sog!.toFixed(0)} knop</span>}
+            {moving && !status.far && <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--onDeepDim)' }}> · {pos.sog!.toFixed(0)} knop</span>}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 11, color: age.stale ? 'var(--warn)' : 'var(--onDeepDim)' }}>
@@ -183,7 +183,7 @@ export function FerryLive({ dep }: { dep?: Trip | null }) {
       </div>
       <RouteLine pos={pos} line={line} target={status.target} showFerry={!status.far} highlight={note?.stop ?? null} />
       {note && (
-        <div style={{ marginTop: 8, padding: '9px 12px', borderRadius: 'var(--radSm)', background: note.late ? 'color-mix(in srgb, var(--warn) 18%, transparent)' : 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 8, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, color: note.late ? 'var(--warn)' : 'var(--onDeep)', lineHeight: 1.35 }}>
+        <div style={{ marginTop: 8, padding: '9px 12px', borderRadius: 'var(--radSm)', background: note.late ? 'color-mix(in srgb, var(--warn) 18%, transparent)' : 'color-mix(in srgb, var(--accent) 16%, transparent)', display: 'flex', alignItems: 'center', gap: 8, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, color: note.late ? 'var(--warn)' : 'var(--accent)', lineHeight: 1.35 }}>
           <Icon name={note.late ? 'alert' : 'clock'} size={14} color="currentColor" stroke={2.2} style={{ flexShrink: 0 }} />
           <span>{note.text}</span>
         </div>
