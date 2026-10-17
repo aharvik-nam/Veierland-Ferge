@@ -56,7 +56,7 @@ export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick
   const endStop = trip.subpath[trip.subpath.length - 1].stopId;
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'var(--surfaceAlt)' }}>
+    <div style={{ minHeight: '100dvh', background: 'linear-gradient(180deg, var(--deep) 0%, var(--deep2) 55%, var(--deep) 100%)' }}>
       <DeepBand animate={animate} texture={texture} ferry waves style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 20px 34px', borderBottomLeftRadius: 26, borderBottomRightRadius: 26 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18, position: 'relative', zIndex: 2 }}>
           <button onClick={onBack} style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>

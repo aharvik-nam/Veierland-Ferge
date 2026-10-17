@@ -294,8 +294,8 @@ export function TripCard({ trip, isNext, countdown, onClick }: { trip: Trip; isN
 // ── CallButton ───────────────────────────────────────────────
 export function CallButton({ compact = false }: { compact?: boolean }) {
   return (
-    <a href="tel:91888219" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 11, padding: compact ? '13px' : '17px', borderRadius: 'var(--rad)', background: 'var(--deep)', color: 'var(--onDeep)', textDecoration: 'none', boxShadow: '0 8px 22px -10px var(--deep)' }}>
-      <Icon name="phone" size={19} color="var(--onDeep)" stroke={1.9} />
+    <a href="tel:91888219" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 11, padding: compact ? '13px' : '17px', borderRadius: 'var(--rad)', background: 'var(--accent)', color: 'var(--accentInk)', textDecoration: 'none', boxShadow: '0 8px 22px -10px rgba(0,0,0,0.5)' }}>
+      <Icon name="phone" size={19} color="var(--accentInk)" stroke={1.9} />
       <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 16, letterSpacing: '0.01em', whiteSpace: 'nowrap' }}>Ring fergen · 918 88 219</span>
     </a>
   );

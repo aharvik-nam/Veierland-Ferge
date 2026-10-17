@@ -104,14 +104,14 @@ function DayChips({ selected, onSelect }: { selected: string; onSelect: (ds: str
   return (
     <div style={{ display: 'flex', alignItems: 'stretch', gap: 8, paddingLeft: 18 }}>
       {/* Static date picker button — always first */}
-      <button onClick={() => setCalOpen(true)} style={{ flexShrink: 0, padding: '9px 13px', borderRadius: 99, border: isCustom ? '1.5px solid var(--accent)' : '1.5px solid var(--line)', background: isCustom ? 'var(--accent)' : 'var(--surface)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+      <button onClick={() => setCalOpen(true)} style={{ flexShrink: 0, padding: '9px 13px', borderRadius: 99, border: isCustom ? '1.5px solid var(--accent)' : '1px solid rgba(255,255,255,0.14)', background: isCustom ? 'var(--accent)' : 'rgba(255,255,255,0.07)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
         {isCustom ? (
           <>
             <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: 'var(--accentInk)', whiteSpace: 'nowrap' }}>{customLabel}</span>
             <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 10, color: 'var(--accentInk)', opacity: 0.8 }}>{`${customDate!.getDate()}.${customDate!.getMonth() + 1}`}</span>
           </>
         ) : (
-          <Icon name="calendar" size={17} color="var(--inkDim)" stroke={2} />
+          <Icon name="calendar" size={17} color="var(--onDeep)" stroke={2} />
         )}
       </button>
 
@@ -121,15 +121,15 @@ function DayChips({ selected, onSelect }: { selected: string; onSelect: (ds: str
           {days.map(d => {
             const on = d.ds === selected;
             return (
-              <button key={d.ds} onClick={() => onSelect(d.ds)} style={{ flexShrink: 0, padding: '9px 15px', borderRadius: 99, border: on ? '1.5px solid var(--accent)' : '1.5px solid var(--line)', background: on ? 'var(--accent)' : 'var(--surface)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: on ? 'var(--accentInk)' : 'var(--ink)' }}>{d.label}</span>
-                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 10, color: on ? 'var(--accentInk)' : 'var(--inkDim)', opacity: 0.8 }}>{d.num}</span>
+              <button key={d.ds} onClick={() => onSelect(d.ds)} style={{ flexShrink: 0, padding: '9px 15px', borderRadius: 99, border: on ? '1.5px solid var(--accent)' : '1px solid rgba(255,255,255,0.14)', background: on ? 'var(--accent)' : 'rgba(255,255,255,0.07)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12.5, color: on ? 'var(--accentInk)' : 'var(--onDeep)' }}>{d.label}</span>
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 10, color: on ? 'var(--accentInk)' : 'var(--onDeepDim)' }}>{d.num}</span>
               </button>
             );
           })}
         </div>
         {/* Right-edge fade hinting that the chip row scrolls */}
-        <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 36, background: 'linear-gradient(to right, transparent, var(--surfaceAlt))', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 36, background: 'linear-gradient(to right, transparent, color-mix(in srgb, var(--deep2) 30%, var(--deep)))', pointerEvents: 'none' }} />
       </div>
 
       <CalendarSheet open={calOpen} selected={selected} onSelect={onSelect} onClose={() => setCalOpen(false)} />
@@ -173,10 +173,10 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
   }, [selectedDate, from, to]);
 
   return (
-    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: 'var(--surfaceAlt)', overflow: 'hidden' }}>
+    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg, var(--deep) 0%, var(--deep2) 55%, var(--deep) 100%)', overflow: 'hidden' }}>
       {/* sticky header */}
       <div style={{ flexShrink: 0 }}>
-        <DeepBand animate={animate} texture={texture} waves={false} style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 18px 20px', borderBottomLeftRadius: 26, borderBottomRightRadius: 26 }}>
+        <DeepBand animate={animate} texture={texture} waves={false} style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 18px 6px', background: 'transparent' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
             <button onClick={onBack} style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <Icon name="chevronLeft" size={20} color="var(--onDeep)" stroke={2.2} />
@@ -206,12 +206,12 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
         </div>
         {isSummerSeason(selDate) && (
           <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 8 }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 99, background: 'color-mix(in srgb, var(--accent) 12%, var(--surface))', border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 11, color: 'var(--accent)' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 99, background: 'color-mix(in srgb, var(--accentOnDeep) 16%, transparent)', border: '1px solid color-mix(in srgb, var(--accentOnDeep) 35%, transparent)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 11, color: 'var(--accentOnDeep)' }}>
               ☀️ Sommerruter · 22. juni–16. aug
             </span>
           </div>
         )}
-        <HumlaNotice date={selDate} variant="light" style={{ margin: '8px 18px 0' }} />
+        <HumlaNotice date={selDate} variant="deep" style={{ margin: '10px 18px 0' }} />
       </div>
 
       {/* scrollable trip list */}
@@ -236,7 +236,7 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
           const isNext = isToday && i === firstUpcomingIndex;
           const cd = isNext ? minsUntil(trip.dateStr, trip.startTime) : null;
           return (
-            <div key={trip.id + i} ref={isNext ? firstUpcomingRef : undefined} style={{ opacity: isPast ? 0.38 : 1, transition: 'opacity 0.2s' }}>
+            <div key={trip.id + i} ref={isNext ? firstUpcomingRef : undefined} style={{ opacity: isPast ? 0.5 : 1, transition: 'opacity 0.2s' }}>
               <TripCard trip={trip} isNext={isNext} countdown={cd} onClick={() => onOpenTrip(trip)} />
             </div>
           );
@@ -249,15 +249,15 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
               href={isSummer ? '/rutetabell.png' : rutetabellUrl()}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'var(--surface)', border: '1px solid var(--line)', cursor: 'pointer', textDecoration: 'none', marginTop: 4 }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', textDecoration: 'none', marginTop: 4 }}
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-                <Icon name="calendar" size={19} color="var(--inkDim)" stroke={1.9} />
-                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>
+                <Icon name="calendar" size={19} color="var(--onDeep)" stroke={1.9} />
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)' }}>
                   {isSummer ? 'Hele rutetabellen (sommer)' : 'Hele rutetabellen'}
                 </span>
               </span>
-              <Icon name="chevronRight" size={18} color="var(--inkDim)" stroke={2} />
+              <Icon name="chevronRight" size={18} color="var(--onDeepDim)" stroke={2} />
             </a>
           );
         })()}
