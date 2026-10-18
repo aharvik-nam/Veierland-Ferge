@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Veierland</string>
+    <string name="title_activity_main">Veierland</string>
+    <string name="package_name">no.veierland.ferge</string>
+    <string name="custom_url_scheme">no.veierland.ferge</string>
+</resources>
