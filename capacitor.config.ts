@@ -2,27 +2,13 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'no.veierland.ferge',
-  appName: 'Veierland Ferge',
+  appName: 'Veierland',
   webDir: 'dist',
-  server: {
-    androidScheme: 'https',
-  },
-  ios: {
-    contentInset: 'automatic',
-    backgroundColor: '#0A1620',
-    scrollEnabled: false,
-  },
-  android: {
-    backgroundColor: '#0A1620',
-  },
+  // Bakgrunn før innholdet er lastet (samme som Fjord-temaet)
+  backgroundColor: '#07313C',
   plugins: {
-    SplashScreen: {
-      launchShowDuration: 1200,
-      backgroundColor: '#0A1620',
-      androidSplashResourceName: 'splash',
-      androidScaleType: 'CENTER_CROP',
-      showSpinner: false,
-    },
+    // Lys tekst i statuslinjen; appen har mørk topp i alle tema
+    SystemBars: { style: 'DARK' },
   },
 };
 

@@ -1,6 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { readFileSync } from 'fs';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import type { Plugin } from 'vite';
@@ -30,13 +31,14 @@ export default defineConfig(() => {
       timetableJson(),
       VitePWA({
         registerType: 'autoUpdate',
+        injectRegister: false, // registreres i main.tsx, bare på nettsiden
         includeAssets: ['apple-touch-icon.png', 'favicon-32.png'],
         manifest: {
           name: 'Veierland Ferge',
           short_name: 'Veierland',
-          description: 'Rutetider og avganger for M/F Jutøya — Tenvik, Vestgården, Engø, Tangen',
-          theme_color: '#0A1620',
-          background_color: '#0A1620',
+          description: 'Rutetider, neste avgang og fergeposisjon for Veierland – Tenvik, Tangen og Engø',
+          theme_color: '#07313C',
+          background_color: '#07313C',
           display: 'standalone',
           orientation: 'portrait',
           start_url: '/',
@@ -59,6 +61,7 @@ export default defineConfig(() => {
       }),
     ],
     define: {
+      __APP_VERSION__: JSON.stringify(JSON.parse(readFileSync(path.resolve(__dirname, 'package.json'), 'utf8')).version),
       'process.env.GOOGLE_MAPS_PLATFORM_KEY': JSON.stringify(process.env.GOOGLE_MAPS_PLATFORM_KEY || ''),
       'process.env.AISSTREAM_API_KEY': JSON.stringify(process.env.AISSTREAM_API_KEY || '')
     },

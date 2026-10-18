@@ -194,7 +194,7 @@ export function WeatherSheet({ open, animate, preloaded, onClose }: WeatherSheet
           </div>
         </div>
 
-        <div style={{ padding: '0 20px calc(env(safe-area-inset-bottom, 0px) + 24px)' }}>
+        <div style={{ padding: '0 20px calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)) + 24px)' }}>
           {!series && !error && (
             <div style={{ padding: '36px 0', textAlign: 'center', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 13, color: 'var(--inkDim)' }}>Henter værdata …</div>
           )}

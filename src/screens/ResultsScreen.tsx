@@ -25,7 +25,7 @@ function CalendarSheet({ open, selected, onSelect, onClose }: { open: boolean; s
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 85, pointerEvents: open ? 'auto' : 'none' }}>
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(7,20,24,0.45)', backdropFilter: 'blur(2px)', opacity: open ? 1 : 0, transition: 'opacity 0.28s ease' }} />
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: 'var(--surface)', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: '14px 20px calc(env(safe-area-inset-bottom, 0px) + 24px)', transform: open ? 'translateY(0)' : 'translateY(110%)', transition: 'transform 0.34s cubic-bezier(0.22,1,0.36,1)', boxShadow: '0 -20px 50px rgba(0,0,0,0.25)' }}>
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: 'var(--surface)', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: '14px 20px calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)) + 24px)', transform: open ? 'translateY(0)' : 'translateY(110%)', transition: 'transform 0.34s cubic-bezier(0.22,1,0.36,1)', boxShadow: '0 -20px 50px rgba(0,0,0,0.25)' }}>
         <div style={{ width: 42, height: 5, borderRadius: 99, background: 'var(--line)', margin: '0 auto 16px' }} />
 
         {/* Month navigation */}
@@ -174,7 +174,7 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
     <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg, var(--deep) 0%, var(--deep2) 55%, var(--deep) 100%)', overflow: 'hidden' }}>
       {/* sticky header */}
       <div style={{ flexShrink: 0 }}>
-        <DeepBand animate={animate} texture={texture} waves={false} style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 18px 6px', background: 'transparent' }}>
+        <DeepBand animate={animate} texture={texture} waves={false} style={{ padding: 'calc(var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) + 20px) 18px 6px', background: 'transparent' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
             <div style={{ fontFamily: 'var(--num)', fontSize: 26, color: 'var(--onDeep)', flex: 1 }}>Avganger</div>
             <button onClick={onOpenSettings} aria-label="Innstillinger" style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
@@ -210,7 +210,7 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
       </div>
 
       {/* scrollable trip list */}
-      <div data-tour="trip-list" ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 18px calc(env(safe-area-inset-bottom, 0px) + 96px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div data-tour="trip-list" ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 18px calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)) + 96px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
         {isMaintenancePeriod(selDate) && (from === 'vestgarden' || to === 'vestgarden') ? (
           <div style={{ marginTop: 30, padding: 36, borderRadius: 'var(--rad)', background: 'var(--surface)', border: '1px dashed color-mix(in srgb, var(--bad) 40%, transparent)', textAlign: 'center' }}>

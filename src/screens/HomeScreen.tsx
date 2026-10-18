@@ -31,7 +31,7 @@ function PlanCalendar({ open, selected, onSelect, onClose }: { open: boolean; se
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 85, pointerEvents: open ? 'auto' : 'none' }}>
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(7,20,24,0.45)', backdropFilter: 'blur(2px)', opacity: open ? 1 : 0, transition: 'opacity 0.28s ease' }} />
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: 'var(--surface)', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: '14px 20px calc(env(safe-area-inset-bottom, 0px) + 24px)', transform: open ? 'translateY(0)' : 'translateY(110%)', transition: 'transform 0.34s cubic-bezier(0.22,1,0.36,1)', boxShadow: '0 -20px 50px rgba(0,0,0,0.25)' }}>
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: 'var(--surface)', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: '14px 20px calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)) + 24px)', transform: open ? 'translateY(0)' : 'translateY(110%)', transition: 'transform 0.34s cubic-bezier(0.22,1,0.36,1)', boxShadow: '0 -20px 50px rgba(0,0,0,0.25)' }}>
         <div style={{ width: 42, height: 5, borderRadius: 99, background: 'var(--line)', margin: '0 auto 16px' }} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <button onClick={() => setViewYm(v => v.m === 0 ? { y: v.y - 1, m: 11 } : { y: v.y, m: v.m - 1 })} disabled={atCurrentMonth} style={{ width: 38, height: 38, borderRadius: 99, border: '1.5px solid var(--line)', background: 'var(--surfaceAlt)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: atCurrentMonth ? 'default' : 'pointer', opacity: atCurrentMonth ? 0.3 : 1 }}>
@@ -110,7 +110,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
     return (
       <>
       <div style={{ minHeight: '100dvh', background: 'linear-gradient(180deg, var(--deep) 0%, var(--deep2) 55%, var(--deep) 100%)', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 28px) 22px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{ padding: 'calc(var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) + 28px) 22px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
             <CompassMark size={34} color="var(--onDeep)" opacity={0.85} />
             <div>
@@ -126,7 +126,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
           </div>
         </div>
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 22px calc(env(safe-area-inset-bottom, 0px) + 100px)', gap: 14 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 22px calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)) + 100px)', gap: 14 }}>
           <div data-tour="route-picker"><RouteCard from={from} to={to} onEditFrom={onEditFrom} onEditTo={onEditTo} onSwap={onSwap} /></div>
 
           <button data-tour="find-next-btn" onClick={onSetOnboarded} style={{ width: '100%', padding: '16px', borderRadius: 'var(--rad)', background: 'var(--accent)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
@@ -167,7 +167,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
   return (
     <>
     <div style={{ minHeight: '100dvh', background: 'linear-gradient(180deg, var(--deep) 0%, var(--deep2) 55%, var(--deep) 100%)', position: 'relative' }}>
-      <div style={{ position: 'relative', padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 18px calc(env(safe-area-inset-bottom, 0px) + 100px)' }}>
+      <div style={{ position: 'relative', padding: 'calc(var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) + 20px) 18px calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)) + 100px)' }}>
         {/* header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 22 }}>
           <button onClick={onReset} style={{ display: 'flex', alignItems: 'center', gap: 11, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>

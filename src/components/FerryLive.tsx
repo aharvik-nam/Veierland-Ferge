@@ -3,6 +3,7 @@ import { Label } from './Atoms';
 import { Icon } from './Icons';
 import { stopCoords, stopsMap, stopKind, haversineKm, isMaintenancePeriod, getOsloDate, ferryName, minsUntil, fmtCountdown } from '../ferryData';
 import type { StopId, Trip } from '../types';
+import { API_BASE } from '../platform';
 
 interface FerryPos {
   lat: number;
@@ -13,10 +14,7 @@ interface FerryPos {
   time: string | null;
 }
 
-// I den native appen (Capacitor) serveres filene lokalt, så API-et må nås på full adresse
-const API_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost' && !window.location.port
-  ? 'https://jutoya.veierland.org/api/ferry'
-  : '/api/ferry';
+const API_URL = `${API_BASE}/api/ferry`;
 const POLL_MS = 30_000;
 
 function useFerryPosition(): FerryPos | null {

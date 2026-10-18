@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { App as CapApp } from '@capacitor/app';
+import { isNative, API_BASE } from './platform';
 import { THEMES, STYLES, themeVars } from './theme';
 import { ymd, getOsloDate, isMaintenancePeriod } from './ferryData';
 import { HomeScreen } from './screens/HomeScreen';
@@ -44,7 +46,7 @@ function SettingsSheet({ open, theme, style: stylePref, animate, onTheme, onStyl
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 90, pointerEvents: open ? 'auto' : 'none' }}>
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)', opacity: open ? 1 : 0, transition: 'opacity 0.28s ease' }} />
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: 'var(--surface)', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: '14px 20px calc(env(safe-area-inset-bottom,0px) + 24px)', transform: open ? 'translateY(0)' : 'translateY(110%)', transition: 'transform 0.34s cubic-bezier(0.22,1,0.36,1)' }}>
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, maxHeight: '90dvh', overflowY: 'auto', background: 'var(--surface)', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: '14px 20px calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)) + 24px)', transform: open ? 'translateY(0)' : 'translateY(110%)', transition: 'transform 0.34s cubic-bezier(0.22,1,0.36,1)' }}>
         <div style={{ width: 42, height: 5, borderRadius: 99, background: 'var(--line)', margin: '0 auto 20px' }} />
 
         <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--inkDim)', marginBottom: 10 }}>Fargetema</div>
@@ -90,6 +92,16 @@ function SettingsSheet({ open, theme, style: stylePref, animate, onTheme, onStyl
           </span>
           <Icon name="chevronRight" size={17} color="var(--inkDim)" stroke={2} />
         </button>
+
+        <div style={{ marginTop: 18, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--inkDim)', marginBottom: 8 }}>Om appen</div>
+        <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12.5, color: 'var(--inkDim)', lineHeight: 1.5 }}>
+          Uoffisiell app, ikke tilknyttet Jutøya AS eller Veierland Velforening. Rutetider fra veierland.org – sjekk alltid med fergen ved tvil (918 88 219). Fergeposisjon fra BarentsWatch/Kystverket, vær fra Meteorologisk institutt.
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12.5 }}>
+          <a href={`${API_BASE}/personvern.html`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ink)' }}>Personvern</a>
+          <a href={`${API_BASE}/support.html`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ink)' }}>Kontakt og hjelp</a>
+          <span style={{ marginLeft: 'auto', color: 'var(--inkDim)', fontWeight: 500 }}>Versjon {__APP_VERSION__}</span>
+        </div>
       </div>
     </div>
   );
@@ -114,7 +126,7 @@ const TABS: { key: Tab; label: string; icon: 'search' | 'list' | 'table' }[] = [
 // Fast navigasjonslinje nederst, alltid over innholdet
 function TabBar({ active, onSelect }: { active: Tab; onSelect: (t: Tab) => void }) {
   return (
-    <nav data-tour="tabbar" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, maxWidth: 430, margin: '0 auto', zIndex: 60, display: 'flex', padding: '6px 8px calc(env(safe-area-inset-bottom, 0px) + 6px)', background: 'color-mix(in srgb, var(--deep) 88%, transparent)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', borderTop: '1px solid rgba(255,255,255,0.10)' }}>
+    <nav data-tour="tabbar" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, maxWidth: 430, margin: '0 auto', zIndex: 60, display: 'flex', padding: '6px 8px calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)) + 6px)', background: 'color-mix(in srgb, var(--deep) 88%, transparent)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', borderTop: '1px solid rgba(255,255,255,0.10)' }}>
       {TABS.map(t => {
         const on = t.key === active;
         return (
@@ -159,6 +171,22 @@ export default function App() {
   useEffect(() => {
     const id = setInterval(() => setTick(x => x + 1), 1000);
     return () => clearInterval(id);
+  }, []);
+
+  const backRef = useRef<() => void>(() => {});
+  backRef.current = () => {
+    if (picker.open) return setPicker({ open: false, which: null });
+    if (settingsOpen) return setSettingsOpen(false);
+    if (weatherOpen) return setWeatherOpen(false);
+    if (tourOpen) return setTourOpen(false);
+    if (screen === 'detail') return setScreen(prevScreen);
+    if (screen !== 'home') return setScreen('home');
+    CapApp.exitApp();
+  };
+  useEffect(() => {
+    if (!isNative) return;
+    const handle = CapApp.addListener('backButton', () => backRef.current());
+    return () => { handle.then(h => h.remove()); };
   }, []);
 
   // Hent nyeste rutetider fra serveren ved oppstart og når appen åpnes igjen

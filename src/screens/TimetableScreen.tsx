@@ -103,7 +103,7 @@ export function TimetableScreen({ from, animate, texture, onOpenSettings }: Time
 
   return (
     <div style={{ minHeight: '100dvh', background: 'linear-gradient(180deg, var(--deep) 0%, var(--deep2) 55%, var(--deep) 100%)' }}>
-      <DeepBand animate={animate} texture={texture} waves={false} style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 18px 6px', background: 'transparent' }}>
+      <DeepBand animate={animate} texture={texture} waves={false} style={{ padding: 'calc(var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) + 20px) 18px 6px', background: 'transparent' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 2 }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: 'var(--num)', fontSize: 28, color: 'var(--onDeep)', lineHeight: 1 }}>Rutetabell</div>
@@ -115,7 +115,7 @@ export function TimetableScreen({ from, animate, texture, onOpenSettings }: Time
         </div>
       </DeepBand>
 
-      <div style={{ padding: '12px 18px calc(env(safe-area-inset-bottom, 0px) + 96px)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ padding: '12px 18px calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)) + 96px)', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <Segmented<Dir> value={dir} onChange={setDir} options={[{ key: 'til', label: 'Til Veierland' }, { key: 'fra', label: 'Fra Veierland' }]} />
         <Segmented<DayKey> value={day} onChange={setDay} options={DAY_LABELS} />
 
