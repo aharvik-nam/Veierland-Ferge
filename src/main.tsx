@@ -4,6 +4,14 @@ import { Analytics } from '@vercel/analytics/react';
 import { SystemBars, SystemBarsStyle } from '@capacitor/core';
 import App from './App.tsx';
 import { isNative } from './platform';
+// Skrifttyper følger med appen (virker uten nett, og ingen kontakt med Google)
+import '@fontsource/space-grotesk/latin-400.css';
+import '@fontsource/space-grotesk/latin-500.css';
+import '@fontsource/space-grotesk/latin-600.css';
+import '@fontsource/space-grotesk/latin-700.css';
+import '@fontsource/instrument-serif/latin-400.css';
+import '@fontsource/space-mono/latin-400.css';
+import '@fontsource/space-mono/latin-700.css';
 import './index.css';
 
 if (isNative) {
