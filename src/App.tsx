@@ -5,6 +5,7 @@ import { HomeScreen } from './screens/HomeScreen';
 import { ResultsScreen } from './screens/ResultsScreen';
 import { DetailScreen } from './screens/DetailScreen';
 import { TimetableScreen } from './screens/TimetableScreen';
+import { refreshTimetable } from './remoteTimetable';
 import { StopPicker } from './components/Atoms';
 import { Icon } from './components/Icons';
 import { Tour } from './components/Tour';
@@ -158,6 +159,14 @@ export default function App() {
   useEffect(() => {
     const id = setInterval(() => setTick(x => x + 1), 1000);
     return () => clearInterval(id);
+  }, []);
+
+  // Hent nyeste rutetider fra serveren ved oppstart og når appen åpnes igjen
+  useEffect(() => {
+    refreshTimetable(true);
+    const onVisible = () => { if (document.visibilityState === 'visible') refreshTimetable(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
   }, []);
 
   useEffect(() => {

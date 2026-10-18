@@ -3,12 +3,31 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import type { Plugin } from 'vite';
+import { buildRemoteTimetable } from './src/timetableJson';
+
+// /timetable.json: rutetidene som den installerte appen henter, generert fra src/data.ts
+function timetableJson(): Plugin {
+  return {
+    name: 'timetable-json',
+    configureServer(server) {
+      server.middlewares.use('/timetable.json', (_req, res) => {
+        res.setHeader('content-type', 'application/json');
+        res.end(JSON.stringify(buildRemoteTimetable()));
+      });
+    },
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'timetable.json', source: JSON.stringify(buildRemoteTimetable()) });
+    },
+  };
+}
 
 export default defineConfig(() => {
   return {
     plugins: [
       react(),
       tailwindcss(),
+      timetableJson(),
       VitePWA({
         registerType: 'autoUpdate',
         includeAssets: ['apple-touch-icon.png', 'favicon-32.png'],

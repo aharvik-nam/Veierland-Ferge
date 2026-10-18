@@ -1,6 +1,7 @@
 import type { StopId, Trip, TripEvent, TripWarning } from './types';
 import { monFriLoops, satLoops, sunLoops, summerMonFriLoops, summerSatLoops, summerSunLoops, humlaMonFriLoops, humlaSatLoops, humlaSunLoops } from './data';
 import type { FerryLoop } from './data';
+import { remoteTimetable } from './remoteTimetable';
 
 export const stopsMap: Record<StopId, string> = {
   buss_tbg: "Buss fra Tønsberg",
@@ -132,20 +133,34 @@ export function dayLabelFor(d: Date): string {
 export const NO_DAYS_EXPORT = NO_DAYS;
 export const NO_MONTHS_EXPORT = NO_MONTHS;
 
-// Sommerruter gjelder fom. 22. juni tom. 16. august
-export function isSummerSeason(dateObj: Date): boolean {
-  const m = dateObj.getMonth() + 1, d = dateObj.getDate();
-  if (m === 7) return true;
-  if (m === 6) return d >= 22;
-  if (m === 8) return d <= 16;
-  return false;
-}
-
+// Innebygde perioder. Serveren (timetable.json) kan overstyre dem uten ny app-versjon.
+// Sommerruter gjelder fom. 22. juni tom. 16. august (mm-dd, hvert år).
+export const SUMMER = { from: '06-22', to: '08-16' };
 // M/F Jutøya på verksted: M/F Humla seiler fom. 17. okt. 2026 til ca. 1. mars 2027.
 // Kun Tenvik–Tangen–(Engø)–Tangen, Vestgården utgår.
+export const MAINTENANCE = { from: '2026-10-17', to: '2027-02-28' };
+
+export function isSummerSeason(dateObj: Date): boolean {
+  const range = remoteTimetable()?.summer ?? SUMMER;
+  const md = ymd(dateObj).slice(5);
+  return md >= range.from && md <= range.to;
+}
+
 export function isMaintenancePeriod(dateObj: Date): boolean {
+  const range = remoteTimetable()?.maintenance ?? MAINTENANCE;
   const s = ymd(dateObj);
-  return s >= '2026-10-17' && s <= '2027-02-28';
+  return s >= range.from && s <= range.to;
+}
+
+// Turene for datoen fra serverens rutetider: daterte perioder, så sommer, så ordinære
+function remoteSeason(dateObj: Date): { monFri: FerryLoop[], sat: FerryLoop[], sun: FerryLoop[] } | null {
+  const t = remoteTimetable();
+  if (!t) return null;
+  const s = ymd(dateObj);
+  const period = t.periods.find(p => s >= p.from && s <= p.to);
+  if (period) return period.loops;
+  if (isSummerSeason(dateObj)) return t.summer.loops;
+  return t.normal.loops;
 }
 
 export function ferryName(dateObj: Date): string {
@@ -174,7 +189,7 @@ function getAdminSeason(dateObj: Date): { monFri: FerryLoop[], sat: FerryLoop[],
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function loopsFor(dayType: string, dateObj: Date): any[] {
-  const admin = getAdminSeason(dateObj);
+  const admin = getAdminSeason(dateObj) ?? remoteSeason(dateObj);
   if (admin) {
     if (dayType === 'sat') return admin.sat;
     if (dayType === 'sun') return admin.sun;
