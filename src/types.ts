@@ -64,5 +64,5 @@ export interface Weather {
   code: number;
 }
 
-export type Screen = 'home' | 'results' | 'detail';
+export type Screen = 'home' | 'results' | 'detail' | 'timetable';
 export type TransportMode = 'drive' | 'bus' | 'walk';

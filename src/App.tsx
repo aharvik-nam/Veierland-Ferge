@@ -4,6 +4,7 @@ import { ymd, getOsloDate, isMaintenancePeriod } from './ferryData';
 import { HomeScreen } from './screens/HomeScreen';
 import { ResultsScreen } from './screens/ResultsScreen';
 import { DetailScreen } from './screens/DetailScreen';
+import { TimetableScreen } from './screens/TimetableScreen';
 import { StopPicker } from './components/Atoms';
 import { Icon } from './components/Icons';
 import { Tour } from './components/Tour';
@@ -100,6 +101,32 @@ function savedStop(key: string, fallback: StopId): StopId {
   if (!v || !STOP_IDS.includes(v as StopId)) return fallback;
   if (v === 'vestgarden' && isMaintenancePeriod(getOsloDate())) return 'tangen';
   return v as StopId;
+}
+
+type Tab = 'home' | 'results' | 'timetable';
+const TABS: { key: Tab; label: string; icon: 'search' | 'list' | 'table' }[] = [
+  { key: 'home', label: 'Søk', icon: 'search' },
+  { key: 'results', label: 'Avganger', icon: 'list' },
+  { key: 'timetable', label: 'Rutetabell', icon: 'table' },
+];
+
+// Fast navigasjonslinje nederst, alltid over innholdet
+function TabBar({ active, onSelect }: { active: Tab; onSelect: (t: Tab) => void }) {
+  return (
+    <nav data-tour="tabbar" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, maxWidth: 430, margin: '0 auto', zIndex: 60, display: 'flex', padding: '6px 8px calc(env(safe-area-inset-bottom, 0px) + 6px)', background: 'color-mix(in srgb, var(--deep) 88%, transparent)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', borderTop: '1px solid rgba(255,255,255,0.10)' }}>
+      {TABS.map(t => {
+        const on = t.key === active;
+        return (
+          <button key={t.key} onClick={() => onSelect(t.key)} aria-current={on ? 'page' : undefined} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '6px 0 4px', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 52, height: 28, borderRadius: 99, background: on ? 'color-mix(in srgb, var(--accentOnDeep) 18%, transparent)' : 'transparent', transition: 'background 0.2s' }}>
+              <Icon name={t.icon} size={20} color={on ? 'var(--accentOnDeep)' : 'var(--onDeepDim)'} stroke={on ? 2.3 : 2} />
+            </span>
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: on ? 700 : 600, fontSize: 11.5, color: on ? 'var(--onDeep)' : 'var(--onDeepDim)' }}>{t.label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
 }
 
 export default function App() {
@@ -218,7 +245,7 @@ export default function App() {
         <ResultsScreen
           from={from} to={to} selectedDate={selectedDate} onSelectDate={setSelectedDate}
           animate={animate} texture={style.texture}
-          onBack={() => setScreen('home')} onSwap={swap}
+          onSwap={swap}
           onEditFrom={() => openPicker('from')} onEditTo={() => openPicker('to')}
           onOpenTrip={openTrip} tick={tick}
           onOpenSettings={() => setSettingsOpen(true)}
@@ -231,6 +258,19 @@ export default function App() {
           onBack={() => setScreen(prevScreen)} tick={tick}
         />
       )}
+      {screen === 'timetable' && (
+        <TimetableScreen from={from} animate={animate} texture={style.texture} onOpenSettings={() => setSettingsOpen(true)} />
+      )}
+
+      <TabBar
+        active={screen === 'detail' ? (prevScreen === 'detail' ? 'home' : prevScreen as Tab) : screen as Tab}
+        onSelect={t => {
+          // «Avganger» viser alltid dagens avganger
+          if (t === 'results') setSelectedDate(ymd(getOsloDate()));
+          setScreen(t);
+          window.scrollTo({ top: 0 });
+        }}
+      />
 
       <StopPicker
         open={picker.open}

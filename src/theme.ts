@@ -65,10 +65,3 @@ export function themeVars(theme: Theme, style: VisualStyle): Record<string, stri
   };
 }
 
-// «Hele rutetabellen» åpnes i et eget vindu som på iPhone ikke deler lagring med
-// den installerte appen, så valgt tema sendes med i lenken.
-export function rutetabellUrl(): string {
-  let theme = 'fjord', style = 'sjokart';
-  try { theme = localStorage.getItem('themeKey') || theme; style = localStorage.getItem('styleKey') || style; } catch { /* privat modus */ }
-  return `/rutetabell.html?theme=${encodeURIComponent(theme)}&style=${encodeURIComponent(style)}`;
-}

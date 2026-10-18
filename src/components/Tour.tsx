@@ -27,9 +27,9 @@ const TOURS: Record<TourScreen, TourStep[]> = {
       selector: 'find-next-btn',
     },
     {
-      title: 'Se hele rutetabellen',
-      body: 'Her finner du alle avganger for i dag — og kan bla til andre dager. Avganger som har passert er grått ut, men fortsatt klikk­bare.',
-      selector: 'timetable-btn-onboard',
+      title: 'Navigasjon',
+      body: 'Linjen nederst er alltid tilgjengelig: «Søk» viser neste avgang, «Avganger» alle dagens avganger og «Rutetabell» hele rutetabellen.',
+      selector: 'tabbar',
     },
   ],
   home: [
@@ -49,9 +49,9 @@ const TOURS: Record<TourScreen, TourStep[]> = {
       selector: 'mini-cards',
     },
     {
-      title: 'Rekker du fergen?',
-      body: 'Når GPS er aktivt beregnes kjøretid fra din posisjon til kaia i sanntid. Grønt betyr god tid, gult er knapt, rødt er kritisk — og det er ikke alltid like alvorlig ment.',
-      selector: 'status-signal',
+      title: 'Hvor er ferga?',
+      body: 'Her ser du hvor ferga er akkurat nå, og om den er på vei til kaia di. Trykk på kortet for å se posisjonen i kart.',
+      selector: 'ferry-live',
     },
     {
       title: 'Planlegg reise',

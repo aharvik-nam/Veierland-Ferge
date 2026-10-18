@@ -4,7 +4,7 @@ type IconName =
   | 'swap' | 'swapH' | 'arrowRight' | 'arrowDown' | 'chevronLeft' | 'chevronRight' | 'chevronDown'
   | 'phone' | 'wind' | 'calendar' | 'pin' | 'walk' | 'car' | 'clock' | 'info'
   | 'alert' | 'anchor' | 'sun' | 'cloud' | 'rain' | 'fog' | 'snow' | 'bolt'
-  | 'check' | 'x' | 'ticket' | 'settings' | 'close' | 'monitor';
+  | 'check' | 'x' | 'ticket' | 'settings' | 'close' | 'monitor' | 'search' | 'list' | 'table';
 
 interface IconProps {
   name: IconName;
@@ -25,6 +25,9 @@ export function Icon({ name, size = 22, stroke = 2, color = 'currentColor', styl
     swap: <><path d="M7 4v15M7 19l-3.2-3.2M7 19l3.2-3.2" /><path d="M17 20V5M17 5l-3.2 3.2M17 5l3.2 3.2" /></>,
     swapH: <><path d="M4 8h15M19 8l-3.2-3.2M19 8l-3.2 3.2" /><path d="M20 16H5M5 16l3.2-3.2M5 16l3.2 3.2" /></>,
     arrowRight: <path d="M5 12h14M13 6l6 6-6 6" />,
+    search: <><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" /></>,
+    list: <><path d="M9 6h11M9 12h11M9 18h11" /><circle cx="4.5" cy="6" r="1" /><circle cx="4.5" cy="12" r="1" /><circle cx="4.5" cy="18" r="1" /></>,
+    table: <><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><path d="M3.5 9.5h17M3.5 14.5h17M9.5 9.5v10" /></>,
     arrowDown: <path d="M12 5v14M6 13l6 6 6-6" />,
     chevronLeft: <path d="M15 5l-7 7 7 7" />,
     chevronRight: <path d="M9 5l7 7-7 7" />,

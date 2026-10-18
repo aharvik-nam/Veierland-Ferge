@@ -163,6 +163,7 @@ export function FerryLive({ dep }: { dep?: Trip | null }) {
 
   return (
     <a
+      data-tour="ferry-live"
       href={`https://maps.google.com/?q=${pos.lat},${pos.lng}`}
       target="_blank"
       rel="noopener noreferrer"

@@ -1,5 +1,6 @@
 import type { StopId, Trip, TripEvent, TripWarning } from './types';
 import { monFriLoops, satLoops, sunLoops, summerMonFriLoops, summerSatLoops, summerSunLoops, humlaMonFriLoops, humlaSatLoops, humlaSunLoops } from './data';
+import type { FerryLoop } from './data';
 
 export const stopsMap: Record<StopId, string> = {
   buss_tbg: "Buss fra Tønsberg",
@@ -188,6 +189,17 @@ function loopsFor(dayType: string, dateObj: Date): any[] {
   if (dayType === 'sat') return summer ? summerSatLoops : satLoops;
   if (dayType === 'sun') return summer ? summerSunLoops : sunLoops;
   return summer ? summerMonFriLoops : monFriLoops;
+}
+
+// Alle turene i sesongen som gjelder på datoen, per dagtype (for rutetabellen)
+export function seasonLoops(dateObj: Date): { monFri: FerryLoop[]; sat: FerryLoop[]; sun: FerryLoop[] } {
+  return { monFri: loopsFor('monfri', dateObj), sat: loopsFor('sat', dateObj), sun: loopsFor('sun', dateObj) };
+}
+
+export function seasonLabel(dateObj: Date): string {
+  if (isMaintenancePeriod(dateObj)) return 'M/F Humla · 17. okt. – ca. 1. mars';
+  if (isSummerSeason(dateObj)) return 'Sommerruter · 22. juni – 16. aug.';
+  return 'Ordinære ruter';
 }
 
 export function findTripsForDay(dayType: 'monfri' | 'sat' | 'sun', dateObj: Date, from: StopId, to: StopId): Trip[] {

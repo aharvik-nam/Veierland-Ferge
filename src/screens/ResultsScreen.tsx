@@ -3,7 +3,6 @@ import { Icon } from '../components/Icons';
 import { DeepBand, StopDot, Label, TripCard } from '../components/Atoms';
 import { findTripsForDay, dayTypeOf, parseYmd, parseTime, minsUntil, ymd, getOsloDate, stopShort, isSummerSeason, isMaintenancePeriod, NO_DAYS_EXPORT as NO_DAYS, NO_MONTHS_EXPORT } from '../ferryData';
 import { HumlaNotice } from '../components/HumlaNotice';
-import { rutetabellUrl } from '../theme';
 import type { StopId, Trip } from '../types';
 
 function cap(s: string): string { return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -144,7 +143,6 @@ interface ResultsScreenProps {
   onSelectDate: (ds: string) => void;
   animate: boolean;
   texture: boolean;
-  onBack: () => void;
   onSwap: () => void;
   onEditFrom: () => void;
   onEditTo: () => void;
@@ -153,7 +151,7 @@ interface ResultsScreenProps {
   onOpenSettings: () => void;
 }
 
-export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, texture, onBack, onSwap, onEditFrom, onEditTo, onOpenTrip, tick: _tick, onOpenSettings }: ResultsScreenProps) {
+export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, texture, onSwap, onEditFrom, onEditTo, onOpenTrip, tick: _tick, onOpenSettings }: ResultsScreenProps) {
   const todayStr = ymd(getOsloDate());
   const isToday = selectedDate === todayStr;
   const selDate = parseYmd(selectedDate);
@@ -178,9 +176,6 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
       <div style={{ flexShrink: 0 }}>
         <DeepBand animate={animate} texture={texture} waves={false} style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 18px 6px', background: 'transparent' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-            <button onClick={onBack} style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-              <Icon name="chevronLeft" size={20} color="var(--onDeep)" stroke={2.2} />
-            </button>
             <div style={{ fontFamily: 'var(--num)', fontSize: 26, color: 'var(--onDeep)', flex: 1 }}>Avganger</div>
             <button onClick={onOpenSettings} aria-label="Innstillinger" style={{ width: 40, height: 40, borderRadius: 99, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
               <Icon name="settings" size={18} color="var(--onDeep)" stroke={1.9} />
@@ -215,7 +210,7 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
       </div>
 
       {/* scrollable trip list */}
-      <div data-tour="trip-list" ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 18px calc(env(safe-area-inset-bottom, 0px) + 28px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div data-tour="trip-list" ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 18px calc(env(safe-area-inset-bottom, 0px) + 96px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
         {isMaintenancePeriod(selDate) && (from === 'vestgarden' || to === 'vestgarden') ? (
           <div style={{ marginTop: 30, padding: 36, borderRadius: 'var(--rad)', background: 'var(--surface)', border: '1px dashed color-mix(in srgb, var(--bad) 40%, transparent)', textAlign: 'center' }}>
@@ -242,25 +237,6 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
           );
         })}
 
-        {(() => {
-          const isSummer = isSummerSeason(selDate);
-          return (
-            <a
-              href={isSummer ? '/rutetabell.png' : rutetabellUrl()}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', textDecoration: 'none', marginTop: 4 }}
-            >
-              <span style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-                <Icon name="calendar" size={19} color="var(--onDeep)" stroke={1.9} />
-                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)' }}>
-                  {isSummer ? 'Hele rutetabellen (sommer)' : 'Hele rutetabellen'}
-                </span>
-              </span>
-              <Icon name="chevronRight" size={18} color="var(--onDeepDim)" stroke={2} />
-            </a>
-          );
-        })()}
       </div>
     </div>
   );

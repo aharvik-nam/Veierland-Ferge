@@ -5,7 +5,6 @@ import { DeepBand, WeatherChip, RouteCard, NumTime, Label } from '../components/
 import { nextDepartures, minsUntil, fmtCountdown, ymd, getOsloDate, parseYmd, stopsMap, stopShort, bookingStatus, isSummerSeason, isMaintenancePeriod, ferryName } from '../ferryData';
 import { FerryLive } from '../components/FerryLive';
 import { HumlaNotice } from '../components/HumlaNotice';
-import { rutetabellUrl } from '../theme';
 import type { StopId, Weather, Trip } from '../types';
 
 const PLAN_MONTHS = ['januar','februar','mars','april','mai','juni','juli','august','september','oktober','november','desember'];
@@ -127,7 +126,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
           </div>
         </div>
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 22px calc(env(safe-area-inset-bottom, 0px) + 40px)', gap: 14 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 22px calc(env(safe-area-inset-bottom, 0px) + 100px)', gap: 14 }}>
           <div data-tour="route-picker"><RouteCard from={from} to={to} onEditFrom={onEditFrom} onEditTo={onEditTo} onSwap={onSwap} /></div>
 
           <button data-tour="find-next-btn" onClick={onSetOnboarded} style={{ width: '100%', padding: '16px', borderRadius: 'var(--rad)', background: 'var(--accent)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
@@ -139,19 +138,6 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
             <Icon name="calendar" size={18} color="var(--accentOnDeep)" stroke={2.2} />
             <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 16, color: 'var(--accentOnDeep)' }}>{planDate ? formatPlanDate(planDate) : 'Planlegg reise'}</span>
           </button>
-
-          <a
-            href={rutetabellUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', textDecoration: 'none', boxSizing: 'border-box' }}
-          >
-            <span style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-              <Icon name="calendar" size={18} color="var(--onDeep)" stroke={1.9} />
-              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)' }}>Hele rutetabellen</span>
-            </span>
-            <Icon name="chevronRight" size={17} color="var(--onDeepDim)" stroke={2} />
-          </a>
 
           {adminNotices.map(n => {
             const bg = n.type === 'warning' ? 'rgba(220,50,50,0.15)' : n.type === 'price' ? 'rgba(26,138,100,0.15)' : 'rgba(12,130,166,0.15)';
@@ -181,7 +167,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
   return (
     <>
     <div style={{ minHeight: '100dvh', background: 'linear-gradient(180deg, var(--deep) 0%, var(--deep2) 55%, var(--deep) 100%)', position: 'relative' }}>
-      <div style={{ position: 'relative', padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 18px calc(env(safe-area-inset-bottom, 0px) + 32px)' }}>
+      <div style={{ position: 'relative', padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 18px calc(env(safe-area-inset-bottom, 0px) + 100px)' }}>
         {/* header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 22 }}>
           <button onClick={onReset} style={{ display: 'flex', alignItems: 'center', gap: 11, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
@@ -313,19 +299,6 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
         )}
 
         <FerryLive dep={dep} />
-
-        <a
-          href={rutetabellUrl()}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ marginTop: 16, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', textDecoration: 'none', boxSizing: 'border-box' }}
-        >
-          <span style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-            <Icon name="calendar" size={19} color="var(--onDeep)" stroke={1.9} />
-            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: 'var(--onDeep)' }}>Hele rutetabellen</span>
-          </span>
-          <Icon name="chevronRight" size={18} color="var(--onDeepDim)" stroke={2} />
-        </a>
 
         {adminNotices.map(n => {
           const bg = n.type === 'warning' ? 'rgba(220,50,50,0.15)' : n.type === 'price' ? 'rgba(26,138,100,0.15)' : 'rgba(12,130,166,0.15)';
