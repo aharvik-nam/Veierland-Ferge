@@ -24,9 +24,9 @@ jobs:
     env:
       PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -83,9 +83,9 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -104,19 +104,38 @@ jobs:
       - name: Hent App Store Connect-nøkkel
         env:
           KEY_P8: ${{ secrets.APPSTORE_KEY_P8 }}
-          KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          RAW_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          RAW_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          RAW_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          if [ -z "$KEY_P8" ] || [ -z "$KEY_ID" ]; then echo "::error::Mangler secrets APPSTORE_KEY_P8/APPSTORE_KEY_ID"; exit 1; fi
-          echo "$KEY_P8" > "$RUNNER_TEMP/AuthKey.p8"
-          echo "ASC_KEY_PATH=$RUNNER_TEMP/AuthKey.p8" >> "$GITHUB_ENV"
-          echo "APP_VERSION=$(node -p "require('./package.json').version")" >> "$GITHUB_ENV"
+          # Fjern mellomrom og linjeskift som lett følger med ved innliming
+          KEY_ID=$(printf '%s' "$RAW_KEY_ID" | tr -d '[:space:]')
+          ISSUER_ID=$(printf '%s' "$RAW_ISSUER_ID" | tr -d '[:space:]')
+          TEAM_ID=$(printf '%s' "$RAW_TEAM_ID" | tr -d '[:space:]')
+          for v in KEY_P8 KEY_ID ISSUER_ID TEAM_ID; do
+            if [ -z "${!v}" ]; then echo "::error::Mangler secret for $v (APPSTORE_KEY_P8, APPSTORE_KEY_ID, APPSTORE_ISSUER_ID, APPLE_TEAM_ID)"; exit 1; fi
+          done
+          echo "::add-mask::$TEAM_ID"
+          # xcodebuild/altool forventer filnavnet AuthKey_<KEY_ID>.p8
+          mkdir -p ~/private_keys
+          printf '%s\n' "$KEY_P8" > ~/private_keys/AuthKey_$KEY_ID.p8
+          {
+            echo "ASC_KEY_PATH=$HOME/private_keys/AuthKey_$KEY_ID.p8"
+            echo "KEY_ID=$KEY_ID"
+            echo "ISSUER_ID=$ISSUER_ID"
+            echo "TEAM_ID=$TEAM_ID"
+            echo "APP_VERSION=$(node -p "require('./package.json').version")"
+          } >> "$GITHUB_ENV"
+
+      - name: Sjekk Apple-nøkkelen og app-ID-en
+        env:
+          BUNDLE_ID: no.veierland.ferge
+        run: |
+          python3 -m pip install --quiet --break-system-packages pyjwt cryptography
+          python3 scripts/check-appstore-key.py
 
       # Signering skjer automatisk med API-nøkkelen (Xcode lager sertifikat og profil selv)
       - name: Arkiver
-        env:
-          KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
-          ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
-          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           xcodebuild archive \
             -project ios/App/App.xcodeproj -scheme App -configuration Release \
@@ -128,10 +147,6 @@ jobs:
             MARKETING_VERSION="$APP_VERSION" CURRENT_PROJECT_VERSION=${{ github.run_number }}
 
       - name: Last opp til App Store Connect (TestFlight)
-        env:
-          KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
-          ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
-          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
           <?xml version="1.0" encoding="UTF-8"?>
