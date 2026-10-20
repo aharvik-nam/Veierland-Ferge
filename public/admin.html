@@ -755,6 +755,43 @@ tbody tr.row-engo:hover td { background: color-mix(in srgb, var(--accent) 11%, v
 
 <div class="toast" id="toast"></div>
 
+<!-- ── FIREBASE (CDN, module) ── -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+
+// Samme config som i src/firebase.ts — fyll inn verdiene fra Firebase Console
+const firebaseConfig = {
+  apiKey:            "AIzaSyCkI6aY3-sIsVIofOURcU3JzINUdeZYOr4",
+  authDomain:        "ferge-veierland.firebaseapp.com",
+  projectId:         "ferge-veierland",
+  storageBucket:     "ferge-veierland.firebasestorage.app",
+  messagingSenderId: "371514441127",
+  appId:             "1:371514441127:web:11daa945755cae81c08a82",
+  measurementId:     "G-RXGSES6D1T",
+};
+
+try {
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  const TTD = doc(db, 'vf', 'timetable');
+  const NTD = doc(db, 'vf', 'notices');
+  window._fs = {
+    async loadTimetable() {
+      const s = await getDoc(TTD); return s.exists() ? s.data() : null;
+    },
+    async saveTimetable(data) { await setDoc(TTD, data); },
+    async loadNotices() {
+      const s = await getDoc(NTD); return s.exists() ? (s.data().notices ?? []) : null;
+    },
+    async saveNotices(n) { await setDoc(NTD, { notices: n }); },
+  };
+} catch(e) {
+  // Firebase ikke konfigurert — kjører kun med localStorage
+  console.warn('Firebase ikke tilgjengelig:', e.message);
+}
+</script>
+
 <script>
 // ─── DEFAULT DATA ────────────────────────────────────────────────────────────
 
@@ -919,9 +956,11 @@ function loadData() {
   return defaultSeasons();
 }
 
-function doSave() {
+async function doSave() {
   try {
-    localStorage.setItem(LS_DATA, JSON.stringify({ seasons: state.seasons }));
+    const data = { seasons: state.seasons };
+    localStorage.setItem(LS_DATA, JSON.stringify(data));
+    if (window._fs) await window._fs.saveTimetable(data);
     toast('Lagret!');
   } catch(e) {
     toast('Feil ved lagring: ' + e.message, true);
@@ -930,11 +969,35 @@ function doSave() {
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 
-function initApp() {
+async function initApp() {
+  // Vis localStorage-cache umiddelbart for rask oppstart
   state.seasons = loadData();
   state.currentId = state.seasons[0]?.id ?? null;
   loadNotices();
   renderAll();
+
+  if (!window._fs) return;
+  try {
+    const [fsData, fsNotices] = await Promise.all([
+      window._fs.loadTimetable(),
+      window._fs.loadNotices(),
+    ]);
+    let changed = false;
+    if (fsData && Array.isArray(fsData.seasons) && fsData.seasons.length) {
+      state.seasons = fsData.seasons;
+      if (!state.currentId) state.currentId = state.seasons[0]?.id ?? null;
+      localStorage.setItem(LS_DATA, JSON.stringify(fsData));
+      changed = true;
+    }
+    if (fsNotices !== null) {
+      notices = fsNotices;
+      localStorage.setItem('vf_notices', JSON.stringify(notices));
+      updateNoticesBadge();
+    }
+    if (changed) renderAll();
+  } catch(e) {
+    console.warn('Firestore-lasting feilet:', e.message);
+  }
 }
 
 function renderAll() {
@@ -1224,8 +1287,13 @@ function closeNotices() {
   document.getElementById('notices-modal').style.display = 'none';
 }
 
-function saveNotices() {
-  localStorage.setItem('vf_notices', JSON.stringify(notices));
+async function saveNotices() {
+  try {
+    localStorage.setItem('vf_notices', JSON.stringify(notices));
+    if (window._fs) await window._fs.saveNotices(notices);
+  } catch(e) {
+    toast('Feil ved lagring: ' + e.message, true); return;
+  }
   updateNoticesBadge();
   closeNotices();
   toast('Meldinger lagret!');
