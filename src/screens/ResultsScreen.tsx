@@ -217,7 +217,7 @@ export function ResultsScreen({ from, to, selectedDate, onSelectDate, animate, t
             <Icon name="alert" size={32} color="var(--bad)" />
             <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, color: 'var(--bad)', marginTop: 12 }}>Midlertidig stengt</div>
             <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12.5, color: 'var(--inkDim)', marginTop: 6, lineHeight: 1.45 }}>
-              Vestgården utgår mens M/F Humla seiler (17. okt. 2026 – ca. 1. mars 2027). Bruk Tangen.
+              Vestgården utgår mens MF "Humla" seiler (17. okt. 2026 – ca. 1. mars 2027). Bruk Tangen.
             </div>
           </div>
         ) : trips.length === 0 ? (

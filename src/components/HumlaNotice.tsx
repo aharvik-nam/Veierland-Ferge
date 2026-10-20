@@ -23,7 +23,7 @@ export function HumlaNotice({ date, variant, style = {} }: { date: Date; variant
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 10px 12px 14px', borderRadius: deep ? 'var(--rad)' : 'var(--radSm)', background: deep ? 'rgba(220,50,50,0.15)' : 'color-mix(in srgb, var(--bad) 12%, var(--surface))', border: deep ? '1px solid rgba(220,50,50,0.35)' : '1px solid color-mix(in srgb, var(--bad) 30%, transparent)', ...style }}>
       <Icon name="alert" size={15} color={deep ? '#ff6b6b' : 'var(--bad)'} stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13, color: deep ? '#ff6b6b' : 'var(--bad)', marginBottom: 2 }}>M/F Humla seiler · 17. okt. – ca. 1. mars</div>
+        <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13, color: deep ? '#ff6b6b' : 'var(--bad)', marginBottom: 2 }}>MF "Humla" seiler · 17. okt. – ca. 1. mars</div>
         <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12.5, color: deep ? 'var(--onDeepDim)' : 'var(--inkDim)', lineHeight: 1.4 }}>Kun Tenvik–Tangen (Engø). Vestgården utgår. Kun passasjerer og håndbagasje.</div>
       </div>
       <button onClick={close} aria-label="Lukk varselet" style={{ width: 32, height: 32, marginTop: -6, marginRight: -2, flexShrink: 0, borderRadius: 99, border: 'none', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>

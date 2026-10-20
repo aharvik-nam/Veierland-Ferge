@@ -14,7 +14,7 @@ export function buildRemoteTimetable(): RemoteTimetable {
     generated: new Date().toISOString(),
     maintenance: MAINTENANCE,
     periods: [
-      { name: 'M/F Humla', from: MAINTENANCE.from, to: MAINTENANCE.to, loops: { monFri: humlaMonFriLoops, sat: humlaSatLoops, sun: humlaSunLoops } },
+      { name: 'MF "Humla"', from: MAINTENANCE.from, to: MAINTENANCE.to, loops: { monFri: humlaMonFriLoops, sat: humlaSatLoops, sun: humlaSunLoops } },
     ],
     summer: { ...SUMMER, loops: { monFri: summerMonFriLoops, sat: summerSatLoops, sun: summerSunLoops } },
     normal: { loops: { monFri: monFriLoops, sat: satLoops, sun: sunLoops } },

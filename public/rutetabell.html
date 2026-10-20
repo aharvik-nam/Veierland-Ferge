@@ -265,10 +265,10 @@ function esc(s) {
 
 // ─── DATA LOADING ─────────────────────────────────────────────────────────────
 
-// M/F Humla (erstatningsferge) — samme rutetider som appen (src/data.ts)
+// MF "Humla" (erstatningsferge) — samme rutetider som appen (src/data.ts)
 const HUMLA_SEASON = {
   builtin: true,
-  name: 'M/F Humla · 17. okt. 2026 – ca. 1. mars 2027',
+  name: 'MF "Humla" · 17. okt. 2026 – ca. 1. mars 2027',
   dateFrom: '2026-10-17',
   dateTo: '2027-02-28',
   loops: {
@@ -358,7 +358,7 @@ const FRA_STOPS = [
   { label: 'Buss fra Tenv', field: 'bussTenvik',     cls: 'row-ext'  },
 ];
 
-// M/F Humla: Tenvik – Tangen – (Engø) – Tangen, Vestgården utgår
+// MF "Humla": Tenvik – Tangen – (Engø) – Tangen, Vestgården utgår
 const HUMLA_TIL_STOPS = [
   { label: 'Buss fra Tbg.', field: 'bussTbg',  cls: 'row-ext'  },
   { label: 'Fra Tenvik',    field: 'tenvikUt', cls: ''         },
@@ -435,11 +435,11 @@ function noticeIcon(type) {
   }
 
   if (season.builtin) {
-    document.title = 'Rutetider — M/F Humla';
-    document.getElementById('boat-name').innerHTML = 'Rutetider for<br>M/F Humla';
+    document.title = 'Rutetider — MF "Humla"';
+    document.getElementById('boat-name').innerHTML = 'Rutetider for<br>MF "Humla"';
     document.getElementById('boat-eyebrow').textContent = 'Kun Tenvik – Tangen – Tenvik (Engø)';
-    document.getElementById('topbar-title').textContent = 'M/F Humla · Rutetider';
-    document.getElementById('footer-boat').textContent = 'M/F Humla (GO Vakker Randi) · Veierland Ferge';
+    document.getElementById('topbar-title').textContent = 'MF "Humla" · Rutetider';
+    document.getElementById('footer-boat').textContent = 'MF "Humla" (GO Vakker Randi) · Veierland Ferge';
     document.getElementById('engo-note').innerHTML =
       '⚠️ <strong>VIKTIG INFO TIL ENGØ:</strong> Røde enkeltavganger til/fra Engø kan forhåndsbestilles ved å ringe fergen på 918 88 219.<br>' +
       '<strong>ALL RETUR TIL ENGØ GÅR FRA TANGEN!</strong>';

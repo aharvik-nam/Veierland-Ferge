@@ -164,7 +164,7 @@ function remoteSeason(dateObj: Date): { monFri: FerryLoop[], sat: FerryLoop[], s
 }
 
 export function ferryName(dateObj: Date): string {
-  return isMaintenancePeriod(dateObj) ? 'M/F Humla' : 'M/F Jutøya';
+  return isMaintenancePeriod(dateObj) ? 'MF "Humla"' : 'M/F Jutøya';
 }
 
 function getAdminSeason(dateObj: Date): { monFri: FerryLoop[], sat: FerryLoop[], sun: FerryLoop[] } | null {
@@ -212,7 +212,7 @@ export function seasonLoops(dateObj: Date): { monFri: FerryLoop[]; sat: FerryLoo
 }
 
 export function seasonLabel(dateObj: Date): string {
-  if (isMaintenancePeriod(dateObj)) return 'M/F Humla · 17. okt. – ca. 1. mars';
+  if (isMaintenancePeriod(dateObj)) return 'MF "Humla" · 17. okt. – ca. 1. mars';
   if (isSummerSeason(dateObj)) return 'Sommerruter · 22. juni – 16. aug.';
   return 'Ordinære ruter';
 }
