@@ -4,4 +4,4 @@ import { Capacitor } from '@capacitor/core';
 export const isNative = Capacitor.isNativePlatform();
 
 // I den native appen serveres filene lokalt, så server-API-ene må nås på full adresse
-export const API_BASE = isNative ? 'https://jutoya.veierland.org' : '';
+export const API_BASE = isNative ? 'https://veierland-ferge.vercel.app' : '';
