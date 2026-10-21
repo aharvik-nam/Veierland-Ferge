@@ -91,7 +91,8 @@ def install_in_keychain(key, cert):
     sh('security', 'set-keychain-settings', '-lut', '21600', str(keychain))
     sh('security', 'unlock-keychain', '-p', keychain_pw, str(keychain))
     sh('security', 'import', str(p12), '-P', password, '-A', '-t', 'cert', '-f', 'pkcs12', '-k', str(keychain))
-    sh('security', 'import', str(wwdr), '-k', str(keychain))
+    # Finnes som regel allerede på GitHub-maskinene («already exists»), så feil her ignoreres
+    subprocess.run(['security', 'import', str(wwdr), '-k', str(keychain)], capture_output=True)
     subprocess.run(['security', 'set-key-partition-list', '-S', 'apple-tool:,apple:,codesign:', '-s',
                     '-k', keychain_pw, str(keychain)], check=True, stdout=subprocess.DEVNULL)
     sh('security', 'list-keychains', '-d', 'user', '-s', str(keychain), 'login.keychain-db')
