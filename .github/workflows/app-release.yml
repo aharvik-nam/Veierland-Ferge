@@ -82,6 +82,8 @@ jobs:
     if: inputs.platform != 'android'
     runs-on: macos-15
     timeout-minutes: 45
+    env:
+      BUNDLE_ID: no.veierland.ferge
     steps:
       - uses: actions/checkout@v5
 
@@ -128,25 +130,23 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Sjekk Apple-nøkkelen og app-ID-en
-        env:
-          BUNDLE_ID: no.veierland.ferge
         run: |
           python3 -m pip install --quiet --break-system-packages pyjwt cryptography
           python3 scripts/check-appstore-key.py
 
-      # Signering skjer automatisk med API-nøkkelen (Xcode lager sertifikat og profil selv)
+      # Lager distribusjonssertifikat og App Store-profil via API-nøkkelen, og slår på manuell signering
+      - name: Lag sertifikat og profil
+        run: python3 scripts/ios-signing.py setup
+
       - name: Arkiver
         run: |
           xcodebuild archive \
             -project ios/App/App.xcodeproj -scheme App -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath "$RUNNER_TEMP/App.xcarchive" \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$ASC_KEY_PATH" -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER_ID" \
-            DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic \
             MARKETING_VERSION="$APP_VERSION" CURRENT_PROJECT_VERSION=${{ github.run_number }}
 
-      - name: Last opp til App Store Connect (TestFlight)
+      - name: Lag .ipa
         run: |
           cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
           <?xml version="1.0" encoding="UTF-8"?>
@@ -154,9 +154,12 @@ jobs:
           <plist version="1.0">
           <dict>
             <key>method</key><string>app-store-connect</string>
-            <key>destination</key><string>upload</string>
-            <key>signingStyle</key><string>automatic</string>
+            <key>destination</key><string>export</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>signingCertificate</key><string>Apple Distribution</string>
             <key>teamID</key><string>${TEAM_ID}</string>
+            <key>provisioningProfiles</key>
+            <dict><key>${BUNDLE_ID}</key><string>${PROFILE_NAME}</string></dict>
             <key>manageAppVersionAndBuildNumber</key><false/>
           </dict>
           </plist>
@@ -164,6 +167,16 @@ jobs:
           xcodebuild -exportArchive \
             -archivePath "$RUNNER_TEMP/App.xcarchive" \
             -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
-            -exportPath "$RUNNER_TEMP/export" \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$ASC_KEY_PATH" -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER_ID"
+            -exportPath "$RUNNER_TEMP/export"
+
+      # altool finner nøkkelen i ~/private_keys/AuthKey_<KEY_ID>.p8
+      - name: Last opp til App Store Connect (TestFlight)
+        run: |
+          xcrun altool --upload-app --type ios \
+            --file "$(ls "$RUNNER_TEMP"/export/*.ipa)" \
+            --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID"
+
+      # Sertifikatet trekkes tilbake etter hvert bygg. Bygg som er lastet opp påvirkes ikke.
+      - name: Rydd opp signering
+        if: always() && env.CERT_ID != ''
+        run: python3 scripts/ios-signing.py cleanup

@@ -3,18 +3,12 @@
 Registrerer også app-ID-en (bundle ID) automatisk hvis den mangler.
 Leser ASC_KEY_PATH, KEY_ID, ISSUER_ID og BUNDLE_ID fra miljøet.
 """
-import json
 import os
 import sys
-import time
-import urllib.error
-import urllib.request
 
-import jwt  # PyJWT
+import asc
+from asc import call, details
 
-API = 'https://api.appstoreconnect.apple.com/v1'
-key_id = os.environ['KEY_ID']
-issuer = os.environ['ISSUER_ID']
 bundle_id = os.environ['BUNDLE_ID']
 
 with open(os.environ['ASC_KEY_PATH']) as f:
@@ -25,30 +19,10 @@ if 'BEGIN PRIVATE KEY' not in private_key:
     sys.exit(1)
 
 try:
-    token = jwt.encode(
-        {'iss': issuer, 'iat': int(time.time()), 'exp': int(time.time()) + 600, 'aud': 'appstoreconnect-v1'},
-        private_key, algorithm='ES256', headers={'kid': key_id, 'typ': 'JWT'},
-    )
+    asc.token()
 except Exception as e:  # ugyldig nøkkelinnhold
     print(f'::error::Klarte ikke å lese .p8-nøkkelen ({e}). Lim inn hele innholdet i APPSTORE_KEY_P8 på nytt.')
     sys.exit(1)
-
-
-def call(method, path, body=None):
-    req = urllib.request.Request(API + path, method=method, data=json.dumps(body).encode() if body else None,
-                                 headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'})
-    try:
-        with urllib.request.urlopen(req) as r:
-            return r.status, json.load(r)
-    except urllib.error.HTTPError as e:
-        try:
-            return e.code, json.load(e)
-        except Exception:
-            return e.code, {}
-
-
-def details(resp):
-    return ' '.join(err.get('detail', err.get('title', '')) for err in resp.get('errors', []))
 
 
 status, resp = call('GET', f'/bundleIds?filter[identifier]={bundle_id}')

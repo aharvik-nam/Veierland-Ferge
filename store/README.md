@@ -41,6 +41,7 @@ Appen bygges i skyen med GitHub Actions, så du trenger ingen Mac.
 1. [GitHub → Actions → «Bygg og last opp app»](https://github.com/aharvik-nam/Veierland-Ferge/actions/workflows/app-release.yml) → **Run workflow** → velg `ios`.
 2. Etter ca. 15 minutter er bygget lastet opp. Det dukker opp under **TestFlight** i App Store Connect etter 10–30 minutter behandling.
 3. Test gjerne selv: TestFlight → **Internal Testing** → legg til deg selv, og installer via TestFlight-appen på iPhonen.
+4. Bygget lager et nytt distribusjonssertifikat og trekker det tilbake når det er ferdig, så du kan få e-post fra Apple om sertifikater. Det er helt normalt, og bygg som er lastet opp påvirkes ikke.
 
 ### 6. Fyll ut butikksiden og send inn
 I App Store Connect → appen → **iOS App 1.0**:
