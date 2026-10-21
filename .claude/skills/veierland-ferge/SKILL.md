@@ -42,7 +42,7 @@ Andreas (aharvik@gmail.com) eier appen, skriver norsk og er ikke utvikler.
 
 - Andre økter og brukeren selv pusher også til `main`. Kjør derfor `git fetch origin main` før du begynner og igjen før du pusher. Den lokale grenen kan hete noe annet (f.eks. `humla-rutetider`). Push med `git push origin HEAD:main` når historikken er en fast-forward.
 - Lag ikke pull request med mindre brukeren ber om det. Brukeren forventer at endringer havner rett på `main`.
-- `npm ci` først hvis `node_modules` kan være utdatert. Kontroller deretter med `npm run lint` (`tsc --noEmit`) og `npm run build`. `lint` kan ha eldre feil, så sammenlign med feilene før endringen din og pass på at du ikke lager nye.
+- `npm ci` først hvis `node_modules` kan være utdatert. Kontroller deretter med `npm run lint` (`tsc --noEmit`) og `npm run build`. Begge skal gå gjennom uten feil.
 
 ## Oppgave: nye rutetider
 
