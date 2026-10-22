@@ -316,7 +316,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
 
         {/* Vipps-donasjon */}
         <a
-          href="vipps://pay?phone=94493575"
+          href="vipps://payment?recipient=94493575"
           style={{ marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, padding: '12px 20px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', textDecoration: 'none', cursor: 'pointer' }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
