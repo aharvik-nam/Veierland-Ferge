@@ -78,6 +78,8 @@ Når Humla-perioden er slutt, går appen automatisk tilbake til ordinære ruter 
 
 Vercel-miljøvariablene `BARENTSWATCH_CLIENT_ID` og `BARENTSWATCH_CLIENT_SECRET` må være satt. `FERRY_MMSI` overstyrer valget av fartøy. Test med `curl -s https://veierland-ferge.vercel.app/api/ferry`. Svaret skal ha `lat`, `lng` og `time`, eller en forklarende feil.
 
+**AIS-historikk og punktlighet:** `api/ferry-history.ts` henter sporet de siste 14 dagene (BarentsWatch sletter eldre data) og gjør det om til anløp per kai. Kaiposisjonene er målt fra sporet. BarentsWatch er ofte stengt fra Claude-økter, så hent fra Vercel med `web_fetch_vercel_url`, for eksempel `https://veierland-ferge.vercel.app/api/ferry-history?from=2026-10-17&to=2026-10-24&compact=1`. Lagre svaret og kjør `npx tsx .claude/skills/veierland-ferge/scripts/punktlighet.ts <fil.json>`. Faste avvik på mange minutter for samme avgang flere dager på rad betyr at rutetiden i appen trolig er feil. Røde Engø-turer og bestillingsavganger går bare når noen har bestilt, så at de mangler i AIS er normalt. `raw=1&day=…` gir alle punktene for én dag.
+
 Kortet «Ferga nå» viser posisjonen på en rett linje: Tenvik til venstre, Tangen i midten og Engø til høyre. Brukeren valgte bevisst bort et kart.
 
 ## Oppgave: ny app-versjon, bygg og publisering
