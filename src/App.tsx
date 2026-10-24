@@ -28,6 +28,16 @@ function yrSymbolToCode(sym: string): number {
   return 2;
 }
 
+// Byggnummeret fra TestFlight/App Store (finnes bare i den installerte appen)
+function useBuildNumber(): string | null {
+  const [build, setBuild] = useState<string | null>(null);
+  useEffect(() => {
+    if (!isNative) return;
+    CapApp.getInfo().then(info => setBuild(info.build)).catch(() => {});
+  }, []);
+  return build;
+}
+
 function SettingsSheet({ open, theme, style: stylePref, animate, onTheme, onStyle, onAnimate, onTour, onClose }: {
   open: boolean;
   theme: ThemeKey;
@@ -42,6 +52,7 @@ function SettingsSheet({ open, theme, style: stylePref, animate, onTheme, onStyl
   const themeKeys: ThemeKey[] = ['fjord', 'driftwood', 'midnattsol', 'lanterne'];
   const styleKeys: StyleKey[] = ['sjokart', 'tavle', 'mykt'];
   const styleLabels: Record<StyleKey, string> = { sjokart: 'Sjøkart', tavle: 'Tavle', mykt: 'Mykt' };
+  const build = useBuildNumber();
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 90, pointerEvents: open ? 'auto' : 'none' }}>
@@ -100,7 +111,7 @@ function SettingsSheet({ open, theme, style: stylePref, animate, onTheme, onStyl
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12.5 }}>
           <a href={`${API_BASE}/personvern.html`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ink)' }}>Personvern</a>
           <a href={`${API_BASE}/support.html`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ink)' }}>Kontakt og hjelp</a>
-          <span style={{ marginLeft: 'auto', color: 'var(--inkDim)', fontWeight: 500 }}>Versjon {__APP_VERSION__}</span>
+          <span style={{ marginLeft: 'auto', color: 'var(--inkDim)', fontWeight: 500 }}>Versjon {__APP_VERSION__} {build ? `(${build})` : isNative ? '' : '(nettside)'}</span>
         </div>
       </div>
     </div>
