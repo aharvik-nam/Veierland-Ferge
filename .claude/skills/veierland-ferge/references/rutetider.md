@@ -34,6 +34,7 @@ En `FerryLoop` er **én rundtur med båten**: ut fra Tenvik til øya, og tilbake
 | `tenvikInn` | Ankomst Tenvik |
 | `bussTenvik` | Bussen fra Tenvik til Tønsberg som passer med ankomsten |
 | `rowType` | `'engo'`: Engø-tidene er røde og må bestilles. `'booking'`: hele avgangen må bestilles. Utelates for vanlige turer. |
+| `deadline` | Bestillingsfrist for `rowType: 'booking'`: `'18:00'` (standard, samme dag), `'20:00'` eller `'kvelden før, 20:00'` |
 | `note` | Valgfri egen tekst for advarselen |
 
 Kaier som turen ikke går innom, er `null`. Klokkeslett skrives `"TT:MM"` med ledende null, for eksempel `"07:05"`. Alle tider i en rad må være i stigende rekkefølge.
@@ -55,7 +56,7 @@ Under Humla utgår Vestgården. Alle `vestgarden*`-felt i `humla*`-listene skal 
 ## 3. Røde avganger og bestilling
 
 - **Røde Engø-tider** (Humla lørdag og søndag): sett `rowType: "engo"` på raden. Da blir Engø-tidene røde, og appen viser knappen for å ringe fergen på 918 88 219.
-- **Hele avgangen rød** (må bestilles): `rowType: "booking"`. Med Humla valgte brukeren å *fjerne* bestillingsavganger som ikke står i de nye tabellene, i stedet for å vise dem. Spør hvis det er uklart om en rød avgang skal være med.
+- **Bestillingsavganger** (hele avgangen må bestilles): `rowType: "booking"`, `deadline` og en `note` med fristen og telefonnummeret. På veierland.org står de ofte bare som tekst øverst («Avgang 2020 fra Tangen … MÅ bestilles før 1800»), ikke i tabellen. Legg dem i en egen rad, ikke i samme rad som en vanlig tur, fordi `rowType` gjelder hele raden. Ankomsttiden står sjelden. Bruk vanlig overfartstid (Tangen–Tenvik 20 min med Humla), og si fra til brukeren at den er beregnet.
 - **Bestillingsregler på klokkeslett** for ordinære ruter og sommerruter (siste tur om kvelden, tidlig lørdag fra Vestgården) er ikke data. De står som tidsgrenser i `findTripsForDay` i `src/ferryData.ts`. Det gjør også Engø-sesongen (22. mars–27. sept.). Endrer ferjeselskapet reglene, må koden der endres.
 
 ## 4. Hvor rutetidene kommer fra (og hva som vinner)

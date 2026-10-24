@@ -259,7 +259,7 @@ export function findTripsForDay(dayType: 'monfri' | 'sat' | 'sun', dateObj: Date
 
     // Admin-set row type overrides for booking and Engø departures
     if (loop.rowType === 'booking' && !warnings.some(w => w.type === 'booking')) {
-      warnings.push({ type: 'booking', deadline: '18:00', text: loop.note || 'Må forhåndsbestilles. Ring fergen for å bestille.' });
+      warnings.push({ type: 'booking', deadline: loop.deadline || '18:00', text: loop.note || 'Må forhåndsbestilles. Ring fergen for å bestille.' });
     }
     if (loop.rowType === 'engo' && hasEngo && !warnings.some(w => w.type === 'engo')) {
       warnings.push({ type: 'engo', text: loop.note || 'Rød avgang via Engø. Ring fergen for å forhåndsbestille.' });
@@ -270,7 +270,7 @@ export function findTripsForDay(dayType: 'monfri' | 'sat' | 'sun', dateObj: Date
       warnings.push({ type: 'engo', text: 'Rød avgang via Engø — kjøres normalt kun 1. april–28. sep. Ring fergen for å forhåndsbestille.' });
     }
     if (humla) {
-      // M/F Humla: ingen bestillingsavganger i rutetabellen
+      // M/F Humla: bestillingsavgangene er merket med rowType 'booking' i rutetabellen
     } else if (isSummerSeason(dateObj)) {
       // Sommerruter: siste tur krever bestilling innen kl. 20:00 samme dag
       if (dayType === 'monfri') {

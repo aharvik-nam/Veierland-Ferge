@@ -100,6 +100,10 @@ export function TimetableScreen({ from, animate, texture, onOpenSettings }: Time
   const nowMins = now.getHours() * 60 + now.getMinutes();
   const nextIndex = isToday ? rows.findIndex(r => parseTime(r.start) >= nowMins) : -1;
   const hasRedEngo = rows.some(r => r.loop.rowType === 'engo');
+  const bookings = rows.filter(r => r.loop.rowType === 'booking');
+  const bookingText = !bookings.length ? null
+    : bookings.some(r => r.loop.deadline === 'kvelden før, 20:00') ? 'Røde avganger må bestilles kvelden før, innen kl. 20:00.'
+    : 'Røde avganger må bestilles innen kl. 18:00 samme dag.';
 
   return (
     <div style={{ minHeight: '100dvh', background: 'linear-gradient(180deg, var(--deep) 0%, var(--deep2) 55%, var(--deep) 100%)' }}>
@@ -153,11 +157,11 @@ export function TimetableScreen({ from, animate, texture, onOpenSettings }: Time
 
         {/* forklaring */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
-          {hasRedEngo && (
+          {(hasRedEngo || bookingText) && (
             <a href="tel:91888219" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: 'var(--radSm)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', textDecoration: 'none' }}>
               <Icon name="phone" size={16} color="var(--accentOnDeep)" stroke={2} style={{ flexShrink: 0 }} />
               <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, color: 'var(--onDeep)', lineHeight: 1.4 }}>
-                Røde Engø-tider må forhåndsbestilles. Ring fergen: 918 88 219
+                {[hasRedEngo && 'Røde Engø-tider må forhåndsbestilles.', bookingText].filter(Boolean).join(' ')} Ring fergen: 918 88 219
               </span>
             </a>
           )}

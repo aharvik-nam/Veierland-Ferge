@@ -2,7 +2,7 @@
 // Bruker det ferdige bygget i dist/, så kjør `npm run build` først.
 //
 //   node .claude/skills/veierland-ferge/scripts/skjermbilder.mjs <utmappe> [tidspunkt] [tema]
-//   tidspunkt: f.eks. 2026-11-07T09:40 (norsk vintertid, +01:00; legg til +02:00 om sommeren). Standard: nå.
+//   tidspunkt: f.eks. 2026-11-07T09:40 (norsk tid). Standard: nå.
 //   tema: fjord (standard), driftwood (mørk), midnattsol, lanterne
 //
 // All trafikk ut av maskinen blokkeres, så bildene viser rutetidene i dist/ (ikke admin-data fra Firestore).
@@ -48,7 +48,15 @@ await ctx.route('**/*', route => {
   if (url.hostname === 'localhost') return route.continue();
   return route.abort();
 });
-const now = when ? new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(when) ? when : `${when}+01:00`) : new Date();
+// Tidspunkt uten tidssone tolkes som norsk tid (sommertid eller vintertid etter datoen)
+function osloTime(s) {
+  if (/[zZ]|[+-]\d\d:?\d\d$/.test(s)) return new Date(s);
+  const asUtc = new Date(`${s}Z`);
+  const wall = new Date(asUtc.toLocaleString('en-US', { timeZone: 'Europe/Oslo' }));
+  const utc = new Date(asUtc.toLocaleString('en-US', { timeZone: 'UTC' }));
+  return new Date(asUtc.getTime() - (wall.getTime() - utc.getTime()));
+}
+const now = when ? osloTime(when) : new Date();
 await ctx.route('**/api/ferry', route => route.fulfill({
   status: 200, contentType: 'application/json',
   body: JSON.stringify({ lat: 59.1640, lng: 10.3515, sog: 8.4, cog: 225, heading: 224, time: new Date(now.getTime() - 60000).toISOString(), name: 'TEST' }),
