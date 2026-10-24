@@ -50,13 +50,16 @@ function angleDiff(a: number, b: number): number {
   return d > 180 ? 360 - d : d;
 }
 
-function ferryStatus(pos: FerryPos, stops: StopId[]): { text: string; far: boolean; target: StopId | null } {
+function ferryStatus(pos: FerryPos, stops: StopId[], humla: boolean): { text: string; far: boolean; target: StopId | null } {
   const dists = stops.map(s => ({ s, km: haversineKm(pos.lat, pos.lng, stopCoords[s].lat, stopCoords[s].lng) }));
   const nearest = dists.reduce((a, b) => (b.km < a.km ? b : a));
   if (nearest.km > 6) return { text: 'Utenfor ruteområdet', far: true, target: null };
 
   const moving = pos.sog != null && pos.sog >= 1.5;
   if (!moving) {
+    // Vestgården er ikke med mens Humla seiler, men ferga har pause der mellom turene
+    const atVestgarden = haversineKm(pos.lat, pos.lng, stopCoords.vestgarden.lat, stopCoords.vestgarden.lng) <= AT_QUAY_KM.vestgarden!;
+    if (humla && atVestgarden) return { text: 'Ligger ved Vestgården (pause)', far: false, target: null };
     return { text: nearest.km <= (AT_QUAY_KM[nearest.s] ?? 0.03) ? `Ligger ved ${stopsMap[nearest.s]}` : 'Ligger stille', far: false, target: null };
   }
   const course = pos.cog ?? pos.heading;
@@ -155,7 +158,7 @@ export function FerryLive({ dep, showNote = true }: { dep?: Trip | null; showNot
   const humla = isMaintenancePeriod(getOsloDate());
   const stops: StopId[] = humla ? ['tenvik', 'tangen', 'engo'] : ['tenvik', 'vestgarden', 'tangen', 'engo'];
   const line: StopId[] = humla ? ['tenvik', 'tangen', 'engo'] : ['tenvik', 'vestgarden', 'tangen', 'engo'];
-  const status = ferryStatus(pos, stops);
+  const status = ferryStatus(pos, stops, humla);
   const age = ageLabel(pos.time);
   const moving = pos.sog != null && pos.sog >= 1.5;
   const note = status.far || !showNote ? null : departureNote(pos, dep, status.target, line);
