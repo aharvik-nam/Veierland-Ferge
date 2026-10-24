@@ -9,7 +9,7 @@
 6. Feil vi har sett før
 7. App Store og Google Play
 
-Status per 24.10.2026: iOS-bygget virker. Nyeste er versjon 1.0.0 build 9 i TestFlight (kjøring #9, med punktlighet og «forsinket nå»). Kjøring #10 feilet med 401 i nøkkelsjekken etter et svar som tok over ett minutt (#9 brukte 2 s). Det så midlertidig ut, og `scripts/asc.py` prøver nå igjen. Appen er ikke sendt til godkjenning ennå. Android-bygget er ikke prøvd ennå. Oppdater denne linjen når noe endrer seg.
+Status per 24.10.2026: iOS-bygget virker. Nyeste er versjon 1.0.0 build 12 i TestFlight (kjøring #12, med fergekart, klokkeslett i kartet og byggnummer under «Om appen»). Kjøring #10 feilet med 401 i nøkkelsjekken etter et svar som tok over ett minutt. Det var midlertidig: #12 gikk gjennom med samme nøkkel, og `scripts/asc.py` prøver nå igjen. Appen er ikke sendt til godkjenning ennå. Android-bygget er ikke prøvd ennå. Oppdater denne linjen når noe endrer seg.
 
 ## 1. Nettsiden (Vercel)
 
