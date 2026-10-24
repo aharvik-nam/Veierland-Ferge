@@ -194,7 +194,7 @@ export function FerryLive({ dep, showNote = true }: { dep?: Trip | null; showNot
         </div>
       )}
     </button>
-    <FerryMap open={mapOpen} pos={pos} title={status.text} ageText={age.short} note={note?.text ?? null} highlight={note?.stop ?? null} humla={humla} onClose={() => setMapOpen(false)} />
+    <FerryMap open={mapOpen} pos={pos} title={status.text} target={status.target} ageText={age.short} note={note?.text ?? null} highlight={note?.stop ?? null} humla={humla} onClose={() => setMapOpen(false)} />
     </>
   );
 }

@@ -24,7 +24,17 @@ if (isNative) {
   SystemBars.setStyle({ style: SystemBarsStyle.Dark }).catch(() => {});
 } else {
   // Service worker (offline/installering) bare på nettsiden; den installerte appen har filene lokalt
-  import('virtual:pwa-register').then(({ registerSW }) => registerSW({ immediate: true })).catch(() => {});
+  // Ny versjon tas i bruk med en gang (siden lastes på nytt). Se etter den hver gang siden kommer fram igjen,
+  // for appen på hjemskjermen kan ligge åpen i dagevis uten å lastes på nytt.
+  import('virtual:pwa-register').then(({ registerSW }) => registerSW({
+    immediate: true,
+    onRegisteredSW(_url, reg) {
+      if (!reg) return;
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') reg.update().catch(() => {});
+      });
+    },
+  })).catch(() => {});
 }
 
 createRoot(document.getElementById('root')!).render(

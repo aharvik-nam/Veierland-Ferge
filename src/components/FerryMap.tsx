@@ -4,6 +4,7 @@ import { Icon } from './Icons';
 import { stopCoords, stopsMap } from '../ferryData';
 import { MAP_VIEW, toMap, LAND_PATH, ROUTE, LABELS } from '../map/kart';
 import { useLiveTrack } from '../liveDelay';
+import { mapTimes } from '../mapTimes';
 import type { StopId } from '../types';
 
 // Kart over fergeområdet i appens farger, med ferga der AIS sier den er.
@@ -14,10 +15,12 @@ interface MapPos { lat: number; lng: number; sog: number | null; cog: number | n
 const QUAYS: StopId[] = ['tenvik', 'vestgarden', 'tangen', 'engo'];
 const routePath = ROUTE.map(([lat, lng], i) => { const p = toMap(lat, lng); return `${i ? 'L' : 'M'}${p.x.toFixed(0)} ${p.y.toFixed(0)}`; }).join('');
 
-export function FerryMap({ open, pos, title, ageText, note, highlight, humla, onClose }: {
+export function FerryMap({ open, pos, title, target, ageText, note, highlight, humla, onClose }: {
   open: boolean;
   pos: MapPos;
   title: string;
+  target: StopId | null; // kaia ferga er på vei mot
+
   ageText: string;
   note: string | null;
   highlight: StopId | null;
@@ -30,6 +33,9 @@ export function FerryMap({ open, pos, title, ageText, note, highlight, humla, on
   const moving = pos.sog != null && pos.sog >= 1.5;
   const course = pos.cog ?? pos.heading;
   const trail = (track?.trail ?? []).map(([lat, lng]) => toMap(lat, lng));
+  const times = mapTimes(track, pos, target);
+  // Kort tid ved kaia i kartet; ligger ferga ved samme kai som neste avgang, vises bare avgangen
+  const tags = new Map(times.map(c => [c.stop, c.tag]));
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 85, pointerEvents: open ? 'auto' : 'none' }} aria-hidden={!open}>
@@ -49,6 +55,18 @@ export function FerryMap({ open, pos, title, ageText, note, highlight, humla, on
             <Icon name="x" size={17} color="var(--onDeep)" stroke={2.2} />
           </button>
         </div>
+
+        {times.length > 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: times.length > 1 ? '1fr 1fr' : '1fr', gap: 8, margin: '0 12px 10px' }}>
+            {times.map(c => (
+              <div key={c.label} style={{ minWidth: 0, padding: '9px 12px 10px', borderRadius: 'var(--radSm)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)' }}>
+                <Label color="var(--onDeepDim)" style={{ fontSize: 9, letterSpacing: '0.12em' }}>{c.label}</Label>
+                <div style={{ marginTop: 3, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 22, color: 'var(--onDeep)', fontVariantNumeric: 'tabular-nums', lineHeight: 1.15 }}>{c.time}</div>
+                {c.sub && <div style={{ marginTop: 1, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 11.5, color: c.late ? 'color-mix(in srgb, var(--warn) 55%, white)' : 'var(--onDeepDim)' }}>{c.sub}</div>}
+              </div>
+            ))}
+          </div>
+        )}
 
         <div style={{ margin: '0 12px', borderRadius: 'var(--rad)', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.10)' }}>
           <svg viewBox={`0 0 ${MAP_VIEW.width} ${MAP_VIEW.height}`} width="100%" style={{ display: 'block', background: 'color-mix(in srgb, var(--deep) 82%, #000)' }} fontFamily="'Space Grotesk', sans-serif">
@@ -71,6 +89,11 @@ export function FerryMap({ open, pos, title, ageText, note, highlight, humla, on
                   <text x={p.x + (right ? 120 : -120)} y={p.y + 50} textAnchor={right ? 'start' : 'end'} fontSize={150} fontWeight={700} fill="var(--onDeep)" stroke="color-mix(in srgb, var(--deep) 82%, #000)" strokeWidth={3} paintOrder="stroke" vectorEffect="non-scaling-stroke">
                     {stopsMap[s]}
                   </text>
+                  {tags.has(s) && (
+                    <text x={p.x + (right ? 120 : -120)} y={p.y + 205} textAnchor={right ? 'start' : 'end'} fontSize={125} fontWeight={700} fill="var(--accentOnDeep)" stroke="color-mix(in srgb, var(--deep) 82%, #000)" strokeWidth={3} paintOrder="stroke" vectorEffect="non-scaling-stroke" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                      {tags.get(s)}
+                    </text>
+                  )}
                 </g>
               );
             })}
