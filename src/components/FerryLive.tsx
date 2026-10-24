@@ -4,6 +4,7 @@ import { Icon } from './Icons';
 import { stopCoords, stopsMap, stopKind, haversineKm, isMaintenancePeriod, getOsloDate, ferryName, minsUntil, fmtCountdown, AT_QUAY_KM } from '../ferryData';
 import type { StopId, Trip } from '../types';
 import { API_BASE } from '../platform';
+import { FerryMap } from './FerryMap';
 
 interface FerryPos {
   lat: number;
@@ -153,6 +154,7 @@ function RouteLine({ pos, line, target, showFerry, highlight }: { pos: FerryPos;
 // showNote=false når kortet for neste avgang allerede viser at ferga er forsinket
 export function FerryLive({ dep, showNote = true }: { dep?: Trip | null; showNote?: boolean }) {
   const pos = useFerryPosition();
+  const [mapOpen, setMapOpen] = useState(false);
   if (!pos) return null;
 
   const humla = isMaintenancePeriod(getOsloDate());
@@ -164,12 +166,12 @@ export function FerryLive({ dep, showNote = true }: { dep?: Trip | null; showNot
   const note = status.far || !showNote ? null : departureNote(pos, dep, status.target, line);
 
   return (
-    <a
+    <>
+    <button
       data-tour="ferry-live"
-      href={`https://maps.google.com/?q=${pos.lat},${pos.lng}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ marginTop: 12, display: 'block', padding: '12px 14px 10px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', textDecoration: 'none' }}
+      onClick={() => setMapOpen(true)}
+      aria-label="Vis ferga på kartet"
+      style={{ marginTop: 12, display: 'block', width: '100%', textAlign: 'left', cursor: 'pointer', padding: '12px 14px 10px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)' }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10, padding: '2px 2px 12px' }}>
         <div style={{ minWidth: 0 }}>
@@ -191,6 +193,8 @@ export function FerryLive({ dep, showNote = true }: { dep?: Trip | null; showNot
           <span>{note.text}</span>
         </div>
       )}
-    </a>
+    </button>
+    <FerryMap open={mapOpen} pos={pos} title={status.text} ageText={age.short} note={note?.text ?? null} highlight={note?.stop ?? null} humla={humla} onClose={() => setMapOpen(false)} />
+    </>
   );
 }

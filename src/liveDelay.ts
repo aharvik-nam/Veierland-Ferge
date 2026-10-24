@@ -11,6 +11,7 @@ export interface LiveTrack {
   now: number; // minutter etter midnatt, norsk tid
   latest: { min: number; lat: number; lng: number; sog: number | null; cog: number | null } | null;
   calls: { stop: string; arr: number; dep: number | null }[]; // dep er null mens ferga ligger ved kaia
+  trail?: [number, number][]; // siste posisjoner (lat, lng), eldst først
 }
 
 // reason: «Ferga har ikke gått fra Tangen ennå», short: «ca. 6 min forsinket», text: begge deler

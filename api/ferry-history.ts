@@ -314,6 +314,8 @@ async function live(token: string, mmsi: string, radius?: number): Promise<Respo
     latest: last ? { min: r1(osloMin(last.t)), lat: last.lat, lng: last.lng, sog: last.sog, cog: last.cog } : null,
     // arr/dep i minutter etter midnatt; dep er null mens båten fortsatt ligger ved kaia
     calls: rawCalls(points, radius).slice(-6).map(c => ({ stop: c.stop, arr: r1(osloMin(c.first.t)), dep: departedAt(c) == null ? null : r1(departedAt(c)!) })),
+    // spor de siste 20 minuttene, til kartet
+    trail: points.filter(p => p.t >= now - 20 * 60_000).slice(-30).map(p => [+p.lat.toFixed(5), +p.lng.toFixed(5)]),
   }, 200, 10);
 }
 
