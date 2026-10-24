@@ -3,7 +3,7 @@
 //
 //   /api/ferry-history?from=2026-10-17&to=2026-10-24     anløp per dag (norske datoer, til og med «to»)
 //   /api/ferry-history?day=2026-10-23&raw=1              alle AIS-punkter for én dag (feilsøking)
-//   valgfritt: radius=250 (meter fra kaia), mmsi=257281900
+//   valgfritt: radius=120 (meter fra kaia), compact=1 (kortere svar), mmsi=257281900
 //
 // Krever de samme miljøvariablene som /api/ferry: BARENTSWATCH_CLIENT_ID og BARENTSWATCH_CLIENT_SECRET.
 
@@ -12,12 +12,12 @@ const JUTOYA_MMSI = '257207800';
 const TOKEN_URL = 'https://id.barentswatch.no/connect/token';
 const HISTORIC_BASE = 'https://historic.ais.barentswatch.no';
 
-// Kaiene (samme som stopCoords i src/data.ts)
+// Der ferga faktisk ligger til kai (målt fra AIS-sporet 23.10.2026)
 const QUAYS: Record<string, { lat: number; lng: number }> = {
-  tenvik: { lat: 59.1744256064253, lng: 10.364987204418728 },
-  vestgarden: { lat: 59.16496191981857, lng: 10.343429236051696 },
-  tangen: { lat: 59.15344925258157, lng: 10.33775055215706 },
-  engo: { lat: 59.147476312611, lng: 10.31832985729631 },
+  tenvik: { lat: 59.17436, lng: 10.36493 },
+  vestgarden: { lat: 59.16491, lng: 10.34331 },
+  tangen: { lat: 59.15352, lng: 10.33655 },
+  engo: { lat: 59.14765, lng: 10.31865 },
 };
 
 interface Point { t: number; lat: number; lng: number; sog: number | null }
@@ -112,9 +112,10 @@ function portCalls(points: Point[], radius: number) {
   let cur: { stop: string; first: Point; last: Point; before: Point | null; n: number } | null = null;
   let prev: Point | null = null;
   for (const p of points) {
-    // Ved kaia: innenfor radius og (nesten) stille. Uten fart i meldingen holder det å være innenfor radius.
+    // Ved kaia: nær kaia og under 4 knop (korte stopp på Engø blir sjelden fanget med fart 0).
+    // Uten fart i meldingen holder det å være nær kaia.
     const quay = nearestQuay(p, radius);
-    const atQuay = quay && (p.sog == null || p.sog < 2) ? quay : null;
+    const atQuay = quay && (p.sog == null || p.sog < 4) ? quay : null;
     if (atQuay && cur && cur.stop === atQuay) { cur.last = p; cur.n++; }
     else {
       if (cur) calls.push(finish(cur, p));
@@ -149,7 +150,7 @@ export async function GET(request: Request): Promise<Response> {
   const q = new URL(request.url).searchParams;
   const mmsi = q.get('mmsi') || HUMLA_MMSI;
   if (mmsi !== HUMLA_MMSI && mmsi !== JUTOYA_MMSI) return json({ error: 'unknown_mmsi' }, 400);
-  const radius = Math.min(Math.max(Number(q.get('radius')) || 250, 50), 1000);
+  const radius = Math.min(Math.max(Number(q.get('radius')) || 120, 30), 1000);
   const today = oslo(Date.now()).date;
   const isDate = (s: string | null): s is string => !!s && /^\d{4}-\d{2}-\d{2}$/.test(s);
 
@@ -181,7 +182,9 @@ export async function GET(request: Request): Promise<Response> {
       if (from > Date.now()) return { day, error: 'future' };
       try {
         const points = await fetchTrack(token, mmsi, from, Math.min(from + 86_400_000, Date.now()));
-        return { day, ...gapStats(points), calls: portCalls(points, radius) };
+        const calls = portCalls(points, radius);
+        // compact=1: «kai ankomst avgang» per anløp, for å holde svaret lite
+        return { day, ...gapStats(points), calls: q.get('compact') ? calls.map(c => `${c.stop} ${c.arr[1]} ${c.dep[0]}`) : calls };
       } catch (e) {
         return { day, error: e instanceof Error ? e.message : String(e), detail: (e as { detail?: unknown }).detail };
       }
