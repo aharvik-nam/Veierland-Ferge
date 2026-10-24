@@ -70,7 +70,10 @@ export function FerryMap({ open, pos, title, target, ageText, note, highlight, h
 
         <div style={{ margin: '0 12px', borderRadius: 'var(--rad)', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.10)' }}>
           <svg viewBox={`0 0 ${MAP_VIEW.width} ${MAP_VIEW.height}`} width="100%" style={{ display: 'block', background: 'color-mix(in srgb, var(--deep) 82%, #000)' }} fontFamily="'Space Grotesk', sans-serif">
-            <path d={LAND_PATH} fill="color-mix(in srgb, var(--onDeep) 13%, var(--deep))" stroke="color-mix(in srgb, var(--onDeep) 24%, var(--deep))" strokeWidth={1} vectorEffect="non-scaling-stroke" fillRule="evenodd" />
+            {/* grunt vann langs land: to brede, svake streker rundt kysten under selve landet */}
+            <path d={LAND_PATH} fill="none" stroke="color-mix(in srgb, var(--onDeep) 5%, transparent)" strokeWidth={110} strokeLinejoin="round" />
+            <path d={LAND_PATH} fill="none" stroke="color-mix(in srgb, var(--onDeep) 6%, transparent)" strokeWidth={45} strokeLinejoin="round" />
+            <path d={LAND_PATH} fill="color-mix(in srgb, var(--onDeep) 13%, var(--deep))" stroke="color-mix(in srgb, var(--onDeep) 26%, var(--deep))" strokeWidth={1} strokeLinejoin="round" vectorEffect="non-scaling-stroke" fillRule="evenodd" />
             {LABELS.map(l => { const p = toMap(l.lat, l.lng); return (
               <text key={l.name} x={p.x} y={p.y} textAnchor="middle" fontSize={150} fontStyle="italic" fontWeight={600} fill="var(--onDeepDim)" opacity={0.75}>{l.name}</text>
             ); })}
