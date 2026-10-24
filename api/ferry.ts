@@ -109,7 +109,7 @@ export async function GET(): Promise<Response> {
       cog: pos.courseOverGround ?? null,
       heading: pos.trueHeading != null && pos.trueHeading < 360 ? pos.trueHeading : null,
       time: pos.msgtime ?? null,
-    }, 200, 20);
+    }, 200, 10);
   } catch (e) {
     cachedToken = null;
     return json({ error: 'upstream', detail: e instanceof Error ? e.message : String(e) }, 502);

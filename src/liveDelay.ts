@@ -21,7 +21,8 @@ function make(stop: StopId, mins: number, reason: string, approx: 'ca.' | 'minst
   return { stop, mins, reason, short, text: `${reason}, ${short}` };
 }
 
-const POLL_MS = 30_000;
+// Hyppig rundt avgangstiden: serveren henter siste posisjon fra BarentsWatch sitt sanntids-API (cache 10 s)
+const POLL_MS = 15_000;
 
 // Hentes bare når en avgang er nær, så serveren ikke spørres unødig
 export function useLiveTrack(enabled: boolean): LiveTrack | null {

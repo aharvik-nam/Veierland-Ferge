@@ -30,14 +30,18 @@ export const stopKind: Record<StopId, 'buss' | 'fastland' | 'øy'> = {
   buss_tenv: "buss",
 };
 
+// Kaiene er der ferga faktisk ligger fortøyd (målt fra AIS, samme punkter som api/ferry-history.ts)
 export const stopCoords: Record<StopId, { lat: number; lng: number }> = {
   buss_tbg:   { lat: 59.2676, lng: 10.4078 },
-  tenvik:     { lat: 59.1744, lng: 10.3650 },
-  vestgarden: { lat: 59.1650, lng: 10.3434 },
-  engo:       { lat: 59.1475, lng: 10.3183 },
-  tangen:     { lat: 59.1534, lng: 10.3378 },
+  tenvik:     { lat: 59.17436, lng: 10.36493 },
+  vestgarden: { lat: 59.16491, lng: 10.34331 },
+  engo:       { lat: 59.14765, lng: 10.31865 },
+  tangen:     { lat: 59.15352, lng: 10.33655 },
   buss_tenv:  { lat: 59.2676, lng: 10.4078 },
 };
+
+// Innenfor denne avstanden (km) og nesten stille regnes ferga som ved kaia; utenfor har den gått
+export const AT_QUAY_KM: Partial<Record<StopId, number>> = { tenvik: 0.03, vestgarden: 0.03, tangen: 0.03, engo: 0.06 };
 
 export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLng = (lng2 - lng1) * Math.PI / 180;

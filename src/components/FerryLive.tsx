@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Label } from './Atoms';
 import { Icon } from './Icons';
-import { stopCoords, stopsMap, stopKind, haversineKm, isMaintenancePeriod, getOsloDate, ferryName, minsUntil, fmtCountdown } from '../ferryData';
+import { stopCoords, stopsMap, stopKind, haversineKm, isMaintenancePeriod, getOsloDate, ferryName, minsUntil, fmtCountdown, AT_QUAY_KM } from '../ferryData';
 import type { StopId, Trip } from '../types';
 import { API_BASE } from '../platform';
 
@@ -15,7 +15,7 @@ interface FerryPos {
 }
 
 const API_URL = `${API_BASE}/api/ferry`;
-const POLL_MS = 30_000;
+const POLL_MS = 15_000;
 
 function useFerryPosition(): FerryPos | null {
   const [pos, setPos] = useState<FerryPos | null>(null);
@@ -57,7 +57,7 @@ function ferryStatus(pos: FerryPos, stops: StopId[]): { text: string; far: boole
 
   const moving = pos.sog != null && pos.sog >= 1.5;
   if (!moving) {
-    return { text: nearest.km < 0.35 ? `Ligger ved ${stopsMap[nearest.s]}` : 'Ligger stille', far: false, target: null };
+    return { text: nearest.km <= (AT_QUAY_KM[nearest.s] ?? 0.03) ? `Ligger ved ${stopsMap[nearest.s]}` : 'Ligger stille', far: false, target: null };
   }
   const course = pos.cog ?? pos.heading;
   if (course == null) return { text: 'Underveis', far: false, target: null };
@@ -88,7 +88,7 @@ function departureNote(pos: FerryPos, dep: Trip | null | undefined, target: Stop
   const name = stopsMap[stop];
   const km = haversineKm(pos.lat, pos.lng, stopCoords[stop].lat, stopCoords[stop].lng);
   const moving = pos.sog != null && pos.sog >= 1.5;
-  if (km < 0.35 && !moving) return { stop, text: `Ligger klar ved ${name} til avgangen ${board.time}`, late: false };
+  if (km <= (AT_QUAY_KM[stop] ?? 0.03) && !moving) return { stop, text: `Ligger klar ved ${name} til avgangen ${board.time}`, late: false };
   if (moving && target === stop) {
     const eta = Math.max(1, Math.round(km / (pos.sog! * 1.852) * 60));
     const late = eta > minsToDep + 3;
