@@ -130,8 +130,9 @@ export const summerSunLoops: FerryLoop[] = [
 
 // ── M/F HUMLA: erstatningsferge fom. 17. okt. 2026 til ca. 1. mars 2027 ──
 // Kun Tenvik–Tangen–(Engø)–Tangen. Vestgården utgår. Kun passasjerer og håndbagasje.
-// Røde Engø-avganger (lør/søn) må forhåndsbestilles. Oppdatert 24.10.2026 etter veierland.org/jutoya,
-// med bestillingsavgangene (rowType "booking") som står øverst på siden.
+// Røde Engø-avganger (lør/søn) må forhåndsbestilles. Disse tidene gjelder fra 24.10.2026 (veierland.org/jutoya),
+// med bestillingsavgangene (rowType "booking") som står øverst på siden. 17.–23.10 gikk ferga etter de
+// første Humla-tidene (se commit 6b469d5), så punktlighetsanalyser av de dagene må bruke dem.
 
 export const humlaMonFriLoops: FerryLoop[] = [
   { id: "hmf-0", bussTbg: null, tenvikUt: null, vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: null, tangenInn: "06:00", engoInn: null, vestgardenInn: null, tenvikInn: "06:20", bussTenvik: "06:43" },
