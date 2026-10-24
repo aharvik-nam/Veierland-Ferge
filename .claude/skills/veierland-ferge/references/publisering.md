@@ -9,7 +9,7 @@
 6. Feil vi har sett før
 7. App Store og Google Play
 
-Status per 21.10.2026: iOS-bygget virker (kjøring #6, versjon 1.0.0 build 6 er lastet opp til TestFlight). Android-bygget er ikke prøvd ennå. Oppdater denne linjen når noe endrer seg.
+Status per 24.10.2026: iOS-bygget virker. Nyeste er versjon 1.0.0 build 8 i TestFlight (kjøring #8, med Humla-tidene fra 24.10 og bestillingsfrist per avgang). Appen er ikke sendt til godkjenning ennå. Android-bygget er ikke prøvd ennå. Oppdater denne linjen når noe endrer seg.
 
 ## 1. Nettsiden (Vercel)
 
