@@ -341,18 +341,6 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
         })}
 
         <HumlaNotice date={getOsloDate()} variant="deep" style={{ marginTop: 8 }} />
-
-        {/* Vipps-donasjon */}
-        <a
-          href="vipps://payment?recipient=94493575"
-          style={{ marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, padding: '12px 20px', borderRadius: 'var(--rad)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', textDecoration: 'none', cursor: 'pointer' }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="24" height="24" rx="6" fill="#FF5B24"/>
-            <path d="M7 8.5C8.5 11.5 10 14 12 16.5C14 14 15.5 11.5 17 8.5" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13.5, color: 'rgba(255,255,255,0.60)' }}>Støtt appen med Vipps</span>
-        </a>
       </div>
     </div>
     <PlanCalendar
