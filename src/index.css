@@ -35,3 +35,7 @@ button { font-family: inherit; }
   0%   { transform: translateY(-44px); }
   100% { transform: translateY(320px); }
 }
+
+/* Dashbordene på store skjermer: sveip mellom sidene uten synlig rullefelt */
+.dash-pager { scrollbar-width: none; }
+.dash-pager::-webkit-scrollbar { display: none; }

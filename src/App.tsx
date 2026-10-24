@@ -12,21 +12,9 @@ import { StopPicker } from './components/Atoms';
 import { Icon } from './components/Icons';
 import { Tour } from './components/Tour';
 import { WeatherSheet } from './components/WeatherSheet';
+import { Dashboards, useWideScreen } from './dashboard/Dashboards';
+import { yrSymbolToCode } from './dashboard/conditions';
 import type { StopId, ThemeKey, StyleKey, Weather, Trip, Screen } from './types';
-
-
-function yrSymbolToCode(sym: string): number {
-  if (!sym) return 2;
-  if (sym.startsWith('clearsky')) return 1;
-  if (sym.startsWith('fair')) return 1;
-  if (sym.startsWith('partlycloudy')) return 2;
-  if (sym.startsWith('cloudy')) return 3;
-  if (sym.startsWith('fog')) return 45;
-  if (sym.includes('thunder')) return 95;
-  if (sym.includes('snow') || sym.includes('sleet')) return 71;
-  if (sym.includes('rain') || sym.includes('drizzle') || sym.includes('shower')) return 61;
-  return 2;
-}
 
 // Byggnummeret fra TestFlight/App Store (finnes bare i den installerte appen)
 function useBuildNumber(): string | null {
@@ -177,6 +165,7 @@ export default function App() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [forecast, setForecast] = useState<any[] | null>(null);
   const [tick, setTick] = useState(0);
+  const wide = useWideScreen();
 
 
   useEffect(() => {
@@ -272,6 +261,43 @@ export default function App() {
 
   const openTrip = (t: Trip) => { setTrip(t); setPrevScreen(screen); setScreen('detail'); };
 
+  // Arkene for valg av kai, vær og innstillinger brukes både på telefon og på store skjermer
+  const sheets = (
+    <>
+      <StopPicker
+        open={picker.open}
+        title={picker.which === 'from' ? 'Reise fra' : 'Reise til'}
+        selected={picker.which === 'from' ? from : to}
+        exclude={picker.which === 'from' ? to : from}
+        which={picker.which}
+        onPick={pick}
+        onClose={() => setPicker({ open: false, which: null })}
+      />
+      <WeatherSheet open={weatherOpen} animate={animate} preloaded={forecast} onClose={() => setWeatherOpen(false)} />
+      <SettingsSheet
+        open={settingsOpen}
+        theme={themeKey} style={styleKey} animate={animate}
+        onTheme={k => { setThemeKey(k); localStorage.setItem('themeKey', k); }}
+        onStyle={s => { setStyleKey(s); localStorage.setItem('styleKey', s); }}
+        onAnimate={v => { setAnimate(v); localStorage.setItem('animate', String(v)); }}
+        onTour={() => { setSettingsOpen(false); setTourOpen(true); }}
+        onClose={() => setSettingsOpen(false)}
+      />
+    </>
+  );
+
+  // Stor skjerm (iPad/PC): dashbordene for passasjerer og mannskap
+  if (wide) {
+    return (
+      <div style={{ ...(vars as React.CSSProperties) }}>
+        <Dashboards from={from} to={to} weather={weather} animate={animate} texture={style.texture}
+          onEditFrom={() => openPicker('from')} onEditTo={() => openPicker('to')} onSwap={swap}
+          onOpenWeather={() => setWeatherOpen(true)} onOpenSettings={() => setSettingsOpen(true)} />
+        {sheets}
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--deep)', display: 'flex', justifyContent: 'center', ...(vars as React.CSSProperties) }}>
     <div style={{ width: '100%', maxWidth: 430, minHeight: '100dvh', position: 'relative', boxShadow: '0 0 80px rgba(0,0,0,0.5)' }}>
@@ -320,29 +346,9 @@ export default function App() {
         }}
       />
 
-      <StopPicker
-        open={picker.open}
-        title={picker.which === 'from' ? 'Reise fra' : 'Reise til'}
-        selected={picker.which === 'from' ? from : to}
-        exclude={picker.which === 'from' ? to : from}
-        which={picker.which}
-        onPick={pick}
-        onClose={() => setPicker({ open: false, which: null })}
-      />
-
       {tourOpen && <Tour screen={!onboarded ? 'onboarding' : screen === 'results' ? 'results' : 'home'} onClose={() => setTourOpen(false)} />}
 
-      <WeatherSheet open={weatherOpen} animate={animate} preloaded={forecast} onClose={() => setWeatherOpen(false)} />
-
-      <SettingsSheet
-        open={settingsOpen}
-        theme={themeKey} style={styleKey} animate={animate}
-        onTheme={k => { setThemeKey(k); localStorage.setItem('themeKey', k); }}
-        onStyle={s => { setStyleKey(s); localStorage.setItem('styleKey', s); }}
-        onAnimate={v => { setAnimate(v); localStorage.setItem('animate', String(v)); }}
-        onTour={() => { setSettingsOpen(false); setTourOpen(true); }}
-        onClose={() => setSettingsOpen(false)}
-      />
+      {sheets}
     </div>
     </div>
   );

@@ -6,7 +6,7 @@ import type { StopId, Trip } from '../types';
 import { API_BASE } from '../platform';
 import { FerryMap } from './FerryMap';
 
-interface FerryPos {
+export interface FerryPos {
   lat: number;
   lng: number;
   sog: number | null;
@@ -18,7 +18,7 @@ interface FerryPos {
 const API_URL = `${API_BASE}/api/ferry`;
 const POLL_MS = 15_000;
 
-function useFerryPosition(): FerryPos | null {
+export function useFerryPosition(): FerryPos | null {
   const [pos, setPos] = useState<FerryPos | null>(null);
   useEffect(() => {
     let alive = true;
@@ -51,7 +51,7 @@ function angleDiff(a: number, b: number): number {
   return d > 180 ? 360 - d : d;
 }
 
-function ferryStatus(pos: FerryPos, stops: StopId[], humla: boolean): { text: string; far: boolean; target: StopId | null } {
+export function ferryStatus(pos: FerryPos, stops: StopId[], humla: boolean): { text: string; far: boolean; target: StopId | null } {
   const dists = stops.map(s => ({ s, km: haversineKm(pos.lat, pos.lng, stopCoords[s].lat, stopCoords[s].lng) }));
   const nearest = dists.reduce((a, b) => (b.km < a.km ? b : a));
   if (nearest.km > 6) return { text: 'Utenfor ruteområdet', far: true, target: null };
@@ -72,7 +72,7 @@ function ferryStatus(pos: FerryPos, stops: StopId[], humla: boolean): { text: st
   return { text: target ? `På vei mot ${stopsMap[target.s]}` : 'Underveis', far: false, target: target?.s ?? null };
 }
 
-function ageLabel(time: string | null): { short: string; stale: boolean } {
+export function ageLabel(time: string | null): { short: string; stale: boolean } {
   if (!time) return { short: '', stale: true };
   const mins = Math.round((Date.now() - new Date(time).getTime()) / 60000);
   if (mins < 1) return { short: 'Nå', stale: false };

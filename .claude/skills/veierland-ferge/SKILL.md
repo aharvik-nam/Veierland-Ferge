@@ -36,6 +36,8 @@ Andreas (aharvik@gmail.com) eier appen, skriver norsk og er ikke utvikler.
 | Fergeposisjon (Vercel-funksjon) | `api/ferry.ts`, vises i `src/components/FerryLive.tsx` |
 | Fergekartet (trykk på «Ferga nå») | `src/components/FerryMap.tsx`, kartgrunnlag i `src/map/kart.ts` |
 | Punktlighet og «forsinket nå» | `api/ferry-history.ts` (`stats=1` og `live=1`), `src/punctuality.ts`, `src/liveDelay.ts` |
+| Dashbord for iPad og PC (Passasjer og Ferge, sveip mellom dem) | `src/dashboard/*`, valgt i `src/App.tsx` med `useWideScreen` |
+| Vær og sjø, andre båter (Vercel-funksjoner) | `api/conditions.ts`, `api/vessels.ts` |
 | Native-apper | `capacitor.config.ts`, `ios/`, `android/`, `src/platform.ts` (`API_BASE`) |
 | Bygg og opplasting | `.github/workflows/app-release.yml`, `scripts/ios-signing.py`, `scripts/asc.py`, `scripts/check-appstore-key.py` |
 | Butikktekster, bilder og oppskrift | `store/README.md`, `store/app-store/`, `store/google-play/` |
@@ -89,9 +91,32 @@ Vercel-miljøvariablene `BARENTSWATCH_CLIENT_ID` og `BARENTSWATCH_CLIENT_SECRET`
 
 Øverst i kartet står klokkeslettene (`src/mapTimes.ts`). Er ferga underveis, vises «Gikk fra Tenvik 10:07 (rute 10:00)» og «Ankommer Tangen ca. 10:25 (rute 10:20)». Ligger den ved kaia, vises «Kom til Tangen 10:24» og «Neste avgang 10:40». Avgangstiden er den faktiske fra AIS. Ankomsten regnes fra luftlinja til kaia × 1,15 med farten fra AIS, eller 6,5 knop når den er under 5 knop. Det treffer AIS-sporet innen omtrent ett minutt. Rutetiden finnes ved å matche avgangen mot dagens rutetabell. En bestillingsavgang eller rød Engø-tur regnes som droppet 3 min etter rutetiden.
 
-Selve kortet «Ferga nå» viser posisjonen på en rett linje: Tenvik til venstre, Tangen i midten og Engø til høyre. Kartet åpnes først når man trykker på kortet.
+Selve kortet «Ferga nå» viser posisjonen på en rett linje: Tenvik til venstre, Tangen i midten og Engø til høyre. Kartet åpnes først når man trykker på kortet. Selve kartet ligger i `src/components/MapView.tsx` (`MapSvg`, `TimeCells` og knappen «Andre båter») og brukes både i kartarket og på dashbordene.
 
 **Ser brukeren gammel versjon på nettsiden?** Nettsiden er en PWA med service worker. En ny versjon lastes inn og tas i bruk med en automatisk omlasting, og det sjekkes hver gang siden kommer fram igjen (`src/main.tsx`). iPhone-appen fra TestFlight får derimot nye funksjoner først i neste bygg. Spør hvor brukeren testet før du leter etter feil i koden.
+
+## Dashbordene på store skjermer (iPad og PC)
+
+Er skjermen minst 900×600 (eller 700×900 stående), viser appen to dashbord i stedet for telefonvisningen. Det gjelder iPad-appen og nettsiden på PC. Man sveiper mellom dem eller trykker på «Passasjer / Ferge» nederst. Siden man sist var på, huskes.
+
+- **Passasjer** (`PassengerDashboard.tsx`) viser avgangene begge veier for valgt strekning, kartet med tider og «Andre båter», været time for time og «Verdt å vite». Under «Verdt å vite» ligger farevarsler, meldinger fra admin-panelet, Humla-varselet og punktligheten. Trykker man på en avgang, åpnes detaljsiden som et panel.
+- **Ferge** (`CrewDashboard.tsx`) er et display for mannskapet i styrhuset:
+  - stor klokke med sekunder, og neste faste avgang med hvor den går
+  - eventuell bestillingsavgang før den, på egen linje
+  - dagens rundturer som tabell
+  - vind med retning, vindkast og søyler for de neste 8 timene, rød fra liten kuling
+  - sjø og lys: bølger, sjøtemperatur, vannstand mot middelvann, sikt (tåke), luft og soloppgang/solnedgang
+  - farevarsler fra MET
+  - kartet med andre båter slått på
+
+  Nattmodus (rødt på svart, så nattsynet bevares) er Auto etter solen, Natt eller Dag. Den velges med knappen øverst til høyre. Skjermen holdes på der nettleseren støtter det (Wake Lock). På en iPad som skal stå fremme, bør Autolås likevel settes til «Aldri».
+- **Data:**
+  - `api/conditions.ts` henter MET locationforecast (complete), oceanforecast, metalerts og Kartverkets vannstand, med cache på 10 minutter. Ingen nøkler trengs.
+  - `api/vessels.ts` henter andre fartøy i kartutsnittet fra BarentsWatch (`POST /v1/latest/combined` med `geometry`), med cache på 30 sekunder. Den bruker samme nøkler som `api/ferry.ts`.
+  - Begge har `?debug=1`, som viser status for hver kilde. Test med `web_fetch_vercel_url`.
+  - BarentsWatch-nøklene finnes bare i Production hos Vercel, ikke i Preview.
+- **Testing:** begge dashbordene kan testes med Playwright, med visningen satt til 1180×820 og 820×1180, og med oppdiktede svar fra `/api/*`. Sett `localStorage.vf_dashside` til `'1'` for Ferge-siden og `vf_nattmodus` til `'natt'` for nattmodus.
+- **iPad i App Store:** iOS-prosjektet har `TARGETED_DEVICE_FAMILY = "1,2"` og alle retninger på iPad (`UISupportedInterfaceOrientations~ipad`). App Store krever da egne iPad-skjermbilder (13 tommer). Apple tillater ikke å fjerne iPad-støtten etter at appen er publisert.
 
 ## Oppgave: ny app-versjon, bygg og publisering
 
