@@ -9,7 +9,7 @@
 6. Feil vi har sett før
 7. App Store og Google Play
 
-Status per 24.10.2026: iOS-bygget virker. Nyeste er versjon 1.0.0 build 8 i TestFlight (kjøring #8, med Humla-tidene fra 24.10 og bestillingsfrist per avgang). Appen er ikke sendt til godkjenning ennå. Android-bygget er ikke prøvd ennå. Oppdater denne linjen når noe endrer seg.
+Status per 24.10.2026: iOS-bygget virker. Nyeste er versjon 1.0.0 build 9 i TestFlight (kjøring #9, med punktlighet og «forsinket nå»). Kjøring #10 feilet med 401 i nøkkelsjekken etter et svar som tok over ett minutt (#9 brukte 2 s). Det så midlertidig ut, og `scripts/asc.py` prøver nå igjen. Appen er ikke sendt til godkjenning ennå. Android-bygget er ikke prøvd ennå. Oppdater denne linjen når noe endrer seg.
 
 ## 1. Nettsiden (Vercel)
 
@@ -80,6 +80,7 @@ Felles API-kode (JWT og kall) ligger i `scripts/asc.py`. Prosjektet i repoet ska
 | `npm ci` klager på at `package-lock.json` ikke stemmer | `package.json` er endret uten låsefil | `npm install`, og commit `package-lock.json` |
 | `No Account for Team` / `No profiles for 'no.veierland.ferge'` | Gammel automatisk signering i Xcode | Kjøringen bruker gammel kode. Sjekk `head_sha`, og at workflowen kjører `ios-signing.py` |
 | 401 i «Sjekk Apple-nøkkelen» | Key ID og Issuer ID hører ikke til `.p8`-fila, eller det er en Individual Key | Brukeren legger inn secrets på nytt fra samme Team Key |
+| 401 i «Sjekk Apple-nøkkelen» etter at forrige bygg virket | Midlertidig hos Apple (steget brukte da over ett minutt), eller nøkkelen er trukket tilbake | `asc.py` prøver tre ganger. Feiler det likevel, sjekk at nøkkelen er aktiv i App Store Connect → Brukere og tilgang → Integrasjoner |
 | 403 ved oppretting av sertifikat | Nøkkelen har ikke rollen Admin | Ny Team Key med Admin |
 | 409 ved oppretting av sertifikat | For mange distribusjonssertifikater, fordi en tidligere opprydding feilet | Brukeren trekker tilbake gamle under developer.apple.com/account/resources/certificates (skriptet lister dem) |
 | `SecKeychainItemImport: ... already exists` | Apples mellomsertifikat finnes allerede på maskinen | Ufarlig og ignoreres |

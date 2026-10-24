@@ -27,7 +27,7 @@ except Exception as e:  # ugyldig nøkkelinnhold
 
 status, resp = call('GET', f'/bundleIds?filter[identifier]={bundle_id}')
 if status == 401:
-    print('::error::Apple godtok ikke nøkkelen (401). Sjekk at APPSTORE_KEY_ID og APPSTORE_ISSUER_ID hører til samme nøkkel som .p8-filen, og at det er en «Team Key» (ikke «Individual Key»).')
+    print('::error::Apple godtok ikke nøkkelen (401), heller ikke etter tre forsøk. Sjekk at nøkkelen fortsatt er aktiv i App Store Connect (Brukere og tilgang → Integrasjoner), at APPSTORE_KEY_ID og APPSTORE_ISSUER_ID hører til samme nøkkel som .p8-filen, og at det er en «Team Key» (ikke «Individual Key»).')
     sys.exit(1)
 if status == 403:
     print(f'::error::Nøkkelen mangler tilgang (403): {details(resp)} – Bruk en Team Key med rollen Admin, og sjekk at nyeste avtale er godtatt i App Store Connect (Business / Agreements).')
