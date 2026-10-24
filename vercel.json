@@ -3,9 +3,20 @@
     {
       "source": "/timetable.json",
       "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Cache-Control", "value": "public, max-age=0, s-maxage=300, must-revalidate" }
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, s-maxage=300, must-revalidate"
+        }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/ferry-history.ts": {
+      "maxDuration": 60
+    }
+  }
 }
