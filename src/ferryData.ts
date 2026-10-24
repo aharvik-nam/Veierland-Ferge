@@ -400,17 +400,15 @@ export function bookingStatus(trip: { warnings: import('./types').TripWarning[];
   const deadlineTime = booking.deadline === '18:00' ? '18:00' : '20:00';
 
   if (sameDayDeadline) {
-    // Deadline: trip date at deadlineTime
+    // Deadline: trip date at deadlineTime (samme dag som avgangen, også når avgangen er i morgen)
     if (trip.dateStr === todayStr) {
       const mins = minsUntil(todayStr, deadlineTime);
       if (mins <= 0) return { required: true, passed: true, minsLeft: null, label: 'Bestillingsfristen er passert' };
       return { required: true, passed: false, minsLeft: mins, label: `${fmtCountdown(mins)} igjen til fristen (kl. ${deadlineTime})` };
     }
-    if (trip.dateStr === ymd(new Date(now.getTime() + 86400000))) {
-      // Tomorrow — deadline is today at deadlineTime
-      const mins = minsUntil(todayStr, deadlineTime);
-      if (mins <= 0) return { required: true, passed: true, minsLeft: null, label: 'Bestillingsfristen er passert' };
-      return { required: true, passed: false, minsLeft: mins, label: `Ring i dag — frist kl. ${deadlineTime} (${fmtCountdown(mins)} igjen)` };
+    const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
+    if (trip.dateStr === ymd(tomorrow)) {
+      return { required: true, passed: false, minsLeft: null, label: `Må bestilles innen kl. ${deadlineTime} på avreisedagen (frist i morgen kl. ${deadlineTime})` };
     }
     return { required: true, passed: false, minsLeft: null, label: `Må bestilles innen kl. ${deadlineTime} på avreisedagen` };
   } else {
