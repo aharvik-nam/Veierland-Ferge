@@ -34,6 +34,7 @@ Andreas (aharvik@gmail.com) eier appen, skriver norsk og er ikke utvikler.
 | Klassisk rutetabell (egen kopi av Humla-tidene!) | `public/rutetabell.html` |
 | Skjermer | `src/App.tsx` (fanelinje: Søk / Avganger / Rutetabell), `src/screens/*`, `src/components/*` |
 | Fergeposisjon (Vercel-funksjon) | `api/ferry.ts`, vises i `src/components/FerryLive.tsx` |
+| Punktlighet og «forsinket nå» | `api/ferry-history.ts` (`stats=1` og `live=1`), `src/punctuality.ts`, `src/liveDelay.ts` |
 | Native-apper | `capacitor.config.ts`, `ios/`, `android/`, `src/platform.ts` (`API_BASE`) |
 | Bygg og opplasting | `.github/workflows/app-release.yml`, `scripts/ios-signing.py`, `scripts/asc.py`, `scripts/check-appstore-key.py` |
 | Butikktekster, bilder og oppskrift | `store/README.md`, `store/app-store/`, `store/google-play/` |
@@ -49,6 +50,7 @@ Andreas (aharvik@gmail.com) eier appen, skriver norsk og er ikke utvikler.
 Les `references/rutetider.md` først. Der står hva hvert felt betyr, hvordan en trykt rutetabell oversettes til `FerryLoop`-rader, og hva røde avganger betyr.
 
 1. Les bildene kolonne for kolonne og skriv tidene inn i riktig tabell i `src/data.ts`. Les så tabellen tilbake mot bildet én gang til. Skriv ned uleselige eller rare tider og spør brukeren om dem.
+   Sett `TIMES_FROM` i `src/data.ts` til datoen de nye tidene gjelder fra. Punktligheten i appen regnes bare fra den datoen, så eldre dager med andre tider ikke gir feil tall.
 2. Gjelder endringen Humla-tidene, må `HUMLA_SEASON` i `public/rutetabell.html` oppdateres likt. Den klassiske rutetabellen har en egen kopi.
 3. Kjør kontrollskriptet:
    ```bash
@@ -79,6 +81,8 @@ Når Humla-perioden er slutt, går appen automatisk tilbake til ordinære ruter 
 Vercel-miljøvariablene `BARENTSWATCH_CLIENT_ID` og `BARENTSWATCH_CLIENT_SECRET` må være satt. `FERRY_MMSI` overstyrer valget av fartøy. Test med `curl -s https://veierland-ferge.vercel.app/api/ferry`. Svaret skal ha `lat`, `lng` og `time`, eller en forklarende feil.
 
 **AIS-historikk og punktlighet:** `api/ferry-history.ts` henter sporet de siste 14 dagene (BarentsWatch sletter eldre data) og gjør det om til anløp per kai. Kaiposisjonene er målt fra sporet. BarentsWatch er ofte stengt fra Claude-økter, så hent fra Vercel med `web_fetch_vercel_url`, for eksempel `https://veierland-ferge.vercel.app/api/ferry-history?from=2026-10-17&to=2026-10-24&compact=1`. Lagre svaret og kjør `npx tsx .claude/skills/veierland-ferge/scripts/punktlighet.ts <fil.json>`. Faste avvik på mange minutter for samme avgang flere dager på rad betyr at rutetiden i appen trolig er feil. Røde Engø-turer og bestillingsavganger går bare når noen har bestilt, så at de mangler i AIS er normalt. `raw=1&day=…` gir alle punktene for én dag.
+
+**I appen:** `stats=1` gir punktlighet per avgang og samlet for dagene siden `TIMES_FROM` (maks 14, cache 1 time). Appen viser tall først når en avgang har minst 3 målinger, og samlet etter 20 avganger. Dette vises på kortet for neste avgang, på detaljsiden og nederst i rutetabellen. `live=1` gir dagens anløp og siste posisjon (cache 30 s). `liveDelay` bruker det til «Ferga har ikke gått fra Tangen ennå, ca. 6 min forsinket». En avgang som skulle gått for under 15 min siden, men ikke har gått, blir stående øverst.
 
 Kortet «Ferga nå» viser posisjonen på en rett linje: Tenvik til venstre, Tangen i midten og Engø til høyre. Brukeren valgte bevisst bort et kart.
 

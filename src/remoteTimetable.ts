@@ -10,6 +10,7 @@ export interface RemoteTimetable {
   version: 1;
   generated: string;
   maintenance?: { from: string; to: string };          // M/F Humla-perioden (yyyy-mm-dd)
+  timesFrom?: string;                                  // når gjeldende rutetider trådte i kraft (punktlighet)
   periods: { name: string; from: string; to: string; loops: DayLoops }[]; // daterte unntak
   summer: { from: string; to: string; loops: DayLoops }; // mm-dd, gjentas hvert år
   normal: { loops: DayLoops };

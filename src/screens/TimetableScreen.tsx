@@ -4,6 +4,7 @@ import { DeepBand, Label } from '../components/Atoms';
 import { HumlaNotice } from '../components/HumlaNotice';
 import { seasonLoops, seasonLabel, isMaintenancePeriod, getOsloDate, dayTypeOf, parseTime } from '../ferryData';
 import type { FerryLoop } from '../data';
+import { usePunctuality, overallPunctuality } from '../punctuality';
 import type { StopId } from '../types';
 
 type Dir = 'til' | 'fra';
@@ -84,6 +85,7 @@ export function TimetableScreen({ from, animate, texture, onOpenSettings }: Time
   const [dir, setDir] = useState<Dir>(from === 'tangen' || from === 'vestgarden' ? 'fra' : 'til');
   const [day, setDay] = useState<DayKey>(todayKey);
 
+  const overall = overallPunctuality(usePunctuality());
   const allCols = columnsFor(dir, humla);
   const loops = seasonLoops(now)[day];
   // Bare turer som faktisk går i valgt retning, og bare kolonner som har tider
@@ -168,6 +170,12 @@ export function TimetableScreen({ from, animate, texture, onOpenSettings }: Time
           {humla && (
             <div style={{ padding: '0 4px', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12.5, color: 'var(--onDeepDim)', lineHeight: 1.45 }}>
               All retur til Engø går fra Tangen.
+            </div>
+          )}
+          {overall && (
+            <div style={{ padding: '0 4px', display: 'flex', alignItems: 'flex-start', gap: 7, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12.5, color: 'var(--onDeepDim)', lineHeight: 1.45 }}>
+              <Icon name="clock" size={13} color="currentColor" stroke={2} style={{ flexShrink: 0, marginTop: 2 }} />
+              <span>Punktlighet siste {overall.days} dager: {overall.pct} % av avgangene gikk innen 3 min etter rutetid{overall.avg >= 1 ? `, i snitt ${Math.round(overall.avg)} min forsinket` : ''}.</span>
             </div>
           )}
         </div>

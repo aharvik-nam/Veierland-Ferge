@@ -4,6 +4,8 @@
 //   /api/ferry-history?from=2026-10-17&to=2026-10-24     anløp per dag (norske datoer, til og med «to»)
 //   /api/ferry-history?day=2026-10-23&raw=1              alle AIS-punkter for én dag (feilsøking)
 //   valgfritt: radius=120 (meter fra kaia), compact=1 (kortere svar), mmsi=257281900
+//   /api/ferry-history?stats=1                            punktlighet siste 14 dager per avgang og samlet (for appen)
+//   /api/ferry-history?live=1                             dagens anløp og siste posisjon (for «forsinket nå» i appen)
 //
 // Krever de samme miljøvariablene som /api/ferry: BARENTSWATCH_CLIENT_ID og BARENTSWATCH_CLIENT_SECRET.
 
@@ -20,7 +22,7 @@ const QUAYS: Record<string, { lat: number; lng: number }> = {
   engo: { lat: 59.14765, lng: 10.31865 },
 };
 
-interface Point { t: number; lat: number; lng: number; sog: number | null }
+interface Point { t: number; lat: number; lng: number; sog: number | null; cog: number | null }
 
 let cachedToken: { value: string; expires: number } | null = null;
 
@@ -30,7 +32,9 @@ function json(body: unknown, status = 200, cacheSeconds = 0): Response {
     headers: {
       'content-type': 'application/json; charset=utf-8',
       'access-control-allow-origin': '*',
-      'cache-control': cacheSeconds > 0 ? `public, s-maxage=${cacheSeconds}` : 'no-store',
+      // Lange cacher kan gi gamle svar mens nye hentes; korte (live) skal alltid være ferske
+      'cache-control': cacheSeconds >= 600 ? `public, s-maxage=${cacheSeconds}, stale-while-revalidate=${cacheSeconds * 24}`
+        : cacheSeconds > 0 ? `public, s-maxage=${cacheSeconds}` : 'no-store',
     },
   });
 }
@@ -100,16 +104,19 @@ async function fetchTrack(token: string, mmsi: string, from: number, to: number)
     const time = (m.msgtime ?? m.timestamp ?? m.time) as string | undefined;
     if (typeof lat !== 'number' || typeof lng !== 'number' || !time) continue;
     const sog = (m.speedOverGround ?? m.sog) as number | undefined;
-    points.push({ t: Date.parse(time), lat, lng, sog: typeof sog === 'number' ? sog : null });
+    const cog = (m.courseOverGround ?? m.cog) as number | undefined;
+    points.push({ t: Date.parse(time), lat, lng, sog: typeof sog === 'number' ? sog : null, cog: typeof cog === 'number' && cog < 360 ? cog : null });
   }
   return points.sort((a, b) => a.t - b.t);
 }
 
-// Gjør punktene om til anløp: når båten kom til og forlot hver kai.
-// arr = [siste punkt underveis, første punkt ved kaia], dep = [siste punkt ved kaia, første punkt underveis]
-function portCalls(points: Point[], radius: number) {
-  const calls: { stop: string; arr: [string | null, string]; dep: [string, string | null]; n: number }[] = [];
-  let cur: { stop: string; first: Point; last: Point; before: Point | null; n: number } | null = null;
+// Anløp: når båten kom til og forlot hver kai.
+// before = siste punkt underveis før kaia, first/last = første og siste punkt ved kaia, after = første punkt etterpå
+interface Call { stop: string; before: Point | null; first: Point; last: Point; after: Point | null; n: number }
+
+export function rawCalls(points: Point[], radius: number): Call[] {
+  const calls: Call[] = [];
+  let cur: Call | null = null;
   let prev: Point | null = null;
   for (const p of points) {
     // Ved kaia: nær kaia og under 4 knop (korte stopp på Engø blir sjelden fanget med fart 0).
@@ -118,22 +125,36 @@ function portCalls(points: Point[], radius: number) {
     const atQuay = quay && (p.sog == null || p.sog < 4) ? quay : null;
     if (atQuay && cur && cur.stop === atQuay) { cur.last = p; cur.n++; }
     else {
-      if (cur) calls.push(finish(cur, p));
-      cur = atQuay ? { stop: atQuay, first: p, last: p, before: prev, n: 1 } : null;
+      if (cur) { cur.after = p; calls.push(cur); }
+      cur = atQuay ? { stop: atQuay, before: prev, first: p, last: p, after: null, n: 1 } : null;
     }
     prev = p;
   }
-  if (cur) calls.push(finish(cur, null));
+  if (cur) calls.push(cur);
   return calls;
+}
 
-  function finish(c: NonNullable<typeof cur>, after: Point | null) {
-    return {
-      stop: c.stop,
-      arr: [c.before ? oslo(c.before.t).time : null, oslo(c.first.t).time] as [string | null, string],
-      dep: [oslo(c.last.t).time, after ? oslo(after.t).time : null] as [string, string | null],
-      n: c.n,
-    };
-  }
+// arr = [siste punkt underveis, første punkt ved kaia], dep = [siste punkt ved kaia, første punkt underveis]
+function portCalls(points: Point[], radius: number) {
+  return rawCalls(points, radius).map(c => ({
+    stop: c.stop,
+    arr: [c.before ? oslo(c.before.t).time : null, oslo(c.first.t).time] as [string | null, string],
+    dep: [oslo(c.last.t).time, c.after ? oslo(c.after.t).time : null] as [string, string | null],
+    n: c.n,
+  }));
+}
+
+// Minutter etter midnatt norsk tid
+function osloMin(t: number): number {
+  const [h, m, s] = oslo(t).time.split(':').map(Number);
+  return h * 60 + m + s / 60;
+}
+
+// Avgangstidspunkt: midt mellom siste punkt ved kaia og første punkt underveis (punktene kommer ca. hvert minutt)
+function departedAt(c: Call): number | null {
+  if (!c.after) return null;
+  const gap = c.after.t - c.last.t;
+  return osloMin(gap < 180_000 ? c.last.t + gap / 2 : c.last.t);
 }
 
 function gapStats(points: Point[]) {
@@ -146,6 +167,118 @@ function gapStats(points: Point[]) {
   };
 }
 
+// ── Punktlighet ─────────────────────────────────────────────
+
+type Loop = Record<string, string | null | undefined>;
+interface DayLoops { monFri: Loop[]; sat: Loop[]; sun: Loop[] }
+interface Timetable {
+  timesFrom?: string;
+  periods: { from: string; to: string; loops: DayLoops }[];
+  summer: { from: string; to: string; loops: DayLoops };
+  normal: { loops: DayLoops };
+}
+
+const dayKey = (day: string) => { const w = new Date(`${day}T12:00:00Z`).getUTCDay(); return w === 0 ? 'sun' : w === 6 ? 'sat' : 'monFri'; };
+const hm = (s: string) => Number(s.slice(0, 2)) * 60 + Number(s.slice(3, 5));
+
+// Samme rekkefølge som appen: daterte perioder (Humla), så sommer, så ordinære ruter
+function loopsForDate(tt: Timetable, day: string): Loop[] {
+  const period = tt.periods.find(p => day >= p.from && day <= p.to);
+  const md = day.slice(5);
+  const set = period?.loops ?? (md >= tt.summer.from && md <= tt.summer.to ? tt.summer.loops : tt.normal.loops);
+  return set[dayKey(day) as keyof DayLoops] ?? [];
+}
+
+// Planlagte avganger fra hver kai i turene. Bestillingsavganger går bare ved behov og telles ikke.
+const DEPARTURES: [string, string][] = [
+  ['tenvikUt', 'tenvik'], ['vestgardenUt', 'vestgarden'], ['tangenVia', 'tangen'], ['engoUt', 'engo'],
+  ['tangenInn', 'tangen'], ['engoInn', 'engo'], ['vestgardenInn', 'vestgarden'],
+];
+
+// Forsinkelse i minutter per planlagt avgang en dag (bare avganger som kan sees i AIS)
+export function dayDelays(tt: Timetable, day: string, calls: Call[], untilMin: number): { key: string; delay: number }[] {
+  const deps = calls.map(c => ({ stop: c.stop, arr: osloMin(c.first.t), t: departedAt(c), used: false }));
+  const planned: { stop: string; p: number; key: string; before?: number }[] = [];
+  for (const l of loopsForDate(tt, day)) {
+    if (l.rowType === 'booking') continue;
+    // Uten Engø-anløp (rød avgang uten bestilling) blir båten liggende på Tangen: hopp over Engø-delen
+    const engo = l.engoUt ? deps.find(d => d.stop === 'engo' && d.arr >= hm(l.engoUt!) - 10 && d.arr <= hm(l.engoUt!) + 25) : null;
+    for (const [field, stop] of DEPARTURES) {
+      const time = l[field];
+      if (!time) continue;
+      if ((field === 'engoUt' || field === 'tangenVia') && !engo) continue;
+      const p = hm(time);
+      if (p + 25 > untilMin) continue; // ikke ferdig ennå i dag
+      // Tangen mot Engø må ha gått før båten kom til Engø (noen dager går den rett fra Tenvik til Engø)
+      planned.push({ stop, p, key: `${dayKey(day)}|${stop}|${time}`, before: field === 'tangenVia' ? engo!.arr : undefined });
+    }
+  }
+  planned.sort((a, b) => a.p - b.p);
+  const out: { key: string; delay: number }[] = [];
+  for (const pl of planned) {
+    let best: typeof deps[number] | null = null;
+    for (const d of deps) {
+      if (d.used || d.t == null || d.stop !== pl.stop || d.t < pl.p - 5 || d.t > pl.p + 25) continue;
+      if (pl.before != null && d.t > pl.before) continue;
+      if (!best || Math.abs(d.t - pl.p) < Math.abs(best.t! - pl.p)) best = d;
+    }
+    if (best) { best.used = true; out.push({ key: pl.key, delay: Math.round(best.t! - pl.p) }); }
+  }
+  return out;
+}
+
+function summarize(delays: number[]) {
+  const clamped = delays.map(d => Math.max(-2, Math.min(30, d)));
+  return {
+    n: delays.length,
+    avg: Math.round(clamped.reduce((a, b) => a + b, 0) / Math.max(1, delays.length) * 10) / 10,
+    onTime: delays.filter(d => d <= 3).length, // gikk innen 3 min etter rutetid
+  };
+}
+
+async function punctuality(request: Request, token: string, mmsi: string, radius: number): Promise<Response> {
+  const res = await fetch(new URL('/timetable.json', request.url));
+  if (!res.ok) throw new Error(`timetable ${res.status}`);
+  const tt = await res.json() as Timetable;
+  const now = Date.now(), today = oslo(now).date;
+  const days: string[] = [];
+  for (let i = 13; i >= 0; i--) {
+    const day = oslo(now - i * 86_400_000).date;
+    if (!tt.timesFrom || day >= tt.timesFrom) days.push(day);
+  }
+  const perDay = await Promise.all(days.map(async day => {
+    const from = osloMidnight(day);
+    try {
+      const points = await fetchTrack(token, mmsi, from, Math.min(from + 86_400_000, now));
+      return dayDelays(tt, day, rawCalls(points, radius), day === today ? osloMin(now) : 24 * 60);
+    } catch { return []; }
+  }));
+  const byKey = new Map<string, number[]>();
+  for (const { key, delay } of perDay.flat()) (byKey.get(key) ?? byKey.set(key, []).get(key)!).push(delay);
+  return json({
+    generated: new Date(now).toISOString(),
+    timesFrom: tt.timesFrom ?? null,
+    days,
+    overall: summarize(perDay.flat().map(d => d.delay)),
+    departures: Object.fromEntries([...byKey].map(([k, v]) => [k, summarize(v)])),
+  }, 200, 3600);
+}
+
+// Dagens anløp og siste posisjon, så appen kan si om ferga har gått fra kaia ennå
+async function live(token: string, mmsi: string, radius: number): Promise<Response> {
+  const now = Date.now(), day = oslo(now).date;
+  const points = await fetchTrack(token, mmsi, osloMidnight(day), now);
+  const last = points[points.length - 1];
+  const r1 = (x: number) => Math.round(x * 10) / 10;
+  return json({
+    day,
+    now: r1(osloMin(now)),
+    latest: last ? { min: r1(osloMin(last.t)), lat: last.lat, lng: last.lng, sog: last.sog, cog: last.cog } : null,
+    // arr/dep i minutter etter midnatt; dep er null mens båten fortsatt ligger ved kaia
+    calls: rawCalls(points, radius).slice(-6).map(c => ({ stop: c.stop, arr: r1(osloMin(c.first.t)), dep: departedAt(c) == null ? null : r1(departedAt(c)!) })),
+  }, 200, 30);
+}
+
 export async function GET(request: Request): Promise<Response> {
   const q = new URL(request.url).searchParams;
   const mmsi = q.get('mmsi') || HUMLA_MMSI;
@@ -156,6 +289,8 @@ export async function GET(request: Request): Promise<Response> {
 
   try {
     const token = await getToken();
+    if (q.get('stats')) return await punctuality(request, token, mmsi, radius);
+    if (q.get('live')) return await live(token, mmsi, radius);
 
     if (q.get('raw')) {
       const day = q.get('day');

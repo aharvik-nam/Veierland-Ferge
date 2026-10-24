@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { CompassMark } from '../components/Icons';
 import { Icon } from '../components/Icons';
 import { DeepBand, WeatherChip, RouteCard, NumTime, Label } from '../components/Atoms';
-import { nextDepartures, minsUntil, fmtCountdown, ymd, getOsloDate, parseYmd, stopsMap, stopShort, bookingStatus, isSummerSeason, isMaintenancePeriod, ferryName } from '../ferryData';
+import { nextDepartures, prevDeparture, minsUntil, fmtCountdown, ymd, getOsloDate, parseYmd, stopsMap, stopShort, stopKind, bookingStatus, isSummerSeason, isMaintenancePeriod, ferryName } from '../ferryData';
+import { usePunctuality, tripPunctuality, delayText } from '../punctuality';
+import { useLiveTrack, liveDelay } from '../liveDelay';
 import { FerryLive } from '../components/FerryLive';
 import { HumlaNotice } from '../components/HumlaNotice';
 import type { StopId, Weather, Trip } from '../types';
@@ -101,9 +103,20 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
   }, []);
 
   const deps = nextDepartures(from, to, 4);
-  const dep = deps[0] ?? null;
-  const later = deps.slice(1);
-  const countdown = dep && dep.dateStr === ymd(getOsloDate()) ? minsUntil(dep.dateStr, dep.startTime) : null;
+  const now = getOsloDate();
+  const nowMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+  // En avgang som skulle ha gått for under et kvarter siden, men ikke har gått ennå, vises fortsatt øverst
+  const prev = prevDeparture(from, to);
+  const prevRecent = prev && stopKind[prev.startStop] !== 'buss' && minsUntil(prev.dateStr, prev.startTime) >= -15 ? prev : null;
+  const nextSoon = deps[0] && deps[0].dateStr === ymd(now) && minsUntil(deps[0].dateStr, deps[0].startTime) <= 20;
+  const track = useLiveTrack(!!(prevRecent || nextSoon));
+  const prevDelay = liveDelay(track, prevRecent, nowMin);
+  const dep = prevDelay ? prevRecent : deps[0] ?? null;
+  const delay = prevDelay ?? liveDelay(track, dep, nowMin);
+  const later = prevDelay ? deps.slice(0, 3) : deps.slice(1);
+  const countdown = dep && dep.dateStr === ymd(now) ? minsUntil(dep.dateStr, dep.startTime) : null;
+  const punctData = usePunctuality();
+  const punct = dep ? tripPunctuality(punctData, dep) : null;
 
 
   if (!onboarded) {
@@ -227,13 +240,28 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
                 </div>
                 <div style={{ marginTop: 6, display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
                   <NumTime size={64} color="var(--onDeep)">{dep.startTime}</NumTime>
-                  {countdown != null && countdown > 0 && (
+                  {countdown != null && countdown > 0 && !delay && (
                     <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 17, color: 'var(--accentOnDeep)', whiteSpace: 'nowrap' }}>om {fmtCountdown(countdown)}</span>
+                  )}
+                  {delay && (
+                    <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 17, color: 'color-mix(in srgb, var(--warn) 55%, white)', whiteSpace: 'nowrap' }}>{delay.short}</span>
                   )}
                 </div>
                 <div style={{ marginTop: 6, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 14, color: 'var(--onDeepDim)' }}>
                   {stopsMap[from]} → {stopsMap[to]} · fremme {dep.endTime}
                 </div>
+                {delay && (
+                  <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', borderRadius: 'var(--radSm)', background: 'color-mix(in srgb, var(--warn) 20%, transparent)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, color: 'color-mix(in srgb, var(--warn) 55%, white)', lineHeight: 1.35 }}>
+                    <Icon name="alert" size={14} color="currentColor" stroke={2.2} style={{ flexShrink: 0 }} />
+                    <span>{delay.reason}</span>
+                  </div>
+                )}
+                {punct && !delay && (
+                  <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12.5, color: 'var(--onDeepDim)' }}>
+                    <Icon name="clock" size={13} color="currentColor" stroke={2} style={{ flexShrink: 0 }} />
+                    <span>Siste {punct.days} dager: {delayText(punct)}</span>
+                  </div>
+                )}
               </button>
             </DeepBand>
 
@@ -298,7 +326,7 @@ export function HomeScreen({ from, to, weather, animate, texture, onEditFrom, on
           </div>
         )}
 
-        <FerryLive dep={dep} />
+        <FerryLive dep={dep} showNote={!delay} />
 
         {adminNotices.map(n => {
           const bg = n.type === 'warning' ? 'rgba(220,50,50,0.15)' : n.type === 'price' ? 'rgba(26,138,100,0.15)' : 'rgba(12,130,166,0.15)';

@@ -3,7 +3,7 @@
 import {
   monFriLoops, satLoops, sunLoops,
   summerMonFriLoops, summerSatLoops, summerSunLoops,
-  humlaMonFriLoops, humlaSatLoops, humlaSunLoops,
+  humlaMonFriLoops, humlaSatLoops, humlaSunLoops, TIMES_FROM,
 } from './data';
 import { SUMMER, MAINTENANCE } from './ferryData';
 import type { RemoteTimetable } from './remoteTimetable';
@@ -13,6 +13,7 @@ export function buildRemoteTimetable(): RemoteTimetable {
     version: 1,
     generated: new Date().toISOString(),
     maintenance: MAINTENANCE,
+    timesFrom: TIMES_FROM,
     periods: [
       { name: 'MF "Humla"', from: MAINTENANCE.from, to: MAINTENANCE.to, loops: { monFri: humlaMonFriLoops, sat: humlaSatLoops, sun: humlaSunLoops } },
     ],

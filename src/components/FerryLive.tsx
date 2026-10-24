@@ -147,7 +147,8 @@ function RouteLine({ pos, line, target, showFerry, highlight }: { pos: FerryPos;
   );
 }
 
-export function FerryLive({ dep }: { dep?: Trip | null }) {
+// showNote=false når kortet for neste avgang allerede viser at ferga er forsinket
+export function FerryLive({ dep, showNote = true }: { dep?: Trip | null; showNote?: boolean }) {
   const pos = useFerryPosition();
   if (!pos) return null;
 
@@ -157,7 +158,7 @@ export function FerryLive({ dep }: { dep?: Trip | null }) {
   const status = ferryStatus(pos, stops);
   const age = ageLabel(pos.time);
   const moving = pos.sog != null && pos.sog >= 1.5;
-  const note = status.far ? null : departureNote(pos, dep, status.target, line);
+  const note = status.far || !showNote ? null : departureNote(pos, dep, status.target, line);
 
   return (
     <a

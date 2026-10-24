@@ -2,6 +2,8 @@ import React from 'react';
 import { Icon } from '../components/Icons';
 import { DeepBand, Label, NumTime, CallButton } from '../components/Atoms';
 import { minsUntil, fmtCountdown, stopShort, ymd, getOsloDate, parseYmd } from '../ferryData';
+import { usePunctuality, tripPunctuality, delayText, departureLabel } from '../punctuality';
+import { useLiveTrack, liveDelay, needsLive } from '../liveDelay';
 import type { Trip, StopId } from '../types';
 
 function RouteTimeline({ trip, animate }: { trip: Trip; animate: boolean }) {
@@ -54,6 +56,10 @@ export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick
   const booking = trip.warnings.find(w => w.type === 'booking');
   const engo = trip.warnings.find(w => w.type === 'engo');
   const endStop = trip.subpath[trip.subpath.length - 1].stopId;
+  const punct = tripPunctuality(usePunctuality(), trip);
+  const now = getOsloDate();
+  const nowMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+  const delay = liveDelay(useLiveTrack(needsLive(trip, ymd(now), nowMin)), trip, nowMin);
 
   return (
     <div style={{ minHeight: '100dvh', background: 'linear-gradient(180deg, var(--deep) 0%, var(--deep2) 55%, var(--deep) 100%)' }}>
@@ -77,13 +83,19 @@ export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick
             <NumTime size={40} color="var(--onDeepDim)" style={{ display: 'block', marginTop: 2 }}>{trip.endTime}</NumTime>
           </div>
         </div>
-        {countdown != null && countdown >= 0 && (
+        {countdown != null && countdown >= 0 && !delay && (
           <div style={{ position: 'relative', zIndex: 2, marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 7, padding: '6px 13px', borderRadius: 99, background: 'rgba(255,255,255,0.10)', whiteSpace: 'nowrap' }}>
             <Icon name="clock" size={14} color="var(--onDeep)" stroke={2} />
             <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12.5, color: 'var(--onDeep)' }}>Går om {fmtCountdown(countdown)}</span>
           </div>
         )}
-        {countdown != null && countdown < 0 && (
+        {delay && (
+          <div style={{ position: 'relative', zIndex: 2, marginTop: 12, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 13px', borderRadius: 'var(--radSm)', background: 'color-mix(in srgb, var(--warn) 22%, transparent)' }}>
+            <Icon name="alert" size={14} color="color-mix(in srgb, var(--warn) 55%, white)" stroke={2.2} style={{ flexShrink: 0 }} />
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12.5, color: 'color-mix(in srgb, var(--warn) 55%, white)', lineHeight: 1.35 }}>{delay.text}</span>
+          </div>
+        )}
+        {countdown != null && countdown < 0 && !delay && (
           <div style={{ position: 'relative', zIndex: 2, marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 7, padding: '6px 13px', borderRadius: 99, background: 'rgba(255,255,255,0.10)', whiteSpace: 'nowrap' }}>
             <Icon name="info" size={14} color="var(--onDeepDim)" stroke={2} />
             <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12.5, color: 'var(--onDeepDim)' }}>Avgått — gikk kl. {trip.startTime}</span>
@@ -119,6 +131,23 @@ export function DetailScreen({ trip, from: _from, animate, texture, onBack, tick
           <Label color="var(--inkDim)" style={{ paddingLeft: 2 }}>Reiserute</Label>
           <div style={{ marginTop: 14 }}><RouteTimeline trip={trip} animate={animate} /></div>
         </div>
+
+        {punct && (
+          <div style={{ background: 'var(--surface)', borderRadius: 'var(--rad)', border: '1px solid var(--line)', padding: '16px 18px' }}>
+            <Label color="var(--inkDim)" style={{ paddingLeft: 2 }}>Punktlighet</Label>
+            <div style={{ marginTop: 10, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+              <Icon name="clock" size={18} color="var(--accent)" stroke={2} style={{ flexShrink: 0, marginTop: 1 }} />
+              <div>
+                <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14.5, color: 'var(--ink)', lineHeight: 1.35 }}>
+                  {departureLabel(punct)}: {delayText(punct)} siste {punct.days} dager
+                </div>
+                <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 12.5, color: 'var(--inkDim)', marginTop: 4, lineHeight: 1.4 }}>
+                  {punct.onTime} av {punct.n} avganger gikk innen 3 min etter rutetid. Målt med fergens AIS-posisjon.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <CallButton />
       </div>

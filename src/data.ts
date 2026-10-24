@@ -179,6 +179,10 @@ export const humlaSunLoops: FerryLoop[] = [
   { id: "hsu-10", bussTbg: null, tenvikUt: "21:30", vestgardenUt: null, tangenVia: null, engoUt: null, tangenUt: "21:50", tangenInn: null, engoInn: null, vestgardenInn: null, tenvikInn: null, bussTenvik: null, rowType: "booking", deadline: "18:00", note: "Siste avgang. Må forhåndsbestilles innen kl. 18:00 samme dag. Ring fergen: 918 88 219." }
 ];
 
+// Datoen gjeldende rutetider trådte i kraft. Punktligheten i appen regnes bare fra denne datoen,
+// så oppdater den hver gang tidene i tabellene over endres.
+export const TIMES_FROM = '2026-10-24';
+
 export const rules = [
   { text: "OBS: M/F Jutøya er på verksted. M/F HUMLA seiler fom. 17. oktober 2026 til ca. 1. mars 2027 — kun Tenvik–Tangen–Tenvik (Engø). VESTGÅRDEN UTGÅR i hele perioden. Kun passasjerer og håndbagasje — ikke varer og last.", alert: true },
   { text: "ALL RETUR TIL ENGØ GÅR FRA TANGEN!", alert: true },
