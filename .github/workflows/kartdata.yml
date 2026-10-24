@@ -1,0 +1,31 @@
+# Midlertidig: henter kystlinje, fergeruter og stedsnavn fra OpenStreetMap til kartet i appen.
+# Kjøres bare på grenen «kartdata» og lagrer svaret der.
+name: Hent kartdata
+on:
+  push:
+    branches: [kartdata]
+    paths: ['.github/workflows/kartdata.yml']
+permissions:
+  contents: write
+jobs:
+  hent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Hent fra Overpass (OpenStreetMap)
+        run: |
+          mkdir -p kartdata
+          Q='[out:json][timeout:150];(way["natural"="coastline"](59.10,10.22,59.23,10.46);way["route"="ferry"](59.12,10.26,59.20,10.42);node["place"~"island|islet|village|hamlet|locality"](59.12,10.26,59.20,10.42););out geom;'
+          for url in https://overpass-api.de/api/interpreter https://overpass.kumi.systems/api/interpreter https://overpass.private.coffee/api/interpreter; do
+            echo "Prøver $url"
+            if curl -sf --max-time 180 -A "VeierlandFerge/1.0 (+https://jutoya.veierland.org)" --data-urlencode "data=$Q" "$url" -o kartdata/osm.json && grep -q '"elements"' kartdata/osm.json; then echo OK; break; fi
+          done
+          ls -la kartdata
+          python3 -c "import json;d=json.load(open('kartdata/osm.json'));from collections import Counter;print(len(d['elements']), Counter(e['type'] for e in d['elements']))"
+      - name: Lagre på grenen
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add kartdata/osm.json
+          git commit -m "Kartdata fra OpenStreetMap (© OpenStreetMap-bidragsytere, ODbL)"
+          git push
