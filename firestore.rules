@@ -15,6 +15,13 @@ service cloud.firestore {
         && request.resource.data.notices.size() <= 20;
     }
 
+    // Finnes ikke lenger. Eldre app-versjoner (build 12 og eldre) leser den og sletter sin gamle
+    // lagrede kopi når de ser at den mangler, så den må kunne leses, men aldri skrives.
+    match /vf/timetable {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Alt annet er stengt. Rutetidene ligger i appens kode (src/data.ts), ikke i Firestore.
     match /{document=**} {
       allow read, write: if false;

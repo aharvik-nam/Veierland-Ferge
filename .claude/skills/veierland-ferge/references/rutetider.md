@@ -71,7 +71,7 @@ For en gitt dato bruker appen (`loopsFor` i `src/ferryData.ts`):
 1. **Serverens `/timetable.json`**: daterte perioder (Humla), deretter sommer, deretter ordinære ruter.
 2. **Rutetidene som er bygget inn i appen**, altså `src/data.ts` slik den var da appen ble bygget, hvis fila ikke kan hentes.
 
-**Admin-panelet endrer ikke rutetider lenger** (fra 25.10.2026). Før kunne `public/admin.html` lagre rutetider i Firestore `vf/timetable`, og de vant over koden. En gammel kopi i nettleseren ga feil Engø-tider. Nå sletter appen den gamle kopien (`localStorage.vf_timetable`) ved oppstart, og Firestore-reglene stenger `vf/timetable`. Rutetider endres bare i `src/data.ts`.
+**Admin-panelet endrer ikke rutetider lenger** (fra 25.10.2026). Før kunne `public/admin.html` lagre rutetider i Firestore `vf/timetable`, og de vant over koden. En gammel kopi i nettleseren ga feil Engø-tider. Nå sletter appen den gamle kopien (`localStorage.vf_timetable`) ved oppstart, og Firestore-reglene stenger `vf/timetable` for skriving. Dokumentet er slettet, men kan fortsatt leses, så eldre app-versjoner ser at det mangler og sletter kopien sin. Rutetider endres bare i `src/data.ts`.
 
 Meldinger fra admin-panelet ligger i Firestore `vf/notices`. De vises på forsiden, på dashbordene og i `rutetabell.html`. Admin-panelet bruker innlogging med Firebase, og bare admin-e-posten i `firestore.rules` kan skrive.
 

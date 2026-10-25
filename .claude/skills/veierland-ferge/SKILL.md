@@ -75,7 +75,7 @@ Les `references/rutetider.md` først. Der står hva hvert felt betyr, hvordan en
 `public/admin.html` (jutoya.veierland.org/admin.html) brukes bare til meldinger i appen, Firestore `vf/notices`.
 - **Innlogging:** Firebase Authentication med e-post og passord. Brukeren lages i Firebase-konsollen. «Glemt passord?» sender en lenke på e-post.
 - **Ingen passord i Vercel:** passordet ligger hos Firebase, ikke i Vercel eller i koden.
-- **Tilgang:** `firestore.rules` gir lesetilgang til alle og skrivetilgang bare til admin-e-posten. Alt annet er stengt, også `vf/timetable`.
+- **Tilgang:** `firestore.rules` gir lesetilgang til alle og skrivetilgang bare til admin-e-posten. `vf/timetable` finnes ikke og kan ikke skrives, men kan leses: eldre app-versjoner (build 12 og eldre) sletter sin gamle lagrede kopi bare når de ser at dokumentet mangler. Alt annet er stengt.
 - **Endre reglene:** reglene ligger ikke automatisk i Firebase. Brukeren limer dem inn selv under Firestore Database → Regler, med sin e-post i stedet for `ADMIN-EPOST`. E-posten skal ikke inn i repoet.
 - **Teste tilgangen:** les `curl "https://firestore.googleapis.com/v1/projects/ferge-veierland/databases/(default)/documents/vf/notices"` (skal virke). Skriving uten innlogging skal gi 403. Test bare skriving når brukeren har sagt ja.
 
