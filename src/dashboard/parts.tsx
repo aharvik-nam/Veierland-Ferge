@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Label, NumTime } from '../components/Atoms';
 import { Icon, weatherProps } from '../components/Icons';
 import { MapSvg, TimeCells, VesselToggle, useVessels } from '../components/MapView';
@@ -130,7 +130,8 @@ export function DepartureColumn({ from, to, track, onOpenTrip, rows = 8, style }
 }
 
 // Fergekartet med posisjon, tider og knapp for andre båter
-export function MapCard({ vesselsKey, vesselsDefault = false, style }: { vesselsKey: string; vesselsDefault?: boolean; style?: React.CSSProperties }) {
+// showTimes=false: uten feltene «Gikk fra / Ankommer» (tidene står likevel ved kaiene i kartet), så kartet får mer plass
+export function MapCard({ vesselsKey, vesselsDefault = false, showTimes = true, style }: { vesselsKey: string; vesselsDefault?: boolean; showTimes?: boolean; style?: React.CSSProperties }) {
   const pos = useFerryPosition();
   const now = getOsloDate();
   const humla = isMaintenancePeriod(now);
@@ -143,26 +144,37 @@ export function MapCard({ vesselsKey, vesselsDefault = false, style }: { vessels
   const others = useVessels(showOthers);
   const age = pos ? ageLabel(pos.time) : null;
   const moving = pos?.sog != null && pos.sog >= 1.5;
+  // Kartboksens proporsjoner, så utsnittet kan sentreres på ruta
+  const box = useRef<HTMLDivElement>(null);
+  const [aspect, setAspect] = useState<number | undefined>();
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => { if (el.clientHeight) setAspect(el.clientWidth / el.clientHeight); });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   return (
     <Card style={{ padding: 12, ...style }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, padding: '2px 4px 10px' }}>
-        <div style={{ minWidth: 0 }}>
-          <Label style={{ fontSize: 9.5 }}>Ferga nå · {ferryName(now)}</Label>
-          <div style={{ marginTop: 4, fontFamily: font, fontWeight: 700, fontSize: 17, color: 'var(--onDeep)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      {/* én linje: «FERGA NÅ  På vei mot Tangen · 6 knop», så kartet får mest mulig høyde */}
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, padding: '2px 4px 10px' }}>
+        <div style={{ minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 10, whiteSpace: 'nowrap', overflow: 'hidden' }}>
+          <Label style={{ fontSize: 9.5, flexShrink: 0 }}>Ferga nå</Label>
+          <span style={{ fontFamily: font, fontWeight: 700, fontSize: 16, color: 'var(--onDeep)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {status?.text ?? 'Henter posisjon …'}{moving && <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--onDeepDim)' }}> · {pos!.sog!.toFixed(0)} knop</span>}
-          </div>
+          </span>
         </div>
         {age && <span style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, fontFamily: font, fontSize: 11.5, color: age.stale ? 'color-mix(in srgb, var(--warn) 55%, white)' : 'var(--onDeepDim)' }}><Icon name="clock" size={12} color="currentColor" stroke={2} />{age.short}</span>}
       </div>
-      <TimeCells times={times} style={{ marginBottom: 10 }} />
+      {showTimes && <TimeCells times={times} style={{ marginBottom: 10 }} />}
       <div style={{ position: 'relative', flex: 1, minHeight: 160, borderRadius: 'var(--radSm)', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
-        <div style={{ position: 'absolute', inset: 0 }}>
-          <MapSvg fill pos={pos} trail={track?.trail} tags={new Map(times.map(c => [c.stop, c.tag]))} humla={humla} vessels={others.vessels} />
+        <div ref={box} style={{ position: 'absolute', inset: 0 }}>
+          <MapSvg fill aspect={aspect} pos={pos} trail={track?.trail} tags={new Map(times.map(c => [c.stop, c.tag]))} humla={humla} vessels={others.vessels} />
         </div>
         <VesselToggle on={showOthers} count={others.vessels.length} error={others.error} onToggle={() => setShowOthers(v => !v)} />
+        <div style={{ position: 'absolute', right: 6, bottom: 6, padding: '2px 7px', borderRadius: 6, background: 'color-mix(in srgb, var(--deep) 70%, transparent)', fontFamily: font, fontSize: 9.5, color: 'var(--onDeepDim)' }}>© OpenStreetMap-bidragsytere · AIS: BarentsWatch</div>
       </div>
-      <div style={{ padding: '8px 4px 0', fontFamily: font, fontSize: 10.5, color: 'var(--onDeepDim)' }}>Kart: © OpenStreetMap-bidragsytere · AIS: BarentsWatch</div>
     </Card>
   );
 }

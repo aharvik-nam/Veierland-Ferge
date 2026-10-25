@@ -20,9 +20,9 @@ function write(key: string, value: string) {
   try { localStorage.setItem(key, value); } catch { /* privat modus */ }
 }
 
-export function Dashboards({ from, to, weather, animate, texture, onEditFrom, onEditTo, onSwap, onOpenWeather, onOpenSettings }: {
+export function Dashboards({ from, to, weather, animate, texture, onChooseStop, onSwap, onOpenWeather, onOpenSettings }: {
   from: StopId; to: StopId; weather: Weather | null; animate: boolean; texture: boolean;
-  onEditFrom: () => void; onEditTo: () => void; onSwap: () => void; onOpenWeather: () => void; onOpenSettings: () => void;
+  onChooseStop: (which: 'from' | 'to', s: StopId) => void; onSwap: () => void; onOpenWeather: () => void; onOpenSettings: () => void;
 }) {
   const conditions = useConditions();
   const pager = useRef<HTMLDivElement>(null);
@@ -62,7 +62,7 @@ export function Dashboards({ from, to, weather, animate, texture, onEditFrom, on
       <div ref={pager} onScroll={onScroll} className="dash-pager" style={{ display: 'flex', width: '100%', height: '100%', overflowX: 'auto', overflowY: 'hidden', scrollSnapType: 'x mandatory', overscrollBehaviorX: 'contain' }}>
         <section style={{ flex: '0 0 100%', height: '100%', scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
           <PassengerDashboard from={from} to={to} weather={weather} conditions={conditions}
-            onEditFrom={onEditFrom} onEditTo={onEditTo} onSwap={onSwap} onOpenTrip={setTrip} onOpenWeather={onOpenWeather} onOpenSettings={onOpenSettings} />
+            onChooseStop={onChooseStop} onSwap={onSwap} onOpenTrip={setTrip} onOpenWeather={onOpenWeather} onOpenSettings={onOpenSettings} />
         </section>
         <section style={{ flex: '0 0 100%', height: '100%', scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
           <CrewDashboard conditions={conditions} active={page === 1} night={night} mode={mode} onMode={m => { setMode(m); write(NIGHT_KEY, m); }} />

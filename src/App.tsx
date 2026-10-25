@@ -45,7 +45,7 @@ function SettingsSheet({ open, theme, style: stylePref, animate, onTheme, onStyl
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 90, pointerEvents: open ? 'auto' : 'none' }}>
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)', opacity: open ? 1 : 0, transition: 'opacity 0.28s ease' }} />
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, maxHeight: '90dvh', overflowY: 'auto', background: 'var(--surface)', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: '14px 20px calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)) + 24px)', transform: open ? 'translateY(0)' : 'translateY(110%)', transition: 'transform 0.34s cubic-bezier(0.22,1,0.36,1)' }}>
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, maxWidth: 560, margin: '0 auto', maxHeight: '90dvh', overflowY: 'auto', background: 'var(--surface)', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: '14px 20px calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)) + 24px)', transform: open ? 'translateY(0)' : 'translateY(110%)', transition: 'transform 0.34s cubic-bezier(0.22,1,0.36,1)' }}>
         <div style={{ width: 42, height: 5, borderRadius: 99, background: 'var(--line)', margin: '0 auto 20px' }} />
 
         <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--inkDim)', marginBottom: 10 }}>Fargetema</div>
@@ -248,16 +248,18 @@ export default function App() {
 
   const openPicker = (which: 'from' | 'to') => setPicker({ open: true, which });
 
+  // Velg kai; velger man den samme som i det andre feltet, bytter de plass
+  const chooseStop = useCallback((which: 'from' | 'to', s: StopId) => {
+    if (which === 'from') setFrom(prev => { if (s === to) setTo(prev); return s; });
+    else setTo(prev => { if (s === from) setFrom(prev); return s; });
+  }, [from, to]);
+
   const pick = useCallback((s: StopId) => {
     setPicker(p => {
-      if (p.which === 'from') {
-        setFrom(prev => { if (s === to) setTo(prev); return s; });
-      } else {
-        setTo(prev => { if (s === from) setFrom(prev); return s; });
-      }
+      if (p.which) chooseStop(p.which, s);
       return { open: false, which: null };
     });
-  }, [from, to]);
+  }, [chooseStop]);
 
   const openTrip = (t: Trip) => { setTrip(t); setPrevScreen(screen); setScreen('detail'); };
 
@@ -291,7 +293,7 @@ export default function App() {
     return (
       <div style={{ ...(vars as React.CSSProperties) }}>
         <Dashboards from={from} to={to} weather={weather} animate={animate} texture={style.texture}
-          onEditFrom={() => openPicker('from')} onEditTo={() => openPicker('to')} onSwap={swap}
+          onChooseStop={chooseStop} onSwap={swap}
           onOpenWeather={() => setWeatherOpen(true)} onOpenSettings={() => setSettingsOpen(true)} />
         {sheets}
       </div>

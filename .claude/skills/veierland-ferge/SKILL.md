@@ -99,17 +99,23 @@ Selve kortet «Ferga nå» viser posisjonen på en rett linje: Tenvik til venstr
 
 Er skjermen minst 900×600 (eller 700×900 stående), viser appen to dashbord i stedet for telefonvisningen. Det gjelder iPad-appen og nettsiden på PC. Man sveiper mellom dem eller trykker på «Passasjer / Ferge» nederst. Siden man sist var på, huskes.
 
-- **Passasjer** (`PassengerDashboard.tsx`) viser avgangene begge veier for valgt strekning, kartet med tider og «Andre båter», været time for time og «Verdt å vite». Under «Verdt å vite» ligger farevarsler, meldinger fra admin-panelet, Humla-varselet og punktligheten. Trykker man på en avgang, åpnes detaljsiden som et panel.
-- **Ferge** (`CrewDashboard.tsx`) er et display for mannskapet i styrhuset:
-  - stor klokke med sekunder, og neste faste avgang med hvor den går
-  - eventuell bestillingsavgang før den, på egen linje
-  - dagens rundturer som tabell
-  - vind med retning, vindkast og søyler for de neste 8 timene, rød fra liten kuling
-  - sjø og lys: bølger, sjøtemperatur, vannstand mot middelvann, sikt (tåke), luft og soloppgang/solnedgang
-  - farevarsler fra MET
-  - kartet med andre båter slått på
+Brukeren har bestemt hva som er viktigst på hver side.
 
-  Nattmodus (rødt på svart, så nattsynet bevares) er Auto etter solen, Natt eller Dag. Den velges med knappen øverst til høyre. Skjermen holdes på der nettleseren støtter det (Wake Lock). På en iPad som skal stå fremme, bør Autolås likevel settes til «Aldri».
+- **Passasjer** (`PassengerDashboard.tsx`): det viktigste er å finne avganger.
+  - «Finn avgang» er størst: knapper for Fra og Til (alle kaier og bussene), bytt retning, og dag (i dag, i morgen, tre dager til, eller kalender).
+  - Avgangene den dagen står rett under, med neste avgang markert og «om X min». Bestilling, Engø og «forsinket nå» vises som merker.
+  - Trykker man på en avgang, åpnes detaljsiden som et panel.
+  - Kartet («Andre båter») og «Verdt å vite» (farevarsler, admin-meldinger, Humla-varselet og punktlighet) står til siden.
+  - Været ligger i værknappen når skjermen ligger, og som eget kort når den står.
+- **Ferge** (`CrewDashboard.tsx`): det viktigste er hvor ferga er, de neste anløpene, vind og vær, og farevarsler.
+  - Kartet er størst, og andre båter er slått på.
+  - «Neste anløp» (`upcomingCalls` i `src/mapTimes.ts`) viser rundturene lagt etter hverandre. Det første anløpet har beregnet ankomst og hvor mye ferga er etter ruta. Engø-anløp på røde turer og hele bestillingsturer er merket «ved bestilling».
+  - Vind har retning, vindkast og søyler for de neste 8 timene. Søylene blir røde fra liten kuling.
+  - Fliser for bølger, sjøtemperatur, vannstand, sikt, nedbør og sol.
+  - Farevarsler fra MET står midt i toppen, og en klokke står øverst til venstre.
+  - Nattmodus (rødt på svart, så nattsynet bevares) er Auto etter solen, Natt eller Dag. Den velges med knappen øverst til høyre.
+  - Skjermen holdes på der nettleseren støtter det (Wake Lock). På en iPad som skal stå fremme, bør Autolås likevel settes til «Aldri».
+- **Kartet på dashbordene** (`MapCard` i `parts.tsx`) måler boksen sin og velger et utsnitt som er sentrert på ruta Tenvik–Engø (`viewBoxFor` i `MapView.tsx`).
 - **Data:**
   - `api/conditions.ts` henter MET locationforecast (complete), oceanforecast, metalerts og Kartverkets vannstand, med cache på 10 minutter. Ingen nøkler trengs.
   - `api/vessels.ts` henter andre fartøy i kartutsnittet fra BarentsWatch (`POST /v1/latest/combined` med `geometry`), med cache på 30 sekunder. Den bruker samme nøkler som `api/ferry.ts`.

@@ -68,8 +68,25 @@ export function TimeCells({ times, style }: { times: TimeCell[]; style?: React.C
   );
 }
 
-// fill: kartet fyller boksen det står i (beskåret på sidene), ellers full bredde med kartets egne proporsjoner
-export function MapSvg({ pos, trail = [], tags, highlight = null, humla, vessels = [], fill = false }: {
+// Ruta Tenvik–Engø med plass til navnene; et beskåret kart sentreres på den
+const ROUTE_BOX = { x0: 650, x1: 3900, y0: 900, y1: 4250 };
+
+// Utsnitt med boksens proporsjoner (bredde/høyde), sentrert på ruta og innenfor kartet
+function viewBoxFor(aspect: number): string {
+  const W = MAP_VIEW.width, H = MAP_VIEW.height;
+  const cx = (ROUTE_BOX.x0 + ROUTE_BOX.x1) / 2, cy = (ROUTE_BOX.y0 + ROUTE_BOX.y1) / 2;
+  const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+  if (aspect >= W / H) {
+    const h = W / aspect;
+    return `0 ${clamp(cy - h / 2, 0, H - h).toFixed(0)} ${W} ${h.toFixed(0)}`;
+  }
+  const w = H * aspect;
+  return `${clamp(cx - w / 2, 0, W - w).toFixed(0)} 0 ${w.toFixed(0)} ${H}`;
+}
+
+// fill: kartet fyller boksen det står i, med boksens proporsjoner (aspect) og sentrert på ruta;
+// ellers full bredde med kartets egne proporsjoner
+export function MapSvg({ pos, trail = [], tags, highlight = null, humla, vessels = [], fill = false, aspect }: {
   pos: MapPos | null;
   trail?: [number, number][];
   tags?: Map<StopId, string>;
@@ -77,6 +94,7 @@ export function MapSvg({ pos, trail = [], tags, highlight = null, humla, vessels
   humla: boolean;
   vessels?: Vessel[];
   fill?: boolean;
+  aspect?: number;
 }) {
   const ferry = pos ? toMap(pos.lat, pos.lng) : null;
   const inView = ferry != null && ferry.x >= 0 && ferry.y >= 0 && ferry.x <= MAP_VIEW.width && ferry.y <= MAP_VIEW.height;
@@ -86,7 +104,7 @@ export function MapSvg({ pos, trail = [], tags, highlight = null, humla, vessels
   const halo = { stroke: SEA, strokeWidth: 3, paintOrder: 'stroke' as const, vectorEffect: 'non-scaling-stroke' as const };
 
   return (
-    <svg viewBox={`0 0 ${MAP_VIEW.width} ${MAP_VIEW.height}`} width="100%" height={fill ? '100%' : undefined} preserveAspectRatio={fill ? 'xMidYMid slice' : undefined}
+    <svg viewBox={fill && aspect ? viewBoxFor(aspect) : `0 0 ${MAP_VIEW.width} ${MAP_VIEW.height}`} width="100%" height={fill ? '100%' : undefined} preserveAspectRatio={fill ? 'xMidYMid slice' : undefined}
       style={{ display: 'block', background: SEA }} fontFamily="'Space Grotesk', sans-serif">
       {/* grunt vann langs land: to brede, svake streker rundt kysten under selve landet */}
       <path d={LAND_PATH} fill="none" stroke="color-mix(in srgb, var(--onDeep) 5%, transparent)" strokeWidth={110} strokeLinejoin="round" />
