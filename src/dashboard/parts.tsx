@@ -3,15 +3,12 @@ import { Label, NumTime } from '../components/Atoms';
 import { Icon, weatherProps } from '../components/Icons';
 import { MapSvg, TimeCells, VesselToggle, useVessels } from '../components/MapView';
 import { useFerryPosition, ferryStatus, ageLabel } from '../components/FerryLive';
-import {
-  findTripsForDay, dayTypeOf, getOsloDate, ymd, minsUntil, fmtCountdown, bookingStatus, stopsMap,
-  isMaintenancePeriod, ferryName,
-} from '../ferryData';
-import { useLiveTrack, liveDelay, type LiveTrack } from '../liveDelay';
+import { getOsloDate, ymd, isMaintenancePeriod } from '../ferryData';
+import { useLiveTrack } from '../liveDelay';
 import { mapTimes } from '../mapTimes';
 import { usePunctuality, overallPunctuality } from '../punctuality';
 import { yrSymbolToCode, compass, osloHm, type Alert, type HourWeather } from './conditions';
-import type { StopId, Trip } from '../types';
+import type { StopId } from '../types';
 
 // Felles byggeklosser for dashbordene på store skjermer (iPad og PC).
 
@@ -67,69 +64,6 @@ export function dateLine(d: Date): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function Badge({ children, tone }: { children: React.ReactNode; tone: 'accent' | 'bad' | 'warn' | 'dim' }) {
-  const styles: Record<string, React.CSSProperties> = {
-    accent: { background: 'var(--accentOnDeep)', color: 'var(--deep)' },
-    bad: { background: 'color-mix(in srgb, var(--bad) 24%, transparent)', color: 'color-mix(in srgb, var(--bad) 45%, white)' },
-    warn: { background: 'color-mix(in srgb, var(--warn) 26%, transparent)', color: 'color-mix(in srgb, var(--warn) 50%, white)' },
-    dim: { background: 'rgba(255,255,255,0.08)', color: 'var(--onDeepDim)' },
-  };
-  return <span style={{ flexShrink: 0, padding: '3px 9px', borderRadius: 99, fontFamily: font, fontWeight: 700, fontSize: 11.5, whiteSpace: 'nowrap', ...styles[tone] }}>{children}</span>;
-}
-
-// Avgangene én vei i dag (siste som har gått, dempet) og i morgen tidlig når dagen er i ferd med å ta slutt
-export function DepartureColumn({ from, to, track, onOpenTrip, rows = 8, style }: {
-  from: StopId; to: StopId; track: LiveTrack | null; onOpenTrip: (t: Trip) => void; rows?: number; style?: React.CSSProperties;
-}) {
-  const now = getOsloDate();
-  const nowMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
-  const today = findTripsForDay(dayTypeOf(now), now, from, to);
-  const past = today.filter(t => minsUntil(t.dateStr, t.startTime) < 0);
-  const upcoming = today.filter(t => minsUntil(t.dateStr, t.startTime) >= 0);
-  const tomorrowDate = new Date(now); tomorrowDate.setDate(now.getDate() + 1);
-  const tomorrow = upcoming.length < rows - 1 ? findTripsForDay(dayTypeOf(tomorrowDate), tomorrowDate, from, to).slice(0, rows - 1 - upcoming.length) : [];
-  const list: (Trip | 'i morgen')[] = [...past.slice(-1), ...upcoming, ...(tomorrow.length ? ['i morgen' as const, ...tomorrow] : [])];
-  const nextId = upcoming[0] ? `${upcoming[0].dateStr}|${upcoming[0].id}` : null;
-
-  return (
-    <Card style={{ padding: '14px 14px 6px', ...style }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, padding: '0 4px 8px' }}>
-        <Label style={{ fontSize: 10 }}>{stopsMap[from]} → {stopsMap[to]}</Label>
-        <span style={{ fontFamily: font, fontSize: 11.5, color: 'var(--onDeepDim)' }}>i dag</span>
-      </div>
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-        {list.map((t, i) => {
-          if (t === 'i morgen') return <div key="i-morgen" style={{ padding: '10px 6px 4px', fontFamily: font, fontWeight: 700, fontSize: 10.5, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--onDeepDim)' }}>I morgen</div>;
-          const id = `${t.dateStr}|${t.id}`;
-          const isPast = past.includes(t);
-          const isNext = id === nextId;
-          const mins = minsUntil(t.dateStr, t.startTime);
-          const bs = bookingStatus(t);
-          const engo = t.warnings.some(w => w.type === 'engo');
-          const delay = (isNext || isPast) && t.dateStr === ymd(now) ? liveDelay(track, t, nowMin) : null;
-          if (isPast && !delay) {
-            // vis bare den forrige avgangen hvis den fortsatt ikke har gått
-            if (mins < -15) return null;
-          }
-          return (
-            <button key={id} onClick={() => onOpenTrip(t)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '9px 8px', marginTop: i ? 2 : 0, borderRadius: 12, border: 'none', cursor: 'pointer', textAlign: 'left', background: isNext ? 'color-mix(in srgb, var(--accentOnDeep) 15%, transparent)' : 'transparent', opacity: isPast && !delay ? 0.45 : 1 }}>
-              <NumTime size={27} color="var(--onDeep)" style={{ width: 64, flexShrink: 0 }}>{t.startTime}</NumTime>
-              <span style={{ fontFamily: font, fontWeight: 600, fontSize: 13, color: 'var(--onDeepDim)', whiteSpace: 'nowrap' }}>→ {t.endTime}</span>
-              <span style={{ flex: 1 }} />
-              {delay ? <Badge tone="warn">{delay.short}</Badge>
-                : isNext ? <Badge tone="accent">om {fmtCountdown(mins)}</Badge> : null}
-              {bs.required && <Badge tone={bs.passed ? 'dim' : 'bad'}>{bs.passed ? 'Frist passert' : 'Må bestilles'}</Badge>}
-              {!bs.required && engo && <Badge tone="bad">Engø: bestill</Badge>}
-            </button>
-          );
-        })}
-        {!list.length && <div style={{ padding: 12, fontFamily: font, fontSize: 13, color: 'var(--onDeepDim)' }}>Ingen avganger</div>}
-      </div>
-    </Card>
-  );
-}
-
-// Fergekartet med posisjon, tider og knapp for andre båter
 // showTimes=false: uten feltene «Gikk fra / Ankommer» (tidene står likevel ved kaiene i kartet), så kartet får mer plass
 export function MapCard({ vesselsKey, vesselsDefault = false, showTimes = true, style }: { vesselsKey: string; vesselsDefault?: boolean; showTimes?: boolean; style?: React.CSSProperties }) {
   const pos = useFerryPosition();
