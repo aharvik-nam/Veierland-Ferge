@@ -106,7 +106,7 @@ export function MapSvg({ pos, trail = [], tags, highlight = null, humla, vessels
   return (
     <svg viewBox={fill && aspect ? viewBoxFor(aspect) : `0 0 ${MAP_VIEW.width} ${MAP_VIEW.height}`} width="100%" height={fill ? '100%' : undefined} preserveAspectRatio={fill ? 'xMidYMid slice' : undefined}
       style={{ display: 'block', background: SEA }} fontFamily="'Space Grotesk', sans-serif">
-      <path d={LAND_PATH} fill="color-mix(in srgb, var(--onDeep) 13%, var(--deep))" stroke="color-mix(in srgb, var(--onDeep) 26%, var(--deep))" strokeWidth={1} strokeLinejoin="round" vectorEffect="non-scaling-stroke" fillRule="evenodd" />
+      <path d={LAND_PATH} fill="color-mix(in srgb, var(--onDeep) 13%, var(--deep))" fillRule="evenodd" />
       {LABELS.map(l => { const p = toMap(l.lat, l.lng); return (
         <text key={l.name} x={p.x} y={p.y} textAnchor="middle" fontSize={150} fontStyle="italic" fontWeight={600} fill="var(--onDeepDim)" opacity={0.75}>{l.name}</text>
       ); })}
