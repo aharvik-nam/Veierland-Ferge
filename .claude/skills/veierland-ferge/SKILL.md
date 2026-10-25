@@ -30,8 +30,8 @@ Andreas (aharvik@gmail.com) eier appen, skriver norsk og er ikke utvikler.
 | Alle rutetider (ordinær, sommer, Humla) | `src/data.ts` |
 | Sesongdatoer (`SUMMER`, `MAINTENANCE` = Humla) og reiselogikk (`findTripsForDay`, bestillingsregler) | `src/ferryData.ts` |
 | Rutetider fra serveren til appen | `src/timetableJson.ts` (lager `/timetable.json` ved bygg), `src/remoteTimetable.ts` (henter og lagrer) |
-| Admin-panel og Firestore (overstyrer kode-rutetidene!) | `public/admin.html`, `src/firestoreData.ts` |
-| Klassisk rutetabell (egen kopi av Humla-tidene!) | `public/rutetabell.html` |
+| Admin-panel for meldinger (Firebase-innlogging), Firestore-regler | `public/admin.html`, `firestore.rules`, `src/firestoreData.ts` |
+| Klassisk rutetabell (leser `/timetable.json`) | `public/rutetabell.html` |
 | Skjermer | `src/App.tsx` (fanelinje: Søk / Avganger / Rutetabell), `src/screens/*`, `src/components/*` |
 | Fergeposisjon (Vercel-funksjon) | `api/ferry.ts`, vises i `src/components/FerryLive.tsx` |
 | Fergekartet (trykk på «Ferga nå») | `src/components/FerryMap.tsx`, kartgrunnlag i `src/map/kart.ts` |
@@ -54,29 +54,36 @@ Les `references/rutetider.md` først. Der står hva hvert felt betyr, hvordan en
 
 1. Les bildene kolonne for kolonne og skriv tidene inn i riktig tabell i `src/data.ts`. Les så tabellen tilbake mot bildet én gang til. Skriv ned uleselige eller rare tider og spør brukeren om dem.
    Sett `TIMES_FROM` i `src/data.ts` til datoen de nye tidene gjelder fra. Punktligheten i appen regnes bare fra den datoen, så eldre dager med andre tider ikke gir feil tall.
-2. Gjelder endringen Humla-tidene, må `HUMLA_SEASON` i `public/rutetabell.html` oppdateres likt. Den klassiske rutetabellen har en egen kopi.
+2. Den klassiske rutetabellen (`public/rutetabell.html`) henter de samme tidene fra `/timetable.json`. Den trenger ingen endring.
 3. Kjør kontrollskriptet:
    ```bash
    npx tsx .claude/skills/veierland-ferge/scripts/sjekk-rutetider.ts
    ```
-   Skriptet finner feil klokkeslett, tider i feil rekkefølge, Vestgården i Humla-ruter, ulik Humla-periode i filene, og forskjeller mellom `rutetabell.html` og `data.ts`. Det skal ende med «✓ Ingen feil».
+   Skriptet finner feil klokkeslett, tider i feil rekkefølge, Vestgården i Humla-ruter og ulik Humla-periode i filene. Det skal ende med «✓ Ingen feil».
 4. Se resultatet: `npm run build`, deretter
    ```bash
    node .claude/skills/veierland-ferge/scripts/skjermbilder.mjs <scratchpad-mappe> 2026-11-07T09:40
    ```
    Velg et tidspunkt i perioden du endret. Se på bildene og send dem gjerne til brukeren.
 5. Commit og push til `main`. Etter et par minutter er tidene på nettsiden. Den installerte appen henter dem neste gang den åpnes, eller innen 30 minutter.
-6. Hvis noen har lagret rutetider i admin-panelet for samme periode, vinner de over koden. Spør brukeren om det før du konkluderer med at endringen ikke virker. Se `references/rutetider.md`.
-   - Admin-rutetidene ligger i Firestore (`vf/timetable`). Appen lagrer en kopi i `localStorage.vf_timetable`, og kopien slettes når dokumentet er borte (`syncTimetable`).
-   - Mens Humla seiler, gjelder bare admin-sesonger som starter i Humla-perioden. Eldre sesonger som strekker seg inn i perioden, overstyrer ikke.
-   - Les dokumentet direkte: `curl "https://firestore.googleapis.com/v1/projects/ferge-veierland/databases/(default)/documents/vf/timetable"` (404 = finnes ikke).
-   - Kjennetegn på en gammel kopi: Engø-tidene i appen er de ordinære (f.eks. søndag Engø 10:50, 12:20, 13:20 i stedet for Humla 11:00, 13:30, 16:30), mens Tenvik–Tangen ser nesten riktig ut. Det skjedde 25.10.2026.
+6. Admin-panelet kan ikke endre rutetider (fra 25.10.2026), så det er bare `src/data.ts` som gjelder.
+   - Ser brukeren gamle tider, er det trolig en gammel versjon av appen eller nettsiden. Be om å laste nettsiden på nytt, eller vent på neste app-bygg.
+   - Kjennetegn fra 25.10.2026: Engø-tidene var de ordinære (søndag Engø 10:50, 12:20, 13:20) i stedet for Humla (11:00, 13:30, 16:30). Det kom av en gammel kopi av admin-rutetidene i nettleseren.
+
+## Admin-panelet (meldinger)
+
+`public/admin.html` (jutoya.veierland.org/admin.html) brukes bare til meldinger i appen, Firestore `vf/notices`.
+- **Innlogging:** Firebase Authentication med e-post og passord. Brukeren lages i Firebase-konsollen. «Glemt passord?» sender en lenke på e-post.
+- **Ingen passord i Vercel:** passordet ligger hos Firebase, ikke i Vercel eller i koden.
+- **Tilgang:** `firestore.rules` gir lesetilgang til alle og skrivetilgang bare til admin-e-posten. Alt annet er stengt, også `vf/timetable`.
+- **Endre reglene:** reglene ligger ikke automatisk i Firebase. Brukeren limer dem inn selv under Firestore Database → Regler, med sin e-post i stedet for `ADMIN-EPOST`. E-posten skal ikke inn i repoet.
+- **Teste tilgangen:** les `curl "https://firestore.googleapis.com/v1/projects/ferge-veierland/databases/(default)/documents/vf/notices"` (skal virke). Skriving uten innlogging skal gi 403. Test bare skriving når brukeren har sagt ja.
 
 ## Oppgave: endre sesong eller Humla-perioden
 
-Humla-perioden står med dato i tre filer: `MAINTENANCE` i `src/ferryData.ts`, `HUMLA_FROM`/`HUMLA_TO` i `api/ferry.ts` og `dateFrom`/`dateTo` i `public/rutetabell.html`. Teksten med datoene står for hånd på fire steder til: `seasonLabel` i `src/ferryData.ts`, `src/components/HumlaNotice.tsx`, `src/screens/ResultsScreen.tsx` og `rules` i `src/data.ts`. Kontrollskriptet sjekker at de tre datoene er like, og skriver ut tekstene så du kan se over dem.
+Humla-perioden står med dato i to filer: `MAINTENANCE` i `src/ferryData.ts` og `HUMLA_FROM`/`HUMLA_TO` i `api/ferry.ts`. `public/rutetabell.html` leser den fra `/timetable.json`. Teksten med datoene står for hånd på fire steder til: `seasonLabel` i `src/ferryData.ts`, `src/components/HumlaNotice.tsx`, `src/screens/ResultsScreen.tsx` og `rules` i `src/data.ts`. Kontrollskriptet sjekker at de to datoene er like, og skriver ut tekstene så du kan se over dem.
 
-Når Humla-perioden er slutt, går appen automatisk tilbake til ordinære ruter og sommerruter, og AIS-funksjonen viser M/F Jutøya igjen. Utenfor Humla-perioden viser `rutetabell.html` bare det som er lagret i admin-panelet, ellers «Ingen rutedata». Gjør brukeren oppmerksom på det.
+Når Humla-perioden er slutt, går appen og den klassiske rutetabellen automatisk tilbake til ordinære ruter og sommerruter, og AIS-funksjonen viser M/F Jutøya igjen.
 
 ## Oppgave: fergeposisjon
 

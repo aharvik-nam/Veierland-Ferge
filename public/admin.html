@@ -1,1341 +1,223 @@
 <!doctype html>
 <html lang="no">
 <head>
-<title>Rutetabell Admin — Veierland Ferge</title>
+<title>Meldinger — Veierland Ferge</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<meta name="robots" content="noindex">
 <style>
-/* ── TOKENS ── */
+/* Admin for meldingene i appen. Rutetidene endres ikke her; de ligger i appens kode (src/data.ts). */
 :root {
-  --bg: #E5EFF6;
-  --surface: #FFFFFF;
-  --surfaceAlt: #F2F7FB;
-  --card: #DAEAF3;
-  --border: #BBC8D8;
-  --borderLight: #D2E2EE;
-  --accent: #0C82A6;
-  --accentDk: #0A6B8A;
-  --accentFg: #FFFFFF;
-  --accentSoft: rgba(12,130,166,0.09);
-  --text: #091820;
-  --textDim: #4E718A;
-  --good: #1A8A64;
-  --goodFg: #FFFFFF;
-  --warn: #A87218;
-  --danger: #C03434;
-  --dangerFg: #FFFFFF;
-
-  --sidebar: #12202E;
-  --sidebarSurface: #192C3E;
-  --sidebarText: #88BCCE;
-  --sidebarDim: #3A5668;
-  --sidebarAccent: #38C8E8;
-  --sidebarActive: rgba(56,200,232,0.13);
-  --sidebarBorder: rgba(56,200,232,0.08);
-
-  --header: #0A1620;
-  --headerBorder: rgba(56,200,232,0.09);
-
-  --tblHead: #D5E6F2;
-  --tblRow: #FFFFFF;
-  --tblAlt: #EDF5FA;
-  --tblOut: rgba(12,130,166,0.05);
-  --tblIn: rgba(26,138,100,0.05);
-  --tblTangen: rgba(168,114,24,0.11);
-  --tblTangenTxt: #6E4A0C;
-  --tblBooking: rgba(192,52,52,0.07);
-  --tblEngo: rgba(12,130,166,0.08);
-
-  --grpOut: rgba(12,130,166,0.28);
-  --grpTangen: rgba(168,114,24,0.35);
-  --grpTangenMid: rgba(168,114,24,0.55);
-  --grpIn: rgba(26,138,100,0.28);
-  --tblExt: rgba(78,113,138,0.10);
-
-  --inp: #FFFFFF;
-  --inpBorder: #A2C2D4;
-  --inpFocus: #0C82A6;
-
-  --shadow-sm: 0 1px 3px rgba(9,24,32,0.08), 0 2px 6px rgba(9,24,32,0.04);
-  --shadow-md: 0 4px 18px rgba(9,24,32,0.10), 0 1px 4px rgba(9,24,32,0.06);
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'IBM Plex Sans', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  height: 100vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ── LOGIN ── */
-#login-screen {
-  position: fixed; inset: 0;
-  background: linear-gradient(150deg, #0A1828 0%, #102236 55%, #0C2030 100%);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 100;
-}
-.login-box {
-  width: 400px;
-  background: var(--surface);
-  border-radius: 20px;
-  padding: 0 0 36px;
-  text-align: center;
-  box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
-  overflow: hidden;
-}
-.login-top {
-  background: var(--sidebar);
-  padding: 32px 40px 28px;
-  border-bottom: 1px solid rgba(56,200,232,0.12);
-}
-.login-eyebrow {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px; font-weight: 600;
-  letter-spacing: 0.28em; text-transform: uppercase;
-  color: var(--sidebarDim); margin-bottom: 10px;
-}
-.login-title {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 30px; font-weight: 700; line-height: 1.15;
-  color: var(--sidebarAccent);
-}
-.login-sub {
-  font-size: 14px; color: var(--sidebarDim); margin-top: 4px;
-  font-family: 'IBM Plex Sans', sans-serif;
-}
-.login-fields {
-  padding: 28px 36px 0;
-}
-.login-inp {
-  width: 100%; padding: 14px 18px;
-  background: var(--surfaceAlt);
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
-  font-family: 'IBM Plex Sans', sans-serif; font-size: 18px;
-  color: var(--text); outline: none;
-  margin-bottom: 14px;
-  transition: border-color 0.18s, box-shadow 0.18s;
-}
-.login-inp:focus {
-  border-color: var(--inpFocus);
-  box-shadow: 0 0 0 3px rgba(12,130,166,0.14);
-}
-.login-btn {
-  width: 100%; padding: 15px;
-  background: var(--accent); color: #fff;
-  border: none; border-radius: 12px;
-  font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 17px;
-  cursor: pointer; transition: background 0.16s, box-shadow 0.16s;
-  letter-spacing: 0.01em;
-}
-.login-btn:hover { background: var(--accentDk); box-shadow: 0 4px 14px rgba(12,130,166,0.35); }
-.login-err {
-  font-size: 14px; color: var(--danger); margin-top: 14px; min-height: 18px;
-  padding: 0 36px;
-}
-
-/* ── APP SHELL ── */
-#app { display: none; flex-direction: column; height: 100vh; }
-#app.show { display: flex; }
-
-/* ── HEADER ── */
-.hdr {
-  background: var(--header);
-  height: 60px; flex-shrink: 0;
-  display: flex; align-items: center; padding: 0 24px;
-  gap: 16px; border-bottom: 1px solid var(--headerBorder);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-}
-.hdr-brand {
-  display: flex; align-items: center; gap: 10px;
-}
-.hdr-icon {
-  font-size: 22px; line-height: 1;
-}
-.hdr-logo {
-  font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 17px;
-  letter-spacing: 0.01em; color: var(--sidebarAccent);
-}
-.hdr-sep { width: 1px; height: 24px; background: rgba(255,255,255,0.08); }
-.hdr-label {
-  font-family: 'IBM Plex Mono', monospace; font-size: 12px;
-  color: rgba(255,255,255,0.28); letter-spacing: 0.04em;
-}
-.hdr-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-.hdr-btn {
-  padding: 8px 16px; border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.13);
-  background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.60);
-  font-size: 13px; font-family: 'IBM Plex Sans', sans-serif; font-weight: 500;
-  cursor: pointer; transition: all 0.14s;
-}
-.hdr-btn:hover { border-color: rgba(255,255,255,0.28); color: #fff; background: rgba(255,255,255,0.09); }
-.hdr-save {
-  padding: 9px 22px; border-radius: 8px;
-  background: var(--good); color: #fff;
-  border: none; font-size: 14px; font-weight: 700;
-  font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.01em;
-  cursor: pointer; transition: background 0.16s, box-shadow 0.16s;
-  box-shadow: 0 2px 8px rgba(26,138,100,0.35);
-}
-.hdr-save:hover { background: #157850; box-shadow: 0 4px 14px rgba(26,138,100,0.45); }
-
-/* ── LAYOUT ── */
-.layout { display: flex; flex: 1; overflow: hidden; }
-
-/* ── SIDEBAR ── */
-.sidebar {
-  width: 252px; flex-shrink: 0;
-  background: var(--sidebar);
-  border-right: 1px solid var(--sidebarBorder);
-  display: flex; flex-direction: column;
-  overflow-y: auto;
-}
-.sb-brand {
-  padding: 22px 18px 16px;
-  border-bottom: 1px solid var(--sidebarBorder);
-}
-.sb-ferry {
-  font-size: 26px; line-height: 1; margin-bottom: 8px;
-}
-.sb-ferry-name {
-  font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700;
-  color: var(--sidebarAccent); letter-spacing: 0.01em;
-}
-.sb-ferry-sub {
-  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
-  color: var(--sidebarDim); margin-top: 2px; letter-spacing: 0.08em;
-}
-.sb-section {
-  font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600;
-  letter-spacing: 0.26em; text-transform: uppercase;
-  color: var(--sidebarDim); padding: 18px 18px 8px;
-}
-.season-item {
-  display: flex; align-items: flex-start;
-  padding: 12px 18px 12px 16px; gap: 10px; cursor: pointer;
-  border-left: 3px solid transparent;
-  transition: background 0.13s, border-color 0.13s;
-}
-.season-item:hover { background: rgba(255,255,255,0.04); }
-.season-item.active {
-  background: var(--sidebarActive);
-  border-left-color: var(--sidebarAccent);
-}
-.season-info { flex: 1; min-width: 0; }
-.season-name {
-  font-family: 'IBM Plex Sans', sans-serif; font-size: 15px; font-weight: 600;
-  color: var(--sidebarText); line-height: 1.3;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.season-range {
-  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px;
-  color: var(--sidebarDim); line-height: 1.4; margin-top: 3px;
-}
-.badge-default {
-  font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-  background: var(--sidebarAccent); color: #061018;
-  border-radius: 4px; padding: 2px 7px; flex-shrink: 0; margin-top: 3px;
-}
-.sb-add {
-  margin: 12px 16px 20px;
-  padding: 11px; border-radius: 10px;
-  border: 1.5px dashed var(--sidebarDim);
-  background: transparent; color: var(--sidebarDim);
-  font-size: 14px; font-family: 'IBM Plex Sans', sans-serif; font-weight: 500;
-  cursor: pointer; transition: all 0.16s; text-align: center;
-}
-.sb-add:hover { border-color: var(--sidebarAccent); color: var(--sidebarAccent); background: var(--sidebarActive); }
-
-/* ── NOTICES SIDEBAR BUTTON ── */
-.sb-notices-btn {
-  margin: 2px 14px 16px; padding: 12px 14px;
-  border-radius: 10px; border: 1.5px solid var(--sidebarDim);
-  background: transparent; color: var(--sidebarText);
-  font-size: 14px; font-family: 'IBM Plex Sans', sans-serif; font-weight: 500;
-  cursor: pointer; transition: all 0.15s; text-align: left;
-  display: flex; align-items: center; gap: 8px;
-  width: calc(100% - 28px);
-}
-.sb-notices-btn:hover { border-color: var(--sidebarAccent); color: var(--sidebarAccent); background: var(--sidebarActive); }
-.sb-notices-count {
-  background: var(--danger); color: #fff; border-radius: 99px;
-  font-size: 11px; font-weight: 700; padding: 1px 7px; flex-shrink: 0;
-}
-
-/* ── NOTICES MODAL ── */
-.notices-modal-bg {
-  position: fixed; inset: 0; background: rgba(9,24,32,0.55);
-  display: flex; align-items: center; justify-content: center; z-index: 200;
-  backdrop-filter: blur(3px);
-}
-.notices-modal {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 16px; width: 600px; max-height: 82vh;
-  display: flex; flex-direction: column;
-  box-shadow: var(--shadow-md); overflow: hidden;
-}
-.notices-modal-hdr {
-  padding: 20px 24px 16px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.notices-modal-title {
-  font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; color: var(--text);
-}
-.notices-list {
-  flex: 1; overflow-y: auto; padding: 16px;
-  display: flex; flex-direction: column; gap: 10px;
-}
-.notice-card {
-  border: 1.5px solid var(--border); border-radius: 10px;
-  padding: 12px 14px; background: var(--surfaceAlt);
-  display: flex; align-items: flex-start; gap: 10px;
-}
-.notice-card.active-notice { border-color: var(--accent); background: var(--accentSoft); }
-.notice-card.type-warning { border-color: var(--danger); background: rgba(192,52,52,0.06); }
-.notice-card.type-warning.active-notice { border-color: var(--danger); }
-.notice-card.type-price { border-color: var(--good); background: rgba(26,138,100,0.07); }
-.notice-card-body { flex: 1; min-width: 0; }
-.notice-type-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
-.notice-type-sel {
-  font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 99px;
-  border: 1.5px solid var(--border); background: var(--surface); color: var(--text);
-  cursor: pointer; outline: none; font-family: 'IBM Plex Sans', sans-serif;
-}
-.notice-active-toggle {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 13px; color: var(--textDim); cursor: pointer;
-}
-.notice-active-toggle input { accent-color: var(--good); cursor: pointer; width: 16px; height: 16px; }
-.notice-text-inp {
-  width: 100%; padding: 8px 10px; border-radius: 8px;
-  border: 1.5px solid var(--border); background: var(--inp);
-  font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; color: var(--text);
-  outline: none; resize: vertical; min-height: 56px; max-height: 150px;
-  transition: border-color 0.14s;
-}
-.notice-text-inp:focus { border-color: var(--inpFocus); }
-.del-notice {
-  width: 30px; height: 30px; border-radius: 7px; flex-shrink: 0;
-  border: 1.5px solid transparent; background: transparent;
-  color: var(--textDim); cursor: pointer; font-size: 18px;
-  display: inline-flex; align-items: center; justify-content: center;
-  transition: all 0.13s;
-}
-.del-notice:hover { border-color: var(--danger); color: var(--danger); background: rgba(192,52,52,0.08); }
-.notices-add-btn {
-  margin: 0 16px 16px; padding: 12px;
-  border: 2px dashed var(--border); border-radius: 10px;
-  background: transparent; color: var(--textDim);
-  font-size: 14px; font-family: 'IBM Plex Sans', sans-serif; font-weight: 500;
-  cursor: pointer; transition: all 0.15s;
-}
-.notices-add-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accentSoft); }
-.notices-modal-footer {
-  padding: 14px 24px; border-top: 1px solid var(--border);
-  display: flex; justify-content: flex-end; gap: 10px;
-}
-
-/* ── CONTENT ── */
-.content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-
-/* ── SEASON HEADER ── */
-.season-hdr {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 20px 28px 0;
-  flex-shrink: 0;
-  box-shadow: var(--shadow-sm);
-  position: relative; z-index: 2;
-}
-.season-hdr-top {
-  display: flex; align-items: center; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;
-}
-.season-title-inp {
-  font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700;
-  color: var(--text); background: transparent; border: none;
-  border-bottom: 2.5px solid transparent; padding: 2px 0;
-  outline: none; min-width: 180px; flex: 1;
-  transition: border-color 0.18s;
-}
-.season-title-inp:hover, .season-title-inp:focus { border-bottom-color: var(--accent); }
-.meta-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.meta-field { display: flex; align-items: center; gap: 8px; }
-.meta-lbl {
-  font-size: 11px; font-weight: 700; color: var(--textDim);
-  letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap;
-}
-.meta-inp {
-  font-family: 'IBM Plex Mono', monospace; font-size: 14px;
-  background: var(--surfaceAlt); border: 1.5px solid var(--border);
-  border-radius: 8px; padding: 8px 12px; color: var(--text);
-  outline: none; transition: border-color 0.15s, box-shadow 0.15s;
-}
-.meta-inp:focus { border-color: var(--inpFocus); box-shadow: 0 0 0 3px rgba(12,130,166,0.12); }
-.meta-check-lbl {
-  display: flex; align-items: center; gap: 9px;
-  font-size: 15px; color: var(--textDim); cursor: pointer; white-space: nowrap;
-}
-.meta-check-lbl input { accent-color: var(--accent); cursor: pointer; width: 18px; height: 18px; }
-.del-season-btn {
-  padding: 8px 16px; border-radius: 8px;
-  border: 1.5px solid rgba(192,52,52,0.30);
-  background: transparent; color: var(--danger);
-  font-size: 14px; font-family: 'IBM Plex Sans', sans-serif; font-weight: 500;
-  cursor: pointer; transition: all 0.14s; white-space: nowrap;
-}
-.del-season-btn:hover { background: rgba(192,52,52,0.07); border-color: var(--danger); }
-
-/* ── DAY TABS — segmented control ── */
-.day-tabs {
-  display: flex; gap: 3px;
-  background: var(--surfaceAlt);
-  border-radius: 10px; padding: 4px;
-  width: fit-content; margin-bottom: -1px;
-  border: 1.5px solid var(--border);
-}
-.day-tab {
-  padding: 10px 26px; font-size: 15px; font-weight: 600;
-  color: var(--textDim); cursor: pointer; border: none;
-  background: transparent;
-  font-family: 'IBM Plex Sans', sans-serif;
-  border-radius: 7px;
-  transition: color 0.14s, background 0.14s, box-shadow 0.14s;
-}
-.day-tab:hover { color: var(--text); background: rgba(255,255,255,0.5); }
-.day-tab.active {
-  color: var(--accent); background: var(--surface);
-  box-shadow: 0 1px 4px rgba(9,24,32,0.12), 0 0 0 1px var(--borderLight);
-}
-
-/* ── TABLE AREA ── */
-.tbl-area { flex: 1; overflow: auto; padding: 22px 26px 48px; background: var(--bg); }
-.tbl-wrap { overflow-x: auto; border-radius: 12px; box-shadow: var(--shadow-sm); }
-
-table {
-  border-collapse: collapse;
-  min-width: 900px; width: 100%;
-  font-variant-numeric: tabular-nums;
-  background: var(--surface);
-  border-radius: 12px; overflow: hidden;
-}
-thead th {
-  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 600;
-  letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--textDim); padding: 11px 6px;
-  text-align: center; white-space: nowrap;
-  background: var(--tblHead); border-bottom: 2px solid var(--border);
-}
-thead th.th-out { background: color-mix(in srgb, var(--tblOut) 120%, var(--tblHead)); }
-thead th.th-in  { background: color-mix(in srgb, var(--tblIn) 120%, var(--tblHead)); }
-thead th.th-dir {
-  font-size: 13px; letter-spacing: 0.16em;
-  border-bottom: 2px solid var(--border);
-  padding: 9px 6px;
-}
-thead th.th-out.th-dir { color: var(--accent); }
-thead th.th-in.th-dir  { color: var(--good); }
-thead th.th-tangen { background: var(--tblTangen); color: var(--tblTangenTxt); }
-thead th.th-tangen.th-dir { color: var(--warn); }
-
-/* column group separators */
-thead tr:nth-child(2) th:nth-child(1),
-tbody td:nth-child(3) { border-left: 2.5px solid var(--grpOut); }
-thead tr:nth-child(2) th:nth-child(5),
-tbody td:nth-child(7) { border-left: 2.5px solid var(--grpTangen); }
-thead tr:nth-child(2) th:nth-child(7),
-tbody td:nth-child(9) { border-left: 2.5px solid var(--grpIn); }
-thead tr:nth-child(1) th:nth-child(3) { border-left: 2.5px solid var(--grpOut); }
-thead tr:nth-child(1) th:nth-child(4) { border-left: 2.5px solid var(--grpTangen); }
-thead tr:nth-child(1) th:nth-child(5) { border-left: 2.5px solid var(--grpIn); }
-
-tbody tr { border-bottom: 1px solid var(--borderLight); }
-tbody tr:last-child { border-bottom: none; }
-tbody tr:nth-child(odd) td { background: var(--tblRow); }
-tbody tr:nth-child(even) td { background: var(--tblAlt); }
-tbody tr:hover td { background: var(--accentSoft) !important; }
-tbody td { padding: 5px 3px; text-align: center; vertical-align: middle; }
-tbody td.td-tangen { background: var(--tblTangen) !important; }
-tbody td.td-ext { background: var(--tblExt) !important; }
-tbody td.td-ext .tinp { color: var(--textDim); }
-thead th.th-ext { background: rgba(78,113,138,0.12); color: var(--textDim); font-style: italic; }
-
-/* Divider between the two Tangen cells (Ankommer / Avgår) */
-thead tr:nth-child(2) th:nth-child(5) { border-right: 3px solid var(--grpTangenMid); }
-tbody td:nth-child(7) { border-right: 3px solid var(--grpTangenMid); }
-
-.tinp {
-  font-family: 'IBM Plex Mono', monospace; font-size: 16px;
-  width: 70px; padding: 6px 5px; text-align: center;
-  background: transparent; border: 1.5px solid transparent;
-  border-radius: 7px; color: var(--text); outline: none;
-  transition: border-color 0.13s, background 0.13s, box-shadow 0.13s;
-}
-.tinp:hover { border-color: var(--inpBorder); }
-.tinp:focus { border-color: var(--inpFocus); background: #fff; box-shadow: 0 0 0 2.5px rgba(12,130,166,0.12); }
-.tinp::placeholder { color: var(--textDim); font-size: 14px; opacity: 0.45; }
-
-.row-num {
-  font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500;
-  color: var(--textDim); padding: 0 10px; white-space: nowrap;
-}
-.del-row {
-  width: 34px; height: 34px; border-radius: 8px;
-  border: 1.5px solid transparent; background: transparent;
-  color: var(--textDim); cursor: pointer; font-size: 19px;
-  display: inline-flex; align-items: center; justify-content: center;
-  transition: all 0.13s; line-height: 1;
-}
-.del-row:hover { border-color: var(--danger); color: var(--danger); background: rgba(192,52,52,0.08); }
-
-/* ── ROW TYPE ── */
-.type-sel {
-  font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 500;
-  padding: 6px 7px; border-radius: 7px; width: 100%;
-  border: 1.5px solid var(--border); background: var(--surfaceAlt);
-  color: var(--text); cursor: pointer; outline: none;
-  transition: border-color 0.13s;
-}
-.type-sel:focus { border-color: var(--inpFocus); }
-.type-sel.t-booking { border-color: var(--danger); color: var(--danger); background: var(--tblBooking); font-weight: 600; }
-.type-sel.t-engo    { border-color: var(--accent);  color: var(--accent);  background: var(--tblEngo); font-weight: 600; }
-
-tbody tr.row-booking td { background: var(--tblBooking) !important; }
-tbody tr.row-booking td.td-tangen { background: color-mix(in srgb, var(--danger) 12%, var(--tblTangen)) !important; }
-tbody tr.row-booking:hover td { background: color-mix(in srgb, var(--danger) 12%, var(--surface)) !important; }
-tbody tr.row-engo td { background: var(--tblEngo) !important; }
-tbody tr.row-engo:hover td { background: color-mix(in srgb, var(--accent) 11%, var(--surface)) !important; }
-
-/* ── NOTE ── */
-.note-inp {
-  font-family: 'IBM Plex Sans', sans-serif; font-size: 13px;
-  width: 150px; padding: 6px 9px; text-align: left;
-  background: transparent; border: 1.5px solid transparent;
-  border-radius: 7px; color: var(--text); outline: none;
-  transition: border-color 0.13s, background 0.13s;
-}
-.note-inp:hover { border-color: var(--inpBorder); }
-.note-inp:focus { border-color: var(--inpFocus); background: #fff; }
-.note-inp::placeholder { color: var(--textDim); font-size: 12px; opacity: 0.5; }
-
-/* ── ROW DIR INDICATOR ── */
-.row-dir {
-  display: block; font-size: 10px; color: var(--textDim);
-  line-height: 1.2; opacity: 0.7; font-weight: 600;
-}
-.row-dir.out-only { color: var(--accent); opacity: 1; }
-.row-dir.in-only  { color: var(--good);   opacity: 1; }
-
-.add-row-btn {
-  margin-top: 14px; padding: 14px 24px;
-  border: 2px dashed var(--border); border-radius: 10px;
-  background: transparent; color: var(--textDim);
-  font-size: 15px; font-family: 'IBM Plex Sans', sans-serif; font-weight: 500;
-  cursor: pointer; transition: all 0.16s; display: block;
-}
-.add-row-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accentSoft); }
-
-/* ── MODAL ── */
-.modal-bg {
-  position: fixed; inset: 0; background: rgba(9,24,32,0.55);
-  display: flex; align-items: center; justify-content: center; z-index: 200;
-  backdrop-filter: blur(3px);
-}
-.modal {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 16px; padding: 28px; width: 580px; max-height: 82vh;
-  display: flex; flex-direction: column; gap: 16px;
-  box-shadow: var(--shadow-md);
-}
-.modal-title {
-  font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 700; color: var(--text);
-}
-.modal-desc { font-size: 15px; color: var(--textDim); line-height: 1.6; }
-.modal-code {
-  font-family: 'IBM Plex Mono', monospace; font-size: 12px;
-  background: var(--surfaceAlt); border: 1px solid var(--border);
-  border-radius: 10px; padding: 16px; overflow: auto;
-  flex: 1; color: var(--text); white-space: pre; max-height: 280px;
-  line-height: 1.6;
-}
-.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
-.modal-btn {
-  padding: 11px 24px; border-radius: 9px; font-size: 15px; font-weight: 600;
-  font-family: 'IBM Plex Sans', sans-serif; cursor: pointer; border: none;
-  transition: opacity 0.14s, box-shadow 0.14s;
-}
-.modal-btn.primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(12,130,166,0.28); }
-.modal-btn.primary:hover { opacity: 0.88; box-shadow: 0 4px 14px rgba(12,130,166,0.38); }
-.modal-btn.ghost { background: var(--surfaceAlt); color: var(--text); border: 1.5px solid var(--border); }
-.modal-btn.ghost:hover { background: var(--card); }
-
-/* ── TOAST ── */
-.toast {
-  position: fixed; bottom: 28px; right: 28px;
-  padding: 14px 24px; border-radius: 12px;
-  background: var(--good); color: #fff;
-  font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700;
-  opacity: 0; transform: translateY(8px);
-  transition: opacity 0.22s, transform 0.22s;
-  pointer-events: none; z-index: 300;
-  box-shadow: 0 6px 24px rgba(26,138,100,0.40);
-}
-.toast.show { opacity: 1; transform: translateY(0); }
+  --bg: #E9F1F5; --surface: #FFFFFF; --border: #C9D8E2; --text: #0B1E26; --dim: #4E6E7E;
+  --deep: #07313C; --accent: #E2613B; --accent2: #0E7C86; --good: #1A8A64; --bad: #C03434; --warn: #A87218;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.45 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+header { background: var(--deep); color: #EAF6F2; padding: 18px 20px; display: flex; align-items: center; gap: 12px; }
+header h1 { margin: 0; font-size: 19px; font-weight: 700; }
+header .who { margin-left: auto; font-size: 13px; opacity: 0.75; }
+main { max-width: 680px; margin: 0 auto; padding: 22px 16px 60px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+.card + .card { margin-top: 14px; }
+h2 { margin: 0 0 6px; font-size: 18px; }
+p.dim { margin: 0 0 14px; color: var(--dim); font-size: 14px; }
+label { display: block; font-size: 13px; font-weight: 600; color: var(--dim); margin: 12px 0 5px; }
+input[type=email], input[type=password], textarea, select {
+  width: 100%; font: inherit; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 10px; background: #fff; color: var(--text);
+}
+textarea { resize: vertical; min-height: 64px; }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent2); }
+button { font: inherit; font-weight: 700; border-radius: 10px; padding: 10px 16px; border: none; cursor: pointer; }
+.primary { background: var(--accent2); color: #fff; }
+.primary:disabled { opacity: 0.5; cursor: default; }
+.ghost { background: transparent; color: var(--accent2); border: 1.5px solid var(--border); }
+.link { background: none; color: var(--accent2); padding: 0; font-weight: 600; text-decoration: underline; }
+.danger { background: transparent; color: var(--bad); border: 1.5px solid var(--border); padding: 6px 12px; }
+.row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.msg { margin-top: 12px; font-size: 14px; font-weight: 600; }
+.msg.err { color: var(--bad); } .msg.ok { color: var(--good); }
+.notice { border: 1.5px solid var(--border); border-radius: 12px; padding: 12px; margin-top: 12px; }
+.notice.active { border-color: var(--accent2); background: rgba(14,124,134,0.05); }
+.notice.warning { border-color: var(--bad); background: rgba(192,52,52,0.05); }
+.notice .row select { width: auto; }
+.notice textarea { margin-top: 10px; }
+.check { display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; color: var(--text); margin: 0; }
+.empty { color: var(--dim); text-align: center; padding: 18px 0 4px; }
+.hidden { display: none !important; }
 </style>
 </head>
 <body>
+<header>
+  <h1>Veierland Ferge · Meldinger</h1>
+  <span class="who" id="who"></span>
+</header>
 
-<!-- ── LOGIN ── -->
-<div id="login-screen">
-  <div class="login-box">
-    <div class="login-top">
-      <div class="login-eyebrow">M/F Jutøya · Veierland</div>
-      <div class="login-title">Rutetabell Admin</div>
-      <div class="login-sub">Administratorpanel for rutetider</div>
-    </div>
-    <div class="login-fields">
-      <input type="password" id="pw" class="login-inp" placeholder="Passord" autocomplete="current-password">
-      <button class="login-btn" onclick="doLogin()">Logg inn</button>
-      <div class="login-err" id="login-err"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ── APP ── -->
-<div id="app">
-  <div class="hdr">
-    <div class="hdr-brand">
-      <span class="hdr-icon">⛴</span>
-      <span class="hdr-logo">Veierland Ferge</span>
-    </div>
-    <span class="hdr-sep"></span>
-    <span class="hdr-label">Rutetabell Admin</span>
-    <div class="hdr-right">
-      <button class="hdr-btn" onclick="showExport()">Eksporter JSON</button>
-      <button class="hdr-btn" onclick="showChangePw()">Passord</button>
-      <button class="hdr-save" onclick="doSave()">Lagre</button>
-      <button class="hdr-btn" onclick="doLogout()">Logg ut</button>
-    </div>
-  </div>
-  <div class="layout">
-    <div class="sidebar">
-      <div class="sb-brand">
-        <div class="sb-ferry">⛴</div>
-        <div class="sb-ferry-name">Veierland Ferge</div>
-        <div class="sb-ferry-sub">M/F JUTØYA · RUTETABELL</div>
+<main>
+  <!-- Innlogging (Firebase) -->
+  <section class="card" id="login">
+    <h2>Logg inn</h2>
+    <p class="dim">Bruk admin-brukeren som er laget i Firebase-konsollen (Authentication).</p>
+    <form id="login-form">
+      <label for="email">E-post</label>
+      <input type="email" id="email" autocomplete="username" required>
+      <label for="pw">Passord</label>
+      <input type="password" id="pw" autocomplete="current-password" required>
+      <div class="row" style="margin-top:16px">
+        <button class="primary" type="submit" id="login-btn">Logg inn</button>
+        <button class="link" type="button" id="forgot">Glemt passord?</button>
       </div>
-      <div class="sb-section">Sesonger</div>
-      <div id="season-list"></div>
-      <button class="sb-add" onclick="addSeason()">+ Ny sesong</button>
-      <div class="sb-section" style="margin-top:4px">Meldinger</div>
-      <button class="sb-notices-btn" id="sb-notices-btn" onclick="openNotices()">
-        <span id="sb-notices-count" class="sb-notices-count" style="display:none">0</span>
-        Varsler &amp; meldinger
-      </button>
-    </div>
-    <div class="content">
-      <div class="season-hdr" id="season-hdr">
-        <div class="season-hdr-top">
-          <input type="text" class="season-title-inp" id="s-name" placeholder="Sesongnavn"
-            oninput="setSeasonField('name', this.value)">
-          <div class="meta-row">
-            <div class="meta-field">
-              <span class="meta-lbl">Fra</span>
-              <input type="date" class="meta-inp" id="s-from"
-                onchange="setSeasonField('dateFrom', this.value)">
-            </div>
-            <div class="meta-field">
-              <span class="meta-lbl">Til</span>
-              <input type="date" class="meta-inp" id="s-to"
-                onchange="setSeasonField('dateTo', this.value)">
-            </div>
-            <label class="meta-check-lbl">
-              <input type="checkbox" id="s-default"
-                onchange="setSeasonField('isDefault', this.checked)">
-              Standard (brukes om ingen sesong passer)
-            </label>
-          </div>
-          <button class="del-season-btn" onclick="deleteSeason()">Slett sesong</button>
-        </div>
-        <div class="day-tabs">
-          <button class="day-tab active" data-day="monFri" onclick="switchDay(this)">Man – Fre</button>
-          <button class="day-tab" data-day="sat" onclick="switchDay(this)">Lørdag</button>
-          <button class="day-tab" data-day="sun" onclick="switchDay(this)">Søndag</button>
-        </div>
+      <div class="msg" id="login-msg"></div>
+    </form>
+  </section>
+
+  <!-- Meldinger -->
+  <section class="hidden" id="editor">
+    <div class="card">
+      <h2>Meldinger i appen</h2>
+      <p class="dim">Aktive meldinger vises øverst i appen og i den klassiske rutetabellen, for eksempel «Ferga er innstilt i dag på grunn av vær». Rutetidene endres ikke her; de oppdateres i appens kode.</p>
+      <div id="list"></div>
+      <div class="row" style="margin-top:14px">
+        <button class="ghost" id="add">+ Ny melding</button>
+        <span style="flex:1"></span>
+        <button class="primary" id="save">Lagre</button>
       </div>
-      <div class="tbl-area">
-        <div class="tbl-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th rowspan="2" style="width:32px">#</th>
-                <th rowspan="2" style="width:90px">Type</th>
-                <th colspan="4" class="th-dir th-out">← TIL VEIERLAND</th>
-                <th colspan="2" class="th-dir th-tangen">TANGEN</th>
-                <th colspan="4" class="th-dir th-in">FRA VEIERLAND →</th>
-                <th rowspan="2" style="min-width:140px">Merknad</th>
-                <th rowspan="2" style="width:32px"></th>
-              </tr>
-              <tr>
-                <th class="th-out th-ext">Buss Tbg</th>
-                <th class="th-out">Tenvik</th>
-                <th class="th-out">Vestg.</th>
-                <th class="th-out">Engø</th>
-                <th class="th-tangen">Ankommer</th>
-                <th class="th-tangen">Avgår</th>
-                <th class="th-in">Engø</th>
-                <th class="th-in">Vestg.</th>
-                <th class="th-in">Tenvik</th>
-                <th class="th-in th-ext">Buss Tenv</th>
-              </tr>
-            </thead>
-            <tbody id="tbl-body"></tbody>
-          </table>
-        </div>
-        <button class="add-row-btn" onclick="addRow()">+ Legg til avgang</button>
-      </div>
+      <div class="msg" id="save-msg"></div>
     </div>
-  </div>
-</div>
+    <div class="card row">
+      <span class="dim" style="flex:1;font-size:14px">Logget inn som <strong id="email-shown"></strong></span>
+      <button class="ghost" id="logout">Logg ut</button>
+    </div>
+  </section>
+</main>
 
-<!-- ── NOTICES MODAL ── -->
-<div class="notices-modal-bg" id="notices-modal" style="display:none" onclick="if(event.target===this)closeNotices()">
-  <div class="notices-modal" onclick="event.stopPropagation()">
-    <div class="notices-modal-hdr">
-      <div class="notices-modal-title">Varsler &amp; meldinger</div>
-      <button class="modal-btn ghost" onclick="closeNotices()">Lukk</button>
-    </div>
-    <div class="notices-list" id="notices-list"></div>
-    <button class="notices-add-btn" onclick="addNotice()">+ Legg til melding</button>
-    <div class="notices-modal-footer">
-      <button class="modal-btn ghost" onclick="closeNotices()">Avbryt</button>
-      <button class="modal-btn primary" onclick="saveNotices()">Lagre meldinger</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── EXPORT MODAL ── -->
-<div class="modal-bg" id="export-modal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-title">Eksporter rutetabelldata</div>
-    <div class="modal-desc">Kopier JSON nedenfor og send til utvikler, eller lagre som sikkerhetskopi.</div>
-    <div class="modal-code" id="export-code"></div>
-    <div class="modal-actions">
-      <button class="modal-btn ghost" onclick="document.getElementById('export-modal').style.display='none'">Lukk</button>
-      <button class="modal-btn primary" onclick="copyExport()">Kopier til utklippstavle</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── CHANGE PASSWORD MODAL ── -->
-<div class="modal-bg" id="pw-modal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
-  <div class="modal" onclick="event.stopPropagation()" style="max-width:380px;width:380px">
-    <div class="modal-title">Endre passord</div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <input type="password" id="pw-new" class="meta-inp" style="width:100%;font-size:14px;padding:10px 12px" placeholder="Nytt passord">
-      <input type="password" id="pw-confirm" class="meta-inp" style="width:100%;font-size:14px;padding:10px 12px" placeholder="Bekreft nytt passord">
-    </div>
-    <div class="login-err" id="pw-err"></div>
-    <div class="modal-actions">
-      <button class="modal-btn ghost" onclick="document.getElementById('pw-modal').style.display='none'">Avbryt</button>
-      <button class="modal-btn primary" onclick="changePassword()">Lagre passord</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<!-- ── FIREBASE (CDN, module) ── -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 
-// Samme config som i src/firebase.ts — fyll inn verdiene fra Firebase Console
-const firebaseConfig = {
-  apiKey:            "AIzaSyCkI6aY3-sIsVIofOURcU3JzINUdeZYOr4",
-  authDomain:        "ferge-veierland.firebaseapp.com",
-  projectId:         "ferge-veierland",
-  storageBucket:     "ferge-veierland.firebasestorage.app",
-  messagingSenderId: "371514441127",
-  appId:             "1:371514441127:web:11daa945755cae81c08a82",
-  measurementId:     "G-RXGSES6D1T",
-};
+// Samme prosjekt som appen (src/firebase.ts). Nøklene her er offentlige; tilgangen styres av
+// innloggingen og reglene i Firestore (firestore.rules i repoet).
+const app = initializeApp({
+  apiKey: 'AIzaSyCkI6aY3-sIsVIofOURcU3JzINUdeZYOr4',
+  authDomain: 'ferge-veierland.firebaseapp.com',
+  projectId: 'ferge-veierland',
+  storageBucket: 'ferge-veierland.firebasestorage.app',
+  messagingSenderId: '371514441127',
+  appId: '1:371514441127:web:11daa945755cae81c08a82',
+});
+const auth = getAuth(app);
+const NOTICES = doc(getFirestore(app), 'vf', 'notices');
 
-try {
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
-  const TTD = doc(db, 'vf', 'timetable');
-  const NTD = doc(db, 'vf', 'notices');
-  window._fs = {
-    async loadTimetable() {
-      const s = await getDoc(TTD); return s.exists() ? s.data() : null;
-    },
-    async saveTimetable(data) { await setDoc(TTD, data); },
-    async loadNotices() {
-      const s = await getDoc(NTD); return s.exists() ? (s.data().notices ?? []) : null;
-    },
-    async saveNotices(n) { await setDoc(NTD, { notices: n }); },
-  };
-} catch(e) {
-  // Firebase ikke konfigurert — kjører kun med localStorage
-  console.warn('Firebase ikke tilgjengelig:', e.message);
-}
-</script>
-
-<script>
-// ─── DEFAULT DATA ────────────────────────────────────────────────────────────
-
-const DEFAULT_MF = [
-  {id:"mf-0",bussTbg:null,tenvikUt:null,vestgardenUt:null,engoUt:null,tangenUt:null,tangenInn:null,engoInn:null,vestgardenInn:"06:10",tenvikInn:"06:20",bussTenvik:"06:43"},
-  {id:"mf-1",bussTbg:null,tenvikUt:"06:20",vestgardenUt:"06:30",engoUt:null,tangenUt:"06:40",tangenInn:"06:40",engoInn:null,vestgardenInn:"06:50",tenvikInn:"07:00",bussTenvik:"07:08"},
-  {id:"mf-2",bussTbg:"06:40",tenvikUt:"07:15",vestgardenUt:"07:25",engoUt:"07:35",tangenUt:"07:45",tangenInn:"07:45",engoInn:null,vestgardenInn:"07:55",tenvikInn:"08:05",bussTenvik:"08:13"},
-  {id:"mf-3",bussTbg:"07:45",tenvikUt:"08:15",vestgardenUt:"08:25",engoUt:null,tangenUt:"08:35",tangenInn:"08:45",engoInn:null,vestgardenInn:"08:55",tenvikInn:"09:05",bussTenvik:"09:13"},
-  {id:"mf-4",bussTbg:"08:45",tenvikUt:"09:15",vestgardenUt:"09:25",engoUt:null,tangenUt:"09:35",tangenInn:"09:45",engoInn:null,vestgardenInn:"09:55",tenvikInn:"10:05",bussTenvik:"10:13"},
-  {id:"mf-5",bussTbg:null,tenvikUt:"10:05",vestgardenUt:"10:15",engoUt:"10:35",tangenUt:"10:45",tangenInn:"10:45",engoInn:null,vestgardenInn:"10:55",tenvikInn:"11:05",bussTenvik:"11:13"},
-  {id:"mf-6",bussTbg:"10:45",tenvikUt:"11:15",vestgardenUt:"11:25",engoUt:null,tangenUt:null,tangenInn:null,engoInn:null,vestgardenInn:"11:25",tenvikInn:"11:35",bussTenvik:"11:43"},
-  {id:"mf-7",bussTbg:"13:15",tenvikUt:"13:45",vestgardenUt:"13:55",engoUt:null,tangenUt:"14:05",tangenInn:"14:05",engoInn:null,vestgardenInn:"14:15",tenvikInn:"14:25",bussTenvik:"14:43"},
-  {id:"mf-8",bussTbg:"14:15",tenvikUt:"14:45",vestgardenUt:"14:55",engoUt:"15:05",tangenUt:"15:15",tangenInn:"15:15",engoInn:null,vestgardenInn:"15:25",tenvikInn:"15:35",bussTenvik:"15:43"},
-  {id:"mf-9",bussTbg:"15:15",tenvikUt:"15:45",vestgardenUt:"15:55",engoUt:null,tangenUt:null,tangenInn:null,engoInn:null,vestgardenInn:"15:55",tenvikInn:"16:05",bussTenvik:"16:13"},
-  {id:"mf-10",bussTbg:"15:45",tenvikUt:"16:15",vestgardenUt:"16:25",engoUt:null,tangenUt:"16:35",tangenInn:"16:35",engoInn:"16:45",vestgardenInn:"16:55",tenvikInn:"17:05",bussTenvik:"17:13"},
-  {id:"mf-11",bussTbg:"16:45",tenvikUt:"17:10",vestgardenUt:"17:20",engoUt:null,tangenUt:"17:30",tangenInn:"17:30",engoInn:null,vestgardenInn:"17:40",tenvikInn:"17:50",bussTenvik:"17:58"},
-  {id:"mf-12",bussTbg:"18:30",tenvikUt:"19:00",vestgardenUt:"19:10",engoUt:"19:20",tangenUt:"19:30",tangenInn:"19:30",engoInn:null,vestgardenInn:"19:40",tenvikInn:"19:50",bussTenvik:"19:58"},
-  {id:"mf-13",bussTbg:"19:30",tenvikUt:"20:00",vestgardenUt:"20:10",engoUt:null,tangenUt:null,tangenInn:null,engoInn:null,vestgardenInn:null,tenvikInn:null,bussTenvik:null},
-  {id:"mf-14",bussTbg:null,tenvikUt:null,vestgardenUt:null,engoUt:null,tangenUt:null,tangenInn:"20:30",engoInn:null,vestgardenInn:"20:40",tenvikInn:"20:50",bussTenvik:"20:58"},
-  {id:"mf-15",bussTbg:null,tenvikUt:"21:45",vestgardenUt:"21:55",engoUt:null,tangenUt:null,tangenInn:null,engoInn:null,vestgardenInn:null,tenvikInn:null,bussTenvik:null}
-];
-const DEFAULT_SA = [
-  {id:"sa-0",bussTbg:null,tenvikUt:null,vestgardenUt:null,engoUt:null,tangenUt:null,tangenInn:null,engoInn:null,vestgardenInn:"07:50",tenvikInn:"08:00",bussTenvik:null},
-  {id:"sa-1",bussTbg:null,tenvikUt:"08:10",vestgardenUt:"08:20",engoUt:null,tangenUt:"08:30",tangenInn:"08:30",engoInn:null,vestgardenInn:"08:40",tenvikInn:"08:50",bussTenvik:"08:58"},
-  {id:"sa-2",bussTbg:"08:30",tenvikUt:"09:00",vestgardenUt:"09:10",engoUt:"09:20",tangenUt:"09:30",tangenInn:"09:30",engoInn:null,vestgardenInn:"09:40",tenvikInn:"09:50",bussTenvik:"09:58"},
-  {id:"sa-3",bussTbg:"09:30",tenvikUt:"10:30",vestgardenUt:"10:40",engoUt:null,tangenUt:null,tangenInn:null,engoInn:null,vestgardenInn:"10:40",tenvikInn:"10:50",bussTenvik:"10:58"},
-  {id:"sa-4",bussTbg:"10:30",tenvikUt:"11:00",vestgardenUt:"11:10",engoUt:"11:20",tangenUt:"11:30",tangenInn:"11:30",engoInn:null,vestgardenInn:"11:40",tenvikInn:"11:50",bussTenvik:"11:58"},
-  {id:"sa-5",bussTbg:"11:30",tenvikUt:"12:00",vestgardenUt:"12:10",engoUt:"12:20",tangenUt:"12:30",tangenInn:"12:30",engoInn:null,vestgardenInn:"12:40",tenvikInn:"12:50",bussTenvik:"12:58"},
-  {id:"sa-6",bussTbg:"12:30",tenvikUt:"13:00",vestgardenUt:"13:10",engoUt:null,tangenUt:"13:20",tangenInn:"14:30",engoInn:null,vestgardenInn:"14:40",tenvikInn:"14:50",bussTenvik:"14:58"},
-  {id:"sa-7",bussTbg:null,tenvikUt:"15:00",vestgardenUt:"15:10",engoUt:"15:20",tangenUt:"15:30",tangenInn:"16:30",engoInn:null,vestgardenInn:"16:40",tenvikInn:"16:50",bussTenvik:"16:58"},
-  {id:"sa-8",bussTbg:null,tenvikUt:"17:00",vestgardenUt:"17:10",engoUt:"17:20",tangenUt:"17:30",tangenInn:"17:30",engoInn:null,vestgardenInn:"17:40",tenvikInn:"17:50",bussTenvik:"17:58"},
-  {id:"sa-9",bussTbg:null,tenvikUt:"18:30",vestgardenUt:"18:40",engoUt:null,tangenUt:null,tangenInn:null,engoInn:null,vestgardenInn:"18:40",tenvikInn:"18:50",bussTenvik:"18:58"}
-];
-const DEFAULT_SU = [
-  {id:"su-1",bussTbg:null,tenvikUt:"10:30",vestgardenUt:"10:40",engoUt:"10:50",tangenUt:"11:00",tangenInn:"11:00",engoInn:null,vestgardenInn:"11:10",tenvikInn:"11:20",bussTenvik:null},
-  {id:"su-2",bussTbg:null,tenvikUt:"11:30",vestgardenUt:"11:40",engoUt:null,tangenUt:null,tangenInn:null,engoInn:null,vestgardenInn:"11:40",tenvikInn:"11:50",bussTenvik:null},
-  {id:"su-3",bussTbg:null,tenvikUt:"12:00",vestgardenUt:"12:10",engoUt:"12:20",tangenUt:"12:30",tangenInn:"12:30",engoInn:null,vestgardenInn:"12:40",tenvikInn:"12:50",bussTenvik:null},
-  {id:"su-4",bussTbg:null,tenvikUt:"13:00",vestgardenUt:"13:10",engoUt:"13:20",tangenUt:"13:30",tangenInn:"13:30",engoInn:null,vestgardenInn:"13:40",tenvikInn:"13:50",bussTenvik:null},
-  {id:"su-5",bussTbg:null,tenvikUt:"14:00",vestgardenUt:"14:10",engoUt:null,tangenUt:"14:20",tangenInn:"15:30",engoInn:null,vestgardenInn:"15:40",tenvikInn:"15:50",bussTenvik:null},
-  {id:"su-6",bussTbg:null,tenvikUt:"16:00",vestgardenUt:"16:10",engoUt:"16:20",tangenUt:"16:30",tangenInn:"16:30",engoInn:null,vestgardenInn:"16:40",tenvikInn:"16:50",bussTenvik:null},
-  {id:"su-7",bussTbg:null,tenvikUt:"17:00",vestgardenUt:"17:10",engoUt:null,tangenUt:"17:20",tangenInn:"17:30",engoInn:null,vestgardenInn:"17:40",tenvikInn:"17:50",bussTenvik:null},
-  {id:"su-8",bussTbg:null,tenvikUt:"19:00",vestgardenUt:"19:10",engoUt:"19:20",tangenUt:"19:30",tangenInn:"19:30",engoInn:null,vestgardenInn:"19:40",tenvikInn:"19:50",bussTenvik:null},
-  {id:"su-9",bussTbg:null,tenvikUt:"20:00",vestgardenUt:"20:10",engoUt:null,tangenUt:null,tangenInn:null,engoInn:null,vestgardenInn:null,tenvikInn:null,bussTenvik:null},
-  {id:"su-10",bussTbg:null,tenvikUt:null,vestgardenUt:null,engoUt:null,tangenUt:null,tangenInn:"20:30",engoInn:null,vestgardenInn:"20:40",tenvikInn:"20:50",bussTenvik:null},
-  {id:"su-11",bussTbg:null,tenvikUt:"21:30",vestgardenUt:"21:40",engoUt:null,tangenUt:null,tangenInn:null,engoInn:null,vestgardenInn:null,tenvikInn:null,bussTenvik:null}
-];
-
-// ─── STATE ───────────────────────────────────────────────────────────────────
-
-const LS_DATA = 'vf_timetable';
-const LS_PW   = 'vf_pw_hash';
-const LS_AUTH = 'vf_admin_sess';
-
-let state = { seasons: [], currentId: null, currentDay: 'monFri' };
-
-const COL_FIELDS    = ['bussTbg','tenvikUt','vestgardenUt','engoUt','tangenUt','tangenInn','engoInn','vestgardenInn','tenvikInn','bussTenvik'];
-const TANGEN_FIELDS = new Set(['tangenUt','tangenInn']);
-const EXT_FIELDS    = new Set(['bussTbg','bussTenvik']);
-const OUT_FIELDS_SET = new Set(['bussTbg','tenvikUt','vestgardenUt','engoUt','tangenUt']);
-const IN_FIELDS_SET  = new Set(['tangenInn','engoInn','vestgardenInn','tenvikInn','bussTenvik']);
-
-// ─── AUTH ────────────────────────────────────────────────────────────────────
-
-async function sha256(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
-
-async function storedHash() {
-  let h = localStorage.getItem(LS_PW);
-  if (!h) { h = await sha256('veierland2026'); localStorage.setItem(LS_PW, h); }
-  return h;
-}
-
-async function doLogin() {
-  const pw = document.getElementById('pw').value;
-  if (!pw) return;
-  const [entered, stored] = await Promise.all([sha256(pw), storedHash()]);
-  if (entered === stored) {
-    sessionStorage.setItem(LS_AUTH, '1');
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').classList.add('show');
-    initApp();
-  } else {
-    document.getElementById('login-err').textContent = 'Feil passord. Prøv igjen.';
-    document.getElementById('pw').value = '';
-    document.getElementById('pw').focus();
-  }
-}
-
-function doLogout() {
-  sessionStorage.removeItem(LS_AUTH);
-  location.reload();
-}
-
-document.getElementById('pw').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-
-async function changePassword() {
-  const n = document.getElementById('pw-new').value;
-  const c = document.getElementById('pw-confirm').value;
-  const err = document.getElementById('pw-err');
-  if (!n) { err.textContent = 'Skriv inn nytt passord.'; return; }
-  if (n !== c) { err.textContent = 'Passordene stemmer ikke overens.'; return; }
-  if (n.length < 6) { err.textContent = 'Passordet må ha minst 6 tegn.'; return; }
-  const h = await sha256(n);
-  localStorage.setItem(LS_PW, h);
-  document.getElementById('pw-modal').style.display = 'none';
-  document.getElementById('pw-new').value = '';
-  document.getElementById('pw-confirm').value = '';
-  err.textContent = '';
-  toast('Passord endret!');
-}
-
-function showChangePw() {
-  document.getElementById('pw-err').textContent = '';
-  document.getElementById('pw-modal').style.display = 'flex';
-  setTimeout(() => document.getElementById('pw-new').focus(), 60);
-}
-
-// Check existing session
-if (sessionStorage.getItem(LS_AUTH) === '1') {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').classList.add('show');
-  initApp();
-}
-
-// ─── DATA ────────────────────────────────────────────────────────────────────
-
-function defaultSeasons() {
-  return [
-    {
-      id: 'regular',
-      name: 'Ordinær rute',
-      isDefault: true,
-      dateFrom: '2026-08-17',
-      dateTo: '',
-      loops: {
-        monFri: JSON.parse(JSON.stringify(DEFAULT_MF)),
-        sat:    JSON.parse(JSON.stringify(DEFAULT_SA)),
-        sun:    JSON.parse(JSON.stringify(DEFAULT_SU))
-      }
-    },
-    {
-      id: 'sommer',
-      name: 'Sommerruter',
-      isDefault: false,
-      dateFrom: '2026-06-22',
-      dateTo: '2026-08-16',
-      loops: { monFri: [], sat: [], sun: [] }
-    }
-  ];
-}
-
-function loadData() {
-  try {
-    const raw = localStorage.getItem(LS_DATA);
-    if (raw) {
-      const d = JSON.parse(raw);
-      if (Array.isArray(d.seasons) && d.seasons.length) return d.seasons;
-    }
-  } catch(e) {}
-  return defaultSeasons();
-}
-
-async function doSave() {
-  try {
-    const data = { seasons: state.seasons };
-    localStorage.setItem(LS_DATA, JSON.stringify(data));
-    if (window._fs) await window._fs.saveTimetable(data);
-    toast('Lagret!');
-  } catch(e) {
-    toast('Feil ved lagring: ' + e.message, true);
-  }
-}
-
-// ─── INIT ────────────────────────────────────────────────────────────────────
-
-async function initApp() {
-  // Vis localStorage-cache umiddelbart for rask oppstart
-  state.seasons = loadData();
-  state.currentId = state.seasons[0]?.id ?? null;
-  loadNotices();
-  renderAll();
-
-  if (!window._fs) return;
-  try {
-    const [fsData, fsNotices] = await Promise.all([
-      window._fs.loadTimetable(),
-      window._fs.loadNotices(),
-    ]);
-    let changed = false;
-    if (fsData && Array.isArray(fsData.seasons) && fsData.seasons.length) {
-      state.seasons = fsData.seasons;
-      if (!state.currentId) state.currentId = state.seasons[0]?.id ?? null;
-      localStorage.setItem(LS_DATA, JSON.stringify(fsData));
-      changed = true;
-    }
-    if (fsNotices !== null) {
-      notices = fsNotices;
-      localStorage.setItem('vf_notices', JSON.stringify(notices));
-      updateNoticesBadge();
-    }
-    if (changed) renderAll();
-  } catch(e) {
-    console.warn('Firestore-lasting feilet:', e.message);
-  }
-}
-
-function renderAll() {
-  renderSeasonList();
-  renderSeasonHdr();
-  renderTable();
-}
-
-// ─── SEASON LIST ─────────────────────────────────────────────────────────────
-
-function renderSeasonList() {
-  document.getElementById('season-list').innerHTML = state.seasons.map(s => `
-    <div class="season-item ${s.id === state.currentId ? 'active' : ''}" onclick="selectSeason('${esc(s.id)}')">
-      <div>
-        <div class="season-name">${esc(s.name)}</div>
-        <div class="season-range">${fmtRange(s)}</div>
-      </div>
-      ${s.isDefault ? '<span class="badge-default">Standard</span>' : ''}
-    </div>
-  `).join('');
-}
-
-function fmtRange(s) {
-  if (s.dateFrom && s.dateTo) return fmtD(s.dateFrom) + ' → ' + fmtD(s.dateTo);
-  if (s.dateFrom) return 'Fra ' + fmtD(s.dateFrom);
-  if (s.dateTo) return 'Tom. ' + fmtD(s.dateTo);
-  return 'Standard (alle datoer)';
-}
-
-function fmtD(d) {
-  if (!d) return '';
-  const [y, m, dd] = d.split('-');
-  return `${parseInt(dd)}.${parseInt(m)}.${y}`;
-}
-
-function selectSeason(id) {
-  state.currentId = id;
-  renderSeasonList();
-  renderSeasonHdr();
-  renderTable();
-}
-
-function addSeason() {
-  const id = 'season_' + Date.now();
-  state.seasons.push({ id, name: 'Ny sesong', isDefault: false, dateFrom: '', dateTo: '', loops: { monFri: [], sat: [], sun: [] } });
-  state.currentId = id;
-  renderAll();
-  setTimeout(() => { const el = document.getElementById('s-name'); el.select(); el.focus(); }, 40);
-}
-
-function deleteSeason() {
-  if (state.seasons.length <= 1) { toast('Kan ikke slette den eneste sesongen.', true); return; }
-  if (!confirm('Slette sesongen «' + (curSeason()?.name || '') + '»?')) return;
-  state.seasons = state.seasons.filter(s => s.id !== state.currentId);
-  state.currentId = state.seasons[0].id;
-  renderAll();
-}
-
-function curSeason() {
-  return state.seasons.find(s => s.id === state.currentId) ?? null;
-}
-
-function setSeasonField(field, value) {
-  const s = curSeason();
-  if (!s) return;
-  s[field] = value;
-  renderSeasonList();
-}
-
-// ─── SEASON HEADER ───────────────────────────────────────────────────────────
-
-function renderSeasonHdr() {
-  const s = curSeason();
-  if (!s) return;
-  document.getElementById('s-name').value = s.name;
-  document.getElementById('s-from').value = s.dateFrom || '';
-  document.getElementById('s-to').value = s.dateTo || '';
-  document.getElementById('s-default').checked = !!s.isDefault;
-}
-
-// ─── DAY TABS ────────────────────────────────────────────────────────────────
-
-function switchDay(el) {
-  state.currentDay = el.dataset.day;
-  document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  renderTable();
-}
-
-// ─── TABLE ───────────────────────────────────────────────────────────────────
-
-function curLoops() {
-  const s = curSeason();
-  if (!s) return [];
-  return s.loops[state.currentDay] ?? [];
-}
-
-function rowDir(loop) {
-  const hasOut = COL_FIELDS.filter(f => OUT_FIELDS_SET.has(f)).some(f => loop[f]);
-  const hasIn  = COL_FIELDS.filter(f => IN_FIELDS_SET.has(f)).some(f => loop[f]);
-  if (hasOut && !hasIn) return { cls: 'out-only', icon: '→ kun ut', title: 'Kun utfart – ingen retur på denne raden' };
-  if (!hasOut && hasIn) return { cls: 'in-only',  icon: '← kun inn', title: 'Kun innfart – ingen utfart på denne raden' };
-  return { cls: '', icon: '', title: '' };
-}
-
-function renderTable() {
-  const loops = curLoops();
-  const rows = loops.map((loop, ri) => {
-    const t    = loop.rowType || 'normal';
-    const dir  = rowDir(loop);
-    const rowCls = t === 'booking' ? 'row-booking' : t === 'engo' ? 'row-engo' : '';
-    const selCls = t === 'booking' ? 't-booking' : t === 'engo' ? 't-engo' : '';
-    const cells = COL_FIELDS.map((f, ci) => {
-      const val = loop[f] ?? '';
-      const cls = TANGEN_FIELDS.has(f) ? ' class="td-tangen"' : EXT_FIELDS.has(f) ? ' class="td-ext"' : '';
-      return `<td${cls}><input type="text" class="tinp" value="${esc(val)}" placeholder="–"
-        maxlength="5" data-ri="${ri}" data-fi="${ci}" data-field="${f}"
-        onchange="updateCell(${ri},'${f}',this.value)"
-        onkeydown="timeKey(event,${ri},${ci})"></td>`;
-    }).join('');
-    const dirBadge = dir.icon
-      ? `<span class="row-dir ${dir.cls}" title="${esc(dir.title)}">${esc(dir.icon)}</span>`
-      : '';
-    return `<tr class="${rowCls}">
-      <td class="row-num">${ri+1}${dirBadge}</td>
-      <td style="padding:2px 4px">
-        <select class="type-sel ${selCls}" onchange="updateRowType(${ri},this.value)">
-          <option value="normal" ${t==='normal'?'selected':''}>— Normal</option>
-          <option value="booking" ${t==='booking'?'selected':''}>🔴 Bestilling</option>
-          <option value="engo" ${t==='engo'?'selected':''}>🔵 Engø</option>
-        </select>
-      </td>
-      ${cells}
-      <td style="padding:2px 4px"><input type="text" class="note-inp" value="${esc(loop.note||'')}" placeholder="Notat / betingelse…"
-        onblur="updateRowNote(${ri},this.value)"></td>
-      <td><button class="del-row" onclick="deleteRow(${ri})" title="Slett rad">×</button></td>
-    </tr>`;
-  }).join('');
-  document.getElementById('tbl-body').innerHTML = rows;
-}
-
-function timeKey(e, ri, ci) {
-  if (e.key !== 'Enter') return;
-  e.preventDefault();
-  const allInps = [...document.querySelectorAll(`[data-fi="${ci}"]`)];
-  const cur = allInps.find(el => +el.dataset.ri === ri);
-  const next = allInps.find(el => +el.dataset.ri === ri + 1);
-  if (next) { next.focus(); next.select(); }
-  else if (cur) cur.blur();
-}
-
-function normalizeTime(v) {
-  v = v.trim().replace(/[^0-9:]/g, '');
-  if (!v || v === '-' || v === '–') return null;
-  if (/^\d{3,4}$/.test(v)) v = v.slice(0, -2).padStart(2,'0') + ':' + v.slice(-2);
-  return /^\d{2}:\d{2}$/.test(v) ? v : null;
-}
-
-function updateCell(ri, field, raw) {
-  const s = curSeason();
-  if (!s) return;
-  s.loops[state.currentDay][ri][field] = normalizeTime(raw);
-}
-
-function updateRowType(ri, value) {
-  const s = curSeason();
-  if (!s) return;
-  const loop = s.loops[state.currentDay][ri];
-  loop.rowType = value || 'normal';
-  const rows = document.querySelectorAll('#tbl-body tr');
-  const row = rows[ri];
-  if (!row) return;
-  row.classList.remove('row-booking', 'row-engo');
-  if (value === 'booking') row.classList.add('row-booking');
-  else if (value === 'engo') row.classList.add('row-engo');
-  const sel = row.querySelector('.type-sel');
-  if (sel) { sel.className = 'type-sel' + (value === 'booking' ? ' t-booking' : value === 'engo' ? ' t-engo' : ''); }
-}
-
-function updateRowNote(ri, value) {
-  const s = curSeason();
-  if (!s) return;
-  s.loops[state.currentDay][ri].note = value.trim() || null;
-}
-
-function addRow() {
-  const s = curSeason();
-  if (!s) return;
-  const pfx = { monFri:'mf', sat:'sa', sun:'su' }[state.currentDay];
-  const loops = s.loops[state.currentDay];
-  loops.push({ id: pfx + '-' + loops.length, rowType: 'normal', note: null, bussTbg:null, tenvikUt:null, vestgardenUt:null, engoUt:null, tangenUt:null, tangenInn:null, engoInn:null, vestgardenInn:null, tenvikInn:null, bussTenvik:null });
-  renderTable();
-  setTimeout(() => {
-    const rows = document.querySelectorAll('#tbl-body tr');
-    const last = rows[rows.length - 1];
-    if (last) { const inp = last.querySelector('.tinp'); if (inp) { inp.focus(); document.querySelector('.tbl-area').scrollTop = 9999; } }
-  }, 30);
-}
-
-function deleteRow(ri) {
-  const s = curSeason();
-  if (!s) return;
-  s.loops[state.currentDay].splice(ri, 1);
-  renderTable();
-}
-
-// ─── NOTICES ─────────────────────────────────────────────────────────────────
-
+const $ = id => document.getElementById(id);
+const TYPES = { info: 'Info', warning: 'Varsel', price: 'Pris' };
 let notices = [];
 
-function loadNotices() {
+function show(el, text, ok) { el.textContent = text; el.className = 'msg ' + (ok ? 'ok' : 'err'); }
+
+// Norske feilmeldinger for det som oftest går galt
+function why(e) {
+  const c = e && e.code || '';
+  if (c.includes('invalid-credential') || c.includes('wrong-password') || c.includes('user-not-found')) return 'Feil e-post eller passord.';
+  if (c.includes('too-many-requests')) return 'For mange forsøk. Vent litt og prøv igjen.';
+  if (c.includes('permission-denied')) return 'Mangler tilgang. Sjekk at reglene i Firestore er lagt inn med riktig e-post.';
+  if (c.includes('network')) return 'Fikk ikke kontakt. Sjekk nettforbindelsen.';
+  return 'Noe gikk galt: ' + (e && e.message || e);
+}
+
+// ── Innlogging ──
+$('login-form').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  $('login-btn').disabled = true;
+  try { await signInWithEmailAndPassword(auth, $('email').value.trim(), $('pw').value); }
+  catch (e) { show($('login-msg'), why(e), false); }
+  finally { $('login-btn').disabled = false; }
+});
+$('forgot').addEventListener('click', async () => {
+  const email = $('email').value.trim();
+  if (!email) return show($('login-msg'), 'Skriv e-postadressen først, så sender vi en lenke for å lage nytt passord.', false);
+  try { await sendPasswordResetEmail(auth, email); show($('login-msg'), 'Sjekk e-posten: der ligger en lenke for å lage nytt passord.', true); }
+  catch (e) { show($('login-msg'), why(e), false); }
+});
+$('logout').addEventListener('click', () => signOut(auth));
+
+onAuthStateChanged(auth, async user => {
+  $('login').classList.toggle('hidden', !!user);
+  $('editor').classList.toggle('hidden', !user);
+  $('who').textContent = user ? user.email : '';
+  $('email-shown').textContent = user ? user.email : '';
+  $('pw').value = '';
+  if (user) await load();
+});
+
+// ── Meldinger ──
+async function load() {
   try {
-    const raw = localStorage.getItem('vf_notices');
-    notices = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(notices)) notices = [];
-  } catch { notices = []; }
-  updateNoticesBadge();
+    const snap = await getDoc(NOTICES);
+    notices = snap.exists() && Array.isArray(snap.data().notices) ? snap.data().notices : [];
+  } catch (e) { notices = []; show($('save-msg'), why(e), false); }
+  render();
 }
 
-function updateNoticesBadge() {
-  const active = notices.filter(n => n.active).length;
-  const badge = document.getElementById('sb-notices-count');
-  if (active > 0) {
-    badge.textContent = active;
-    badge.style.display = '';
-  } else {
-    badge.style.display = 'none';
-  }
-}
-
-const TYPE_LABELS = { info: 'ℹ️ Info', warning: '⚠️ Varsel', price: '💰 Pris' };
-
-function renderNoticesList() {
-  const el = document.getElementById('notices-list');
+function render() {
+  const list = $('list');
+  list.textContent = '';
   if (!notices.length) {
-    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--textDim);font-size:15px">Ingen meldinger ennå. Klikk «Legg til» for å lage en.</div>';
+    const p = document.createElement('p');
+    p.className = 'empty';
+    p.textContent = 'Ingen meldinger. Trykk «+ Ny melding» for å lage en.';
+    list.append(p);
     return;
   }
-  el.innerHTML = notices.map((n, i) => {
-    const cardCls = (n.active ? 'active-notice ' : '') + (n.type === 'warning' ? 'type-warning' : n.type === 'price' ? 'type-price' : '');
-    const typeOpts = ['info','warning','price'].map(t =>
-      `<option value="${t}"${n.type === t ? ' selected' : ''}>${TYPE_LABELS[t]}</option>`
-    ).join('');
-    return `<div class="notice-card ${cardCls}" id="notice-card-${i}">
-      <div class="notice-card-body">
-        <div class="notice-type-row">
-          <select class="notice-type-sel" onchange="setNoticeField(${i},'type',this.value)">${typeOpts}</select>
-          <label class="notice-active-toggle">
-            <input type="checkbox" ${n.active ? 'checked' : ''} onchange="setNoticeField(${i},'active',this.checked)">
-            Aktiv (vises i appen)
-          </label>
-        </div>
-        <textarea class="notice-text-inp" rows="2" placeholder="Skriv melding her..."
-          oninput="setNoticeField(${i},'text',this.value)">${n.text || ''}</textarea>
-      </div>
-      <button class="del-notice" onclick="deleteNotice(${i})" title="Slett melding">×</button>
-    </div>`;
-  }).join('');
+  notices.forEach((n, i) => {
+    // Bygges med DOM-elementer, ikke innerHTML, så tekst i meldingene aldri kan bli kode
+    const card = document.createElement('div');
+    card.className = 'notice' + (n.active ? ' active' : '') + (n.type === 'warning' ? ' warning' : '');
+    const row = document.createElement('div');
+    row.className = 'row';
+    const sel = document.createElement('select');
+    for (const [v, t] of Object.entries(TYPES)) { const o = new Option(t, v, false, n.type === v); sel.append(o); }
+    sel.addEventListener('change', () => { n.type = sel.value; render(); });
+    const check = document.createElement('label');
+    check.className = 'check';
+    const box = document.createElement('input');
+    box.type = 'checkbox'; box.checked = !!n.active;
+    box.addEventListener('change', () => { n.active = box.checked; render(); });
+    check.append(box, 'Vises i appen');
+    const spacer = document.createElement('span'); spacer.style.flex = '1';
+    const del = document.createElement('button');
+    del.className = 'danger'; del.textContent = 'Slett';
+    del.addEventListener('click', () => { notices.splice(i, 1); render(); });
+    row.append(sel, check, spacer, del);
+    const text = document.createElement('textarea');
+    text.placeholder = 'Skriv meldingen her …';
+    text.maxLength = 500;
+    text.value = n.text || '';
+    text.addEventListener('input', () => { n.text = text.value; });
+    card.append(row, text);
+    list.append(card);
+  });
 }
 
-function setNoticeField(i, field, value) {
-  notices[i][field] = value;
-  const card = document.getElementById(`notice-card-${i}`);
-  if (card) {
-    card.className = 'notice-card ' + (notices[i].active ? 'active-notice ' : '') + (notices[i].type === 'warning' ? 'type-warning' : notices[i].type === 'price' ? 'type-price' : '');
-  }
-}
-
-function addNotice() {
+$('add').addEventListener('click', () => {
   notices.push({ id: 'n-' + Date.now(), text: '', type: 'info', active: true });
-  renderNoticesList();
-  const el = document.getElementById('notices-list');
-  el.scrollTop = el.scrollHeight;
-}
+  render();
+  const areas = $('list').querySelectorAll('textarea');
+  areas[areas.length - 1]?.focus();
+});
 
-function deleteNotice(i) {
-  notices.splice(i, 1);
-  renderNoticesList();
-}
-
-function openNotices() {
-  renderNoticesList();
-  document.getElementById('notices-modal').style.display = 'flex';
-}
-
-function closeNotices() {
-  document.getElementById('notices-modal').style.display = 'none';
-}
-
-async function saveNotices() {
+$('save').addEventListener('click', async () => {
+  const clean = notices
+    .map(n => ({ id: String(n.id), text: String(n.text || '').trim().slice(0, 500), type: TYPES[n.type] ? n.type : 'info', active: !!n.active }))
+    .filter(n => n.text);
+  $('save').disabled = true;
   try {
-    localStorage.setItem('vf_notices', JSON.stringify(notices));
-    if (window._fs) await window._fs.saveNotices(notices);
-  } catch(e) {
-    toast('Feil ved lagring: ' + e.message, true); return;
-  }
-  updateNoticesBadge();
-  closeNotices();
-  toast('Meldinger lagret!');
-}
-
-// ─── EXPORT ──────────────────────────────────────────────────────────────────
-
-function showExport() {
-  const json = JSON.stringify({ seasons: state.seasons }, null, 2);
-  document.getElementById('export-code').textContent = json;
-  document.getElementById('export-modal').style.display = 'flex';
-}
-
-function copyExport() {
-  const text = document.getElementById('export-code').textContent;
-  navigator.clipboard.writeText(text)
-    .then(() => toast('Kopiert til utklippstavle!'))
-    .catch(() => {
-      const r = document.createRange();
-      r.selectNodeContents(document.getElementById('export-code'));
-      window.getSelection().removeAllRanges();
-      window.getSelection().addRange(r);
-      document.execCommand('copy');
-      toast('Kopiert!');
-    });
-}
-
-// ─── UTILITIES ───────────────────────────────────────────────────────────────
-
-function esc(s) {
-  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-let _toastT = null;
-function toast(msg, isErr = false) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.style.background = isErr ? 'var(--danger)' : 'var(--good)';
-  el.classList.add('show');
-  if (_toastT) clearTimeout(_toastT);
-  _toastT = setTimeout(() => el.classList.remove('show'), 2600);
-}
+    await setDoc(NOTICES, { notices: clean, updatedAt: new Date().toISOString(), updatedBy: auth.currentUser.email });
+    notices = clean;
+    render();
+    show($('save-msg'), 'Lagret. Appen viser meldingene neste gang den åpnes.', true);
+  } catch (e) { show($('save-msg'), why(e), false); }
+  finally { $('save').disabled = false; }
+});
 </script>
 </body>
 </html>

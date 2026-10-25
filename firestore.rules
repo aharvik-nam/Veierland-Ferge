@@ -1,0 +1,23 @@
+// Regler for Firestore (prosjekt ferge-veierland). Limes inn i Firebase-konsollen:
+// Firestore Database → Regler (Rules) → lim inn → Publiser.
+// Bytt ADMIN-EPOST med e-posten til admin-brukeren (Authentication → Users), med små bokstaver.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Meldinger i appen: alle kan lese, bare admin-brukeren kan endre (public/admin.html)
+    match /vf/notices {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.auth.token.email == 'ADMIN-EPOST'
+        && request.resource.data.keys().hasOnly(['notices', 'updatedAt', 'updatedBy'])
+        && request.resource.data.notices is list
+        && request.resource.data.notices.size() <= 20;
+    }
+
+    // Alt annet er stengt. Rutetidene ligger i appens kode (src/data.ts), ikke i Firestore.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

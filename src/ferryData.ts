@@ -171,37 +171,15 @@ export function ferryName(dateObj: Date): string {
   return isMaintenancePeriod(dateObj) ? 'MF "Humla"' : 'M/F Jutøya';
 }
 
-function getAdminSeason(dateObj: Date): { monFri: FerryLoop[], sat: FerryLoop[], sun: FerryLoop[] } | null {
-  try {
-    const raw = localStorage.getItem('vf_timetable');
-    if (!raw) return null;
-    const data = JSON.parse(raw);
-    if (!Array.isArray(data.seasons) || !data.seasons.length) return null;
-    const dateStr = ymd(dateObj);
-    // Mens M/F Humla seiler, gjelder bare admin-sesonger som starter i Humla-perioden (f.eks. jul).
-    // En eldre sesong som strekker seg inn i perioden, er laget for M/F Jutøya og skal ikke overstyre Humla-rutene.
-    const humlaFrom = isMaintenancePeriod(dateObj) ? (remoteTimetable()?.maintenance ?? MAINTENANCE).from : null;
-    let season = data.seasons.find((s: { dateFrom?: string; dateTo?: string }) => {
-      if (!s.dateFrom && !s.dateTo) return false;
-      const from = s.dateFrom || '0000-01-01';
-      const to = s.dateTo || '9999-12-31';
-      if (humlaFrom && from < humlaFrom) return false;
-      return dateStr >= from && dateStr <= to;
-    });
-    // En standardsesong fra admin skal ikke overstyre M/F Humla-rutene
-    if (!season && !isMaintenancePeriod(dateObj)) season = data.seasons.find((s: { isDefault?: boolean }) => s.isDefault);
-    if (!season) return null;
-    return { monFri: season.loops?.monFri ?? [], sat: season.loops?.sat ?? [], sun: season.loops?.sun ?? [] };
-  } catch { return null; }
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+// Rutetidene kommer fra serveren (timetable.json, laget fra data.ts) eller de innebygde i appen.
+// Admin-panelet kan ikke lenger endre rutetider.
 function loopsFor(dayType: string, dateObj: Date): any[] {
-  const admin = getAdminSeason(dateObj) ?? remoteSeason(dateObj);
-  if (admin) {
-    if (dayType === 'sat') return admin.sat;
-    if (dayType === 'sun') return admin.sun;
-    return admin.monFri;
+  const remote = remoteSeason(dateObj);
+  if (remote) {
+    if (dayType === 'sat') return remote.sat;
+    if (dayType === 'sun') return remote.sun;
+    return remote.monFri;
   }
   if (isMaintenancePeriod(dateObj)) {
     if (dayType === 'sat') return humlaSatLoops;

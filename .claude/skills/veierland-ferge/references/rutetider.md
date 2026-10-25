@@ -59,34 +59,29 @@ Under Humla utgår Vestgården. Alle `vestgarden*`-felt i `humla*`-listene skal 
 - **Bestillingsavganger** (hele avgangen må bestilles): `rowType: "booking"`, `deadline` og en `note` med fristen og telefonnummeret. På veierland.org står de ofte bare som tekst øverst («Avgang 2020 fra Tangen … MÅ bestilles før 1800»), ikke i tabellen. Legg dem i en egen rad, ikke i samme rad som en vanlig tur, fordi `rowType` gjelder hele raden. Ankomsttiden står sjelden. Bruk vanlig overfartstid (Tangen–Tenvik 20 min med Humla), og si fra til brukeren at den er beregnet.
 - **Bestillingsregler på klokkeslett** for ordinære ruter og sommerruter (siste tur om kvelden, tidlig lørdag fra Vestgården) er ikke data. De står som tidsgrenser i `findTripsForDay` i `src/ferryData.ts`. Det gjør også Engø-sesongen (22. mars–27. sept.). Endrer ferjeselskapet reglene, må koden der endres.
 
-## 4. Hvor rutetidene kommer fra (og hva som vinner)
+## 4. Hvor rutetidene kommer fra
 
 ```
 src/data.ts ──bygg──> /timetable.json ──appen henter ved oppstart og når den vises igjen (maks hvert 30. min)──> localStorage «vf_remote_timetable»
-public/admin.html ──lagrer──> Firestore vf/timetable ──appen synker ved oppstart──> localStorage «vf_timetable»
+                                      └──> public/rutetabell.html (den klassiske visningen) henter den samme fila
 ```
 
-For en gitt dato bruker appen den første av disse som finnes (`loopsFor` i `src/ferryData.ts`):
+For en gitt dato bruker appen (`loopsFor` i `src/ferryData.ts`):
 
-1. **Admin-panelet** (Firestore): en sesong med `dateFrom`/`dateTo` som dekker datoen. En sesong merket «standard» brukes også, men ikke i Humla-perioden.
-2. **Serverens `/timetable.json`**: daterte perioder (Humla), deretter sommer, deretter ordinære ruter.
-3. **Rutetidene som er bygget inn i appen**, altså `src/data.ts` slik den var da appen ble bygget.
+1. **Serverens `/timetable.json`**: daterte perioder (Humla), deretter sommer, deretter ordinære ruter.
+2. **Rutetidene som er bygget inn i appen**, altså `src/data.ts` slik den var da appen ble bygget, hvis fila ikke kan hentes.
 
-Sjekk om admin-panelet har lagret noe (tomt svar / `NOT_FOUND` betyr at ingenting overstyrer koden):
-```bash
-curl -s "https://firestore.googleapis.com/v1/projects/ferge-veierland/databases/(default)/documents/vf/timetable" | head -c 600
-```
-Varsler fra admin-panelet ligger i `vf/notices` og vises på forsiden og i `rutetabell.html`.
+**Admin-panelet endrer ikke rutetider lenger** (fra 25.10.2026). Før kunne `public/admin.html` lagre rutetider i Firestore `vf/timetable`, og de vant over koden. En gammel kopi i nettleseren ga feil Engø-tider. Nå sletter appen den gamle kopien (`localStorage.vf_timetable`) ved oppstart, og Firestore-reglene stenger `vf/timetable`. Rutetider endres bare i `src/data.ts`.
 
-`/timetable.json` lages av Vite-pluginen i `vite.config.ts` fra `src/timetableJson.ts`. Den har CORS og 5 minutters cache på Vercel (`vercel.json`). Legger du til en ny sesong eller et nytt felt, må `src/timetableJson.ts` og typene i `src/remoteTimetable.ts` følge med. Installerte apper med gammel kode forstår bare formatet de ble bygget med. Endres formatet, trengs det ny app-versjon, og gamle apper må fortsatt tåle den nye fila (`isValid` forkaster ugyldige filer, og da brukes de innebygde tidene).
+Meldinger fra admin-panelet ligger i Firestore `vf/notices`. De vises på forsiden, på dashbordene og i `rutetabell.html`. Admin-panelet bruker innlogging med Firebase, og bare admin-e-posten i `firestore.rules` kan skrive.
 
-`public/rutetabell.html` (den klassiske visningen) leser ikke `/timetable.json`. Den har sin egen kopi av Humla-tidene i `HUMLA_SEASON` og bruker ellers bare admin-data. Kontrollskriptet sammenligner kopien med `data.ts`.
+`/timetable.json` lages av Vite-pluginen i `vite.config.ts` fra `src/timetableJson.ts`. Den har CORS og 5 minutters cache på Vercel (`vercel.json`). Legger du til en ny sesong eller et nytt felt, må `src/timetableJson.ts` og typene i `src/remoteTimetable.ts` følge med, og det samme gjelder `loadSeason` i `public/rutetabell.html`. Installerte apper med gammel kode forstår bare formatet de ble bygget med. Endres formatet, trengs det ny app-versjon, og gamle apper må fortsatt tåle den nye fila (`isValid` forkaster ugyldige filer, og da brukes de innebygde tidene).
 
 ## 5. Sesonger og Humla-perioden
 
 - `SUMMER = { from: 'mm-dd', to: 'mm-dd' }` i `src/ferryData.ts` gjentas hvert år.
 - `MAINTENANCE = { from: 'yyyy-mm-dd', to: 'yyyy-mm-dd' }` er perioden M/F Jutøya er på verksted og M/F Humla seiler. Den gjelder foran sommer og ordinær.
-- Den samme Humla-perioden står også i `api/ferry.ts` (bytter MMSI) og i `public/rutetabell.html`. Teksten «17. okt. – ca. 1. mars» står for hånd i `seasonLabel` (`src/ferryData.ts`), `src/components/HumlaNotice.tsx`, `src/screens/ResultsScreen.tsx` og `rules` i `src/data.ts`.
+- Den samme Humla-perioden står også i `api/ferry.ts` (bytter MMSI). Teksten «17. okt. – ca. 1. mars» står for hånd i `seasonLabel` (`src/ferryData.ts`), `src/components/HumlaNotice.tsx`, `src/screens/ResultsScreen.tsx` og `rules` i `src/data.ts`.
 - Navnet skrives `MF "Humla"` i appen, fordi det ikke er båtens offisielle navn (AIS-navnet er GO VAKKER RANDI).
 - Varselet om Humla (`HumlaNotice`) kan lukkes. Det huskes i `localStorage` (`humlaNoticeDismissed`).
 

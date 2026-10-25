@@ -13,10 +13,11 @@ import '@fontsource/instrument-serif/latin-400.css';
 import '@fontsource/space-mono/latin-400.css';
 import '@fontsource/space-mono/latin-700.css';
 import './index.css';
-import { syncTimetable, syncNotices } from './firestoreData';
+import { syncNotices } from './firestoreData';
 
-// Hent siste rutetider fra Firestore ved oppstart (bruker localStorage som fallback)
-syncTimetable();
+// Hent meldinger fra admin-panelet. Rutetidene kom tidligere også fra admin-panelet;
+// en gammel lagret kopi kunne overstyre de riktige tidene, så den slettes.
+try { localStorage.removeItem('vf_timetable'); } catch { /* privat modus */ }
 syncNotices();
 
 if (isNative) {

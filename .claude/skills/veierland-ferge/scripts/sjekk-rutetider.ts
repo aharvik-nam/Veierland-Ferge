@@ -1,4 +1,4 @@
-// Sjekker rutetidene i src/data.ts og at Humla-perioden er lik overalt.
+// Sjekker rutetidene i src/data.ts og at Humla-perioden er lik i appen og AIS-funksjonen.
 // Kjør fra repo-roten:  npx tsx .claude/skills/veierland-ferge/scripts/sjekk-rutetider.ts
 // Avslutter med kode 1 hvis noe er galt, så den kan brukes før commit.
 import { readFileSync } from 'node:fs';
@@ -44,37 +44,21 @@ for (const [name, loops] of Object.entries(SETS)) {
   }
 }
 
-// 2. Humla-perioden må være lik i appen, AIS-funksjonen og den klassiske rutetabellen
+// 2. Humla-perioden må være lik i appen og AIS-funksjonen.
+//    (Den klassiske rutetabellen leser /timetable.json og har ingen egen kopi lenger.)
 const read = (p: string) => readFileSync(p, 'utf8');
 const ferryData = read('src/ferryData.ts');
 const api = read('api/ferry.ts');
-const classic = read('public/rutetabell.html');
 
 const m = ferryData.match(/MAINTENANCE = \{ from: '([\d-]+)', to: '([\d-]+)' \}/);
 const a = api.match(/HUMLA_FROM = '([\d-]+)', HUMLA_TO = '([\d-]+)'/);
-const c = classic.match(/dateFrom: '([\d-]+)',\s*dateTo: '([\d-]+)'/);
-const periods = { 'src/ferryData.ts (MAINTENANCE)': m, 'api/ferry.ts (HUMLA_FROM/TO)': a, 'public/rutetabell.html (HUMLA_SEASON)': c };
+const periods = { 'src/ferryData.ts (MAINTENANCE)': m, 'api/ferry.ts (HUMLA_FROM/TO)': a };
 for (const [file, hit] of Object.entries(periods)) if (!hit) errors.push(`Fant ikke Humla-perioden i ${file}`);
 const shown = Object.entries(periods).filter(([, h]) => h).map(([f, h]) => `${h![1]} – ${h![2]}  ${f}`);
 if (new Set(shown.map(s => s.split('  ')[0])).size > 1) errors.push(`Humla-perioden er ikke lik overalt:\n    ${shown.join('\n    ')}`);
 
-// 3. Den klassiske rutetabellen har sin egen kopi av Humla-tidene – den må være lik data.ts
-const block = classic.match(/const HUMLA_SEASON = (\{[\s\S]*?\n\});/);
-if (!block) errors.push('Fant ikke HUMLA_SEASON i public/rutetabell.html');
-else {
-  const season = new Function(`return ${block[1]}`)() as { loops: Record<'monFri' | 'sat' | 'sun', Partial<FerryLoop>[]> };
-  const pairs = { monFri: data.humlaMonFriLoops, sat: data.humlaSatLoops, sun: data.humlaSunLoops };
-  for (const [day, loops] of Object.entries(pairs)) {
-    const html = season.loops[day as keyof typeof pairs] ?? [];
-    const norm = (l: Partial<FerryLoop>) => JSON.stringify(Object.fromEntries(
-      Object.entries(l).filter(([, v]) => v != null && v !== 'normal').sort(([x], [y]) => x.localeCompare(y))));
-    const fromData = loops.map(norm), fromHtml = html.map(norm);
-    if (fromData.length !== fromHtml.length) errors.push(`rutetabell.html Humla ${day}: ${fromHtml.length} turer, data.ts har ${fromData.length}`);
-    fromData.forEach((d, i) => {
-      if (fromHtml[i] !== undefined && d !== fromHtml[i]) errors.push(`rutetabell.html Humla ${day} tur ${i + 1} er ulik data.ts:\n    data.ts: ${d}\n    html:    ${fromHtml[i]}`);
-    });
-  }
-}
+// 3. Den klassiske rutetabellen skal ikke ha en egen kopi av rutetidene igjen
+if (/HUMLA_SEASON\s*=/.test(read('public/rutetabell.html'))) errors.push('public/rutetabell.html har fått en egen kopi av rutetidene (HUMLA_SEASON). Den skal lese /timetable.json.');
 
 // 4. Tekster med datoene står for hånd – vis dem så de kan sjekkes mot perioden
 const labels = [
