@@ -178,10 +178,14 @@ function getAdminSeason(dateObj: Date): { monFri: FerryLoop[], sat: FerryLoop[],
     const data = JSON.parse(raw);
     if (!Array.isArray(data.seasons) || !data.seasons.length) return null;
     const dateStr = ymd(dateObj);
+    // Mens M/F Humla seiler, gjelder bare admin-sesonger som starter i Humla-perioden (f.eks. jul).
+    // En eldre sesong som strekker seg inn i perioden, er laget for M/F Jutøya og skal ikke overstyre Humla-rutene.
+    const humlaFrom = isMaintenancePeriod(dateObj) ? (remoteTimetable()?.maintenance ?? MAINTENANCE).from : null;
     let season = data.seasons.find((s: { dateFrom?: string; dateTo?: string }) => {
       if (!s.dateFrom && !s.dateTo) return false;
       const from = s.dateFrom || '0000-01-01';
       const to = s.dateTo || '9999-12-31';
+      if (humlaFrom && from < humlaFrom) return false;
       return dateStr >= from && dateStr <= to;
     });
     // En standardsesong fra admin skal ikke overstyre M/F Humla-rutene

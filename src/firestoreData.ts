@@ -9,9 +9,9 @@ const NOTICES   = doc(db, 'vf', 'notices');
 export async function syncTimetable(): Promise<void> {
   try {
     const snap = await getDoc(TIMETABLE);
-    if (snap.exists()) {
-      localStorage.setItem('vf_timetable', JSON.stringify(snap.data()));
-    }
+    // Er rutetidene slettet i admin-panelet, må den lagrede kopien også bort, ellers overstyrer den fortsatt
+    if (snap.exists()) localStorage.setItem('vf_timetable', JSON.stringify(snap.data()));
+    else localStorage.removeItem('vf_timetable');
   } catch {
     // offline — localStorage-cache brukes
   }
@@ -32,10 +32,9 @@ export async function syncNotices(): Promise<void> {
 // Lytter på live-oppdateringer (valgfritt — for sanntid i appen)
 export function listenTimetable(onChange: () => void): () => void {
   return onSnapshot(TIMETABLE, snap => {
-    if (snap.exists()) {
-      localStorage.setItem('vf_timetable', JSON.stringify(snap.data()));
-      onChange();
-    }
+    if (snap.exists()) localStorage.setItem('vf_timetable', JSON.stringify(snap.data()));
+    else localStorage.removeItem('vf_timetable');
+    onChange();
   }, () => { /* offline */ });
 }
 

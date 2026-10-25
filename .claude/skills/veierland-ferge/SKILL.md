@@ -67,6 +67,10 @@ Les `references/rutetider.md` først. Der står hva hvert felt betyr, hvordan en
    Velg et tidspunkt i perioden du endret. Se på bildene og send dem gjerne til brukeren.
 5. Commit og push til `main`. Etter et par minutter er tidene på nettsiden. Den installerte appen henter dem neste gang den åpnes, eller innen 30 minutter.
 6. Hvis noen har lagret rutetider i admin-panelet for samme periode, vinner de over koden. Spør brukeren om det før du konkluderer med at endringen ikke virker. Se `references/rutetider.md`.
+   - Admin-rutetidene ligger i Firestore (`vf/timetable`). Appen lagrer en kopi i `localStorage.vf_timetable`, og kopien slettes når dokumentet er borte (`syncTimetable`).
+   - Mens Humla seiler, gjelder bare admin-sesonger som starter i Humla-perioden. Eldre sesonger som strekker seg inn i perioden, overstyrer ikke.
+   - Les dokumentet direkte: `curl "https://firestore.googleapis.com/v1/projects/ferge-veierland/databases/(default)/documents/vf/timetable"` (404 = finnes ikke).
+   - Kjennetegn på en gammel kopi: Engø-tidene i appen er de ordinære (f.eks. søndag Engø 10:50, 12:20, 13:20 i stedet for Humla 11:00, 13:30, 16:30), mens Tenvik–Tangen ser nesten riktig ut. Det skjedde 25.10.2026.
 
 ## Oppgave: endre sesong eller Humla-perioden
 
