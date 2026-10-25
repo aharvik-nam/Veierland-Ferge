@@ -47,7 +47,7 @@ export function VesselToggle({ on, count, error, onToggle }: { on: boolean; coun
   return (
     <button onClick={onToggle} aria-pressed={on} style={{ position: 'absolute', top: 10, left: 10, display: 'flex', alignItems: 'center', gap: 7, padding: '7px 12px', borderRadius: 99, cursor: 'pointer', background: on ? 'var(--accentOnDeep)' : 'color-mix(in srgb, var(--deep) 70%, transparent)', border: on ? 'none' : '1px solid rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 12, color: on ? 'var(--deep)' : 'var(--onDeep)' }}>
       <svg width="13" height="13" viewBox="-10 -10 20 20"><path d="M0,-8 L6,6 L0,3 L-6,6 Z" fill="currentColor" /></svg>
-      {on ? (error ? 'Andre båter: ingen data' : `Andre båter · ${count}`) : 'Andre båter'}
+      {on ? (error ? 'Andre båter: ingen data' : count ? `Andre båter · ${count}` : 'Ingen andre båter i kartet nå') : 'Andre båter'}
     </button>
   );
 }
@@ -72,16 +72,31 @@ export function TimeCells({ times, style }: { times: TimeCell[]; style?: React.C
 const ROUTE_BOX = { x0: 650, x1: 3900, y0: 900, y1: 4250 };
 
 // Utsnitt med boksens proporsjoner (bredde/høyde), sentrert på ruta og innenfor kartet
-function viewBoxFor(aspect: number): string {
+function viewRect(aspect?: number): { x: number; y: number; w: number; h: number } {
   const W = MAP_VIEW.width, H = MAP_VIEW.height;
+  if (!aspect) return { x: 0, y: 0, w: W, h: H };
   const cx = (ROUTE_BOX.x0 + ROUTE_BOX.x1) / 2, cy = (ROUTE_BOX.y0 + ROUTE_BOX.y1) / 2;
   const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
   if (aspect >= W / H) {
     const h = W / aspect;
-    return `0 ${clamp(cy - h / 2, 0, H - h).toFixed(0)} ${W} ${h.toFixed(0)}`;
+    return { x: 0, y: clamp(cy - h / 2, 0, H - h), w: W, h };
   }
   const w = H * aspect;
-  return `${clamp(cx - w / 2, 0, W - w).toFixed(0)} 0 ${w.toFixed(0)} ${H}`;
+  return { x: clamp(cx - w / 2, 0, W - w), y: 0, w, h: H };
+}
+function viewBoxFor(aspect: number): string {
+  const r = viewRect(aspect);
+  return `${r.x.toFixed(0)} ${r.y.toFixed(0)} ${r.w.toFixed(0)} ${r.h.toFixed(0)}`;
+}
+
+// Båtene som faktisk synes i kartet (APIet gir også noen like utenfor kanten).
+// aspect: kartboksens proporsjoner når kartet er beskåret (se viewBoxFor)
+export function vesselsInView(vessels: Vessel[], aspect?: number): Vessel[] {
+  const r = viewRect(aspect), m = 60; // litt margin, så halve trekanter i kanten ikke telles
+  return vessels.filter(v => {
+    const p = toMap(v.lat, v.lng);
+    return p.x >= r.x + m && p.x <= r.x + r.w - m && p.y >= r.y + m && p.y <= r.y + r.h - m;
+  });
 }
 
 // fill: kartet fyller boksen det står i, med boksens proporsjoner (aspect) og sentrert på ruta;

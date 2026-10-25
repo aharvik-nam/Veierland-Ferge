@@ -3,7 +3,7 @@ import { Label } from './Atoms';
 import { Icon } from './Icons';
 import { useLiveTrack } from '../liveDelay';
 import { mapTimes } from '../mapTimes';
-import { MapSvg, TimeCells, VesselToggle, mapInView, useVessels, type MapPos } from './MapView';
+import { MapSvg, TimeCells, VesselToggle, mapInView, useVessels, vesselsInView, type MapPos } from './MapView';
 import type { StopId } from '../types';
 
 // Kart over fergeområdet i appens farger, med ferga der AIS sier den er.
@@ -24,6 +24,7 @@ export function FerryMap({ open, pos, title, target, ageText, note, highlight, h
   const track = useLiveTrack(open);
   const [showOthers, setShowOthers] = useState(() => localStorage.getItem('visAndreBater') === '1');
   const others = useVessels(open && showOthers);
+  const visible = vesselsInView(others.vessels);
   useEffect(() => { try { localStorage.setItem('visAndreBater', showOthers ? '1' : '0'); } catch { /* privat modus */ } }, [showOthers]);
   const inView = mapInView(pos);
   const moving = pos.sog != null && pos.sog >= 1.5;
@@ -53,8 +54,8 @@ export function FerryMap({ open, pos, title, target, ageText, note, highlight, h
         <TimeCells times={times} style={{ margin: '0 12px 10px' }} />
 
         <div style={{ position: 'relative', margin: '0 12px', borderRadius: 'var(--rad)', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.10)' }}>
-          <MapSvg pos={pos} trail={track?.trail} tags={tags} highlight={highlight} humla={humla} vessels={others.vessels} />
-          <VesselToggle on={showOthers} count={others.vessels.length} error={others.error} onToggle={() => setShowOthers(v => !v)} />
+          <MapSvg pos={pos} trail={track?.trail} tags={tags} highlight={highlight} humla={humla} vessels={visible} />
+          <VesselToggle on={showOthers} count={visible.length} error={others.error} onToggle={() => setShowOthers(v => !v)} />
         </div>
 
         {!inView && (

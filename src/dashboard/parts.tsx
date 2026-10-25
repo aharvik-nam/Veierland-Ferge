@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Label, NumTime } from '../components/Atoms';
 import { Icon, weatherProps } from '../components/Icons';
-import { MapSvg, TimeCells, VesselToggle, useVessels } from '../components/MapView';
+import { MapSvg, TimeCells, VesselToggle, useVessels, vesselsInView } from '../components/MapView';
 import { useFerryPosition, ferryStatus, ageLabel } from '../components/FerryLive';
 import { getOsloDate, ymd, isMaintenancePeriod } from '../ferryData';
 import { useLiveTrack } from '../liveDelay';
@@ -88,6 +88,7 @@ export function MapCard({ vesselsKey, vesselsDefault = false, showTimes = true, 
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+  const visible = vesselsInView(others.vessels, aspect);
 
   return (
     <Card style={{ padding: 12, ...style }}>
@@ -104,9 +105,9 @@ export function MapCard({ vesselsKey, vesselsDefault = false, showTimes = true, 
       {showTimes && <TimeCells times={times} style={{ marginBottom: 10 }} />}
       <div style={{ position: 'relative', flex: 1, minHeight: 160, borderRadius: 'var(--radSm)', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
         <div ref={box} style={{ position: 'absolute', inset: 0 }}>
-          <MapSvg fill aspect={aspect} pos={pos} trail={track?.trail} tags={new Map(times.map(c => [c.stop, c.tag]))} humla={humla} vessels={others.vessels} />
+          <MapSvg fill aspect={aspect} pos={pos} trail={track?.trail} tags={new Map(times.map(c => [c.stop, c.tag]))} humla={humla} vessels={visible} />
         </div>
-        <VesselToggle on={showOthers} count={others.vessels.length} error={others.error} onToggle={() => setShowOthers(v => !v)} />
+        <VesselToggle on={showOthers} count={visible.length} error={others.error} onToggle={() => setShowOthers(v => !v)} />
         <div style={{ position: 'absolute', right: 6, bottom: 6, padding: '2px 7px', borderRadius: 6, background: 'color-mix(in srgb, var(--deep) 70%, transparent)', fontFamily: font, fontSize: 9.5, color: 'var(--onDeepDim)' }}>© OpenStreetMap-bidragsytere · AIS: BarentsWatch</div>
       </div>
     </Card>
