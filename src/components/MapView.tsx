@@ -74,10 +74,11 @@ const ROUTE_BOX = { x0: 650, x1: 4450, y0: 900, y1: 4250 };
 
 // Utsnitt med boksens proporsjoner (bredde/høyde), sentrert på ruta og innenfor kartet.
 // zoom < 1 = zoomer inn (viser mindre av kartet), zoom > 1 = zoomer ut (viser mer).
-function viewRect(aspect?: number, zoom = 1): { x: number; y: number; w: number; h: number } {
+function viewRect(aspect?: number, zoom = 1, fcx?: number, fcy?: number): { x: number; y: number; w: number; h: number } {
   const W = MAP_VIEW.width, H = MAP_VIEW.height;
   if (!aspect) return { x: 0, y: 0, w: W, h: H };
-  const cx = (ROUTE_BOX.x0 + ROUTE_BOX.x1) / 2, cy = (ROUTE_BOX.y0 + ROUTE_BOX.y1) / 2;
+  const cx = fcx ?? (ROUTE_BOX.x0 + ROUTE_BOX.x1) / 2;
+  const cy = fcy ?? (ROUTE_BOX.y0 + ROUTE_BOX.y1) / 2;
   const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
   let bw: number, bh: number;
   if (aspect >= W / H) {
@@ -88,8 +89,8 @@ function viewRect(aspect?: number, zoom = 1): { x: number; y: number; w: number;
   const w = Math.min(bw * zoom, W), h = Math.min(bh * zoom, H);
   return { x: clamp(cx - w / 2, 0, W - w), y: clamp(cy - h / 2, 0, H - h), w, h };
 }
-function viewBoxFor(aspect: number, zoom = 1): string {
-  const r = viewRect(aspect, zoom);
+function viewBoxFor(aspect: number, zoom = 1, fcx?: number, fcy?: number): string {
+  const r = viewRect(aspect, zoom, fcx, fcy);
   return `${r.x.toFixed(0)} ${r.y.toFixed(0)} ${r.w.toFixed(0)} ${r.h.toFixed(0)}`;
 }
 
@@ -105,7 +106,7 @@ export function vesselsInView(vessels: Vessel[], aspect?: number): Vessel[] {
 
 // fill: kartet fyller boksen det står i, med boksens proporsjoner (aspect) og sentrert på ruta;
 // ellers full bredde med kartets egne proporsjoner. zoom: < 1 zoomer inn, > 1 zoomer ut.
-export function MapSvg({ pos, trail = [], tags, highlight = null, humla, vessels = [], fill = false, aspect, zoom = 1 }: {
+export function MapSvg({ pos, trail = [], tags, highlight = null, humla, vessels = [], fill = false, aspect, zoom = 1, follow = false }: {
   pos: MapPos | null;
   trail?: [number, number][];
   tags?: Map<StopId, string>;
@@ -115,6 +116,7 @@ export function MapSvg({ pos, trail = [], tags, highlight = null, humla, vessels
   fill?: boolean;
   aspect?: number;
   zoom?: number;
+  follow?: boolean;
 }) {
   const ferry = pos ? toMap(pos.lat, pos.lng) : null;
   const inView = ferry != null && ferry.x >= 0 && ferry.y >= 0 && ferry.x <= MAP_VIEW.width && ferry.y <= MAP_VIEW.height;
@@ -123,8 +125,10 @@ export function MapSvg({ pos, trail = [], tags, highlight = null, humla, vessels
   const line = trail.map(([lat, lng]) => toMap(lat, lng));
   const halo = { stroke: SEA, strokeWidth: 3, paintOrder: 'stroke' as const, vectorEffect: 'non-scaling-stroke' as const };
 
+  const [fcx, fcy] = follow && ferry ? [ferry.x, ferry.y] : [undefined, undefined];
+
   return (
-    <svg viewBox={fill && aspect ? viewBoxFor(aspect, zoom) : `0 0 ${MAP_VIEW.width} ${MAP_VIEW.height}`} width="100%" height={fill ? '100%' : undefined} preserveAspectRatio={fill ? 'xMidYMid slice' : undefined}
+    <svg viewBox={fill && aspect ? viewBoxFor(aspect, zoom, fcx, fcy) : `0 0 ${MAP_VIEW.width} ${MAP_VIEW.height}`} width="100%" height={fill ? '100%' : undefined} preserveAspectRatio={fill ? 'xMidYMid slice' : undefined}
       style={{ display: 'block', background: SEA }} fontFamily="'Space Grotesk', sans-serif">
       <path d={LAND_PATH} fill="color-mix(in srgb, var(--onDeep) 13%, var(--deep))" fillRule="evenodd" />
       {LABELS.map(l => { const p = toMap(l.lat, l.lng); return (

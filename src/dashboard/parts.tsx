@@ -65,7 +65,7 @@ export function dateLine(d: Date): string {
 }
 
 // showTimes=false: uten feltene «Gikk fra / Ankommer» (tidene står likevel ved kaiene i kartet), så kartet får mer plass
-export function MapCard({ vesselsKey, vesselsDefault = false, showTimes = true, style }: { vesselsKey: string; vesselsDefault?: boolean; showTimes?: boolean; style?: React.CSSProperties }) {
+export function MapCard({ vesselsKey, vesselsDefault = false, showTimes = true, follow = false, style }: { vesselsKey: string; vesselsDefault?: boolean; showTimes?: boolean; follow?: boolean; style?: React.CSSProperties }) {
   const pos = useFerryPosition();
   const now = getOsloDate();
   const humla = isMaintenancePeriod(now);
@@ -108,7 +108,7 @@ export function MapCard({ vesselsKey, vesselsDefault = false, showTimes = true, 
       {showTimes && <TimeCells times={times} style={{ marginBottom: 10 }} />}
       <div style={{ position: 'relative', flex: 1, minHeight: 160, borderRadius: 'var(--radSm)', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
         <div ref={box} style={{ position: 'absolute', inset: 0 }}>
-          <MapSvg fill aspect={aspect} pos={pos} trail={track?.trail} tags={new Map(times.map(c => [c.stop, c.tag]))} humla={humla} vessels={visible} zoom={zoom} />
+          <MapSvg fill aspect={aspect} pos={pos} trail={track?.trail} tags={new Map(times.map(c => [c.stop, c.tag]))} humla={humla} vessels={visible} zoom={zoom} follow={follow} />
         </div>
         <VesselToggle on={showOthers} count={visible.length} error={others.error} onToggle={() => setShowOthers(v => !v)} />
         {/* Zoom-knapper nede til høyre */}

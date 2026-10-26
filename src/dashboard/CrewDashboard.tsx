@@ -185,7 +185,7 @@ export function CrewDashboard({ conditions, active, night, mode, onMode }: {
       {portrait ? (
         <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 14 }}>
-            <MapCard vesselsKey="vf_batar_ferge" vesselsDefault showTimes={false} />
+            <MapCard vesselsKey="vf_batar_ferge" vesselsDefault showTimes={false} follow />
             <NextCalls count={8} />
           </div>
           {wind}
@@ -194,7 +194,7 @@ export function CrewDashboard({ conditions, active, night, mode, onMode }: {
       ) : (
         <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 14 }}>
           <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <MapCard vesselsKey="vf_batar_ferge" vesselsDefault showTimes={false} style={{ flex: 1 }} />
+            <MapCard vesselsKey="vf_batar_ferge" vesselsDefault showTimes={false} follow style={{ flex: 1 }} />
             {sea}
           </div>
           <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
