@@ -1,10 +1,11 @@
 import React from 'react';
 
-type IconName =
+export type IconName =
   | 'swap' | 'swapH' | 'arrowRight' | 'arrowDown' | 'chevronLeft' | 'chevronRight' | 'chevronDown'
   | 'phone' | 'wind' | 'calendar' | 'pin' | 'walk' | 'car' | 'clock' | 'info'
   | 'alert' | 'anchor' | 'sun' | 'cloud' | 'rain' | 'fog' | 'snow' | 'bolt'
-  | 'check' | 'x' | 'ticket' | 'settings' | 'close' | 'monitor' | 'search' | 'list' | 'table' | 'moon';
+  | 'check' | 'x' | 'ticket' | 'settings' | 'close' | 'monitor' | 'search' | 'list' | 'table' | 'moon'
+  | 'wave' | 'thermometer' | 'tide';
 
 interface IconProps {
   name: IconName;
@@ -55,6 +56,9 @@ export function Icon({ name, size = 22, stroke = 2, color = 'currentColor', styl
     close: <path d="M6 6l12 12M18 6L6 18" />,
     monitor: <><rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" /></>,
     moon: <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />,
+    wave: <path d="M2 12 C5 8, 9 8, 12 12 C15 16, 19 16, 22 12" />,
+    thermometer: <><path d="M10 13V4a2 2 0 1 1 4 0v9" /><circle cx="12" cy="17.5" r="3" /><path d="M10 9h4" /></>,
+    tide: <path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4" />,
   };
 
   return <svg {...common}>{paths[name] || null}</svg>;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon, weatherProps } from '../components/Icons';
+import { Icon, weatherProps, type IconName } from '../components/Icons';
 import { NumTime, Label } from '../components/Atoms';
 import { useFerryPosition, ferryStatus } from '../components/FerryLive';
 import { stopsMap, ferryName, fmtCountdown, isMaintenancePeriod } from '../ferryData';
@@ -25,9 +25,10 @@ const BEAUFORT: [number, string][] = [[0.3, 'stille'], [1.6, 'flau vind'], [3.4,
 const beaufort = (ms: number) => BEAUFORT.find(([limit]) => ms < limit)?.[1] ?? 'orkan';
 const KULING = 10.8; // liten kuling fra 10,8 m/s
 
-function Tile({ label, value, sub }: { label: string; value: React.ReactNode; sub?: string }) {
+function Tile({ label, value, sub, icon }: { label: string; value: React.ReactNode; sub?: string; icon?: IconName }) {
   return (
-    <div style={{ minWidth: 0, padding: '9px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.05)' }}>
+    <div style={{ minWidth: 0, padding: '8px 10px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', textAlign: 'center' }}>
+      {icon && <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 3 }}><Icon name={icon} size={15} color="var(--onDeepDim)" stroke={1.8} /></div>}
       <Label style={{ fontSize: 9 }}>{label}</Label>
       <div style={{ marginTop: 3, fontFamily: font, fontWeight: 700, fontSize: 19, color: 'var(--onDeep)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
       {sub && <div style={{ fontFamily: font, fontSize: 11, color: 'var(--onDeepDim)', marginTop: 1, lineHeight: 1.3 }}>{sub}</div>}
@@ -149,12 +150,12 @@ export function CrewDashboard({ conditions, active, night, mode, onMode }: {
 
   const sea = (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 8 }}>
-      <Tile label="Bølger" value={ocean?.waveHeight != null ? `${ocean.waveHeight.toFixed(1).replace('.', ',')} m` : '–'} sub={ocean?.waveFrom != null ? `fra ${compass(ocean.waveFrom)}` : undefined} />
-      <Tile label="Sjøtemp." value={ocean?.seaTemp != null ? `${Math.round(ocean.seaTemp)} °C` : '–'} />
-      <Tile label="Vannstand" value={water ? `${water.cm > 0 ? '+' : ''}${water.cm} cm` : '–'} sub={water?.trend} />
-      <Tile label="Sikt" value={fog == null ? '–' : fog >= 60 ? 'Tåke' : fog >= 25 ? 'Mulig tåke' : 'God'} />
-      <Tile label="Nedbør" value={wx?.now.precip != null ? `${wx.now.precip.toString().replace('.', ',')} mm` : '–'} sub="neste time" />
-      <Tile label={sunNext.label} value={osloHm(sunNext.t)} />
+      <Tile icon="wave" label="Bølger" value={ocean?.waveHeight != null ? `${ocean.waveHeight.toFixed(1).replace('.', ',')} m` : '–'} sub={ocean?.waveFrom != null ? `fra ${compass(ocean.waveFrom)}` : undefined} />
+      <Tile icon="thermometer" label="Sjøtemp." value={ocean?.seaTemp != null ? `${Math.round(ocean.seaTemp)} °C` : '–'} />
+      <Tile icon="tide" label="Vannstand" value={water ? `${water.cm > 0 ? '+' : ''}${water.cm} cm` : '–'} sub={water?.trend} />
+      <Tile icon="fog" label="Sikt" value={fog == null ? '–' : fog >= 60 ? 'Tåke' : fog >= 25 ? 'Mulig tåke' : 'God'} />
+      <Tile icon="rain" label="Nedbør" value={wx?.now.precip != null ? `${wx.now.precip.toString().replace('.', ',')} mm` : '–'} sub="neste time" />
+      <Tile icon="sun" label={sunNext.label} value={osloHm(sunNext.t)} />
     </div>
   );
 
