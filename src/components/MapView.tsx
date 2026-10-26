@@ -68,24 +68,28 @@ export function TimeCells({ times, style }: { times: TimeCell[]; style?: React.C
   );
 }
 
-// Ruta Tenvik–Engø med plass til navnene; et beskåret kart sentreres på den
-const ROUTE_BOX = { x0: 650, x1: 3900, y0: 900, y1: 4250 };
+// Ruta Tenvik–Engø med plass til navnene; et beskåret kart sentreres på den.
+// x1 er 4450 (ikke 3900) for å inkludere Nøtterøy-labelen som strekker seg til ~x=4450.
+const ROUTE_BOX = { x0: 650, x1: 4450, y0: 900, y1: 4250 };
 
-// Utsnitt med boksens proporsjoner (bredde/høyde), sentrert på ruta og innenfor kartet
-function viewRect(aspect?: number): { x: number; y: number; w: number; h: number } {
+// Utsnitt med boksens proporsjoner (bredde/høyde), sentrert på ruta og innenfor kartet.
+// zoom < 1 = zoomer inn (viser mindre av kartet), zoom > 1 = zoomer ut (viser mer).
+function viewRect(aspect?: number, zoom = 1): { x: number; y: number; w: number; h: number } {
   const W = MAP_VIEW.width, H = MAP_VIEW.height;
   if (!aspect) return { x: 0, y: 0, w: W, h: H };
   const cx = (ROUTE_BOX.x0 + ROUTE_BOX.x1) / 2, cy = (ROUTE_BOX.y0 + ROUTE_BOX.y1) / 2;
   const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+  let bw: number, bh: number;
   if (aspect >= W / H) {
-    const h = W / aspect;
-    return { x: 0, y: clamp(cy - h / 2, 0, H - h), w: W, h };
+    bh = W / aspect; bw = W;
+  } else {
+    bw = H * aspect; bh = H;
   }
-  const w = H * aspect;
-  return { x: clamp(cx - w / 2, 0, W - w), y: 0, w, h: H };
+  const w = Math.min(bw * zoom, W), h = Math.min(bh * zoom, H);
+  return { x: clamp(cx - w / 2, 0, W - w), y: clamp(cy - h / 2, 0, H - h), w, h };
 }
-function viewBoxFor(aspect: number): string {
-  const r = viewRect(aspect);
+function viewBoxFor(aspect: number, zoom = 1): string {
+  const r = viewRect(aspect, zoom);
   return `${r.x.toFixed(0)} ${r.y.toFixed(0)} ${r.w.toFixed(0)} ${r.h.toFixed(0)}`;
 }
 
@@ -100,8 +104,8 @@ export function vesselsInView(vessels: Vessel[], aspect?: number): Vessel[] {
 }
 
 // fill: kartet fyller boksen det står i, med boksens proporsjoner (aspect) og sentrert på ruta;
-// ellers full bredde med kartets egne proporsjoner
-export function MapSvg({ pos, trail = [], tags, highlight = null, humla, vessels = [], fill = false, aspect }: {
+// ellers full bredde med kartets egne proporsjoner. zoom: < 1 zoomer inn, > 1 zoomer ut.
+export function MapSvg({ pos, trail = [], tags, highlight = null, humla, vessels = [], fill = false, aspect, zoom = 1 }: {
   pos: MapPos | null;
   trail?: [number, number][];
   tags?: Map<StopId, string>;
@@ -110,6 +114,7 @@ export function MapSvg({ pos, trail = [], tags, highlight = null, humla, vessels
   vessels?: Vessel[];
   fill?: boolean;
   aspect?: number;
+  zoom?: number;
 }) {
   const ferry = pos ? toMap(pos.lat, pos.lng) : null;
   const inView = ferry != null && ferry.x >= 0 && ferry.y >= 0 && ferry.x <= MAP_VIEW.width && ferry.y <= MAP_VIEW.height;
@@ -119,7 +124,7 @@ export function MapSvg({ pos, trail = [], tags, highlight = null, humla, vessels
   const halo = { stroke: SEA, strokeWidth: 3, paintOrder: 'stroke' as const, vectorEffect: 'non-scaling-stroke' as const };
 
   return (
-    <svg viewBox={fill && aspect ? viewBoxFor(aspect) : `0 0 ${MAP_VIEW.width} ${MAP_VIEW.height}`} width="100%" height={fill ? '100%' : undefined} preserveAspectRatio={fill ? 'xMidYMid slice' : undefined}
+    <svg viewBox={fill && aspect ? viewBoxFor(aspect, zoom) : `0 0 ${MAP_VIEW.width} ${MAP_VIEW.height}`} width="100%" height={fill ? '100%' : undefined} preserveAspectRatio={fill ? 'xMidYMid slice' : undefined}
       style={{ display: 'block', background: SEA }} fontFamily="'Space Grotesk', sans-serif">
       <path d={LAND_PATH} fill="color-mix(in srgb, var(--onDeep) 13%, var(--deep))" fillRule="evenodd" />
       {LABELS.map(l => { const p = toMap(l.lat, l.lng); return (

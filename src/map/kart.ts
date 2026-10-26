@@ -49,5 +49,5 @@ export const LABELS: { name: string; lat: number; lng: number }[] = [
   { name: 'Veierland', lat: 59.1560, lng: 10.3530 },
   { name: 'Langø', lat: 59.1625, lng: 10.3305 },
   { name: 'Håøya', lat: 59.1790, lng: 10.3555 },
-  { name: 'Nøtterøy', lat: 59.1690, lng: 10.3742 },
+  { name: 'Nøtterøy', lat: 59.1690, lng: 10.365 },
 ];
