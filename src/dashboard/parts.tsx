@@ -115,7 +115,7 @@ export function MapCard({ vesselsKey, vesselsDefault = false, showTimes = true, 
         <div style={{ position: 'absolute', right: 8, bottom: 32, display: 'flex', flexDirection: 'column', gap: 3 }}>
           {[{ label: '+', fn: zoomIn }, { label: '−', fn: zoomOut }].map(({ label, fn }) => (
             <button key={label} onClick={fn} aria-label={label === '+' ? 'Zoom inn' : 'Zoom ut'}
-              style={{ width: 28, height: 28, borderRadius: 7, background: 'color-mix(in srgb, var(--deep) 72%, transparent)', border: '1px solid rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', cursor: 'pointer', fontFamily: font, fontWeight: 700, fontSize: 17, color: 'var(--onDeep)', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
+              style={{ width: 28, height: 28, borderRadius: 7, background: 'color-mix(in srgb, var(--deep) 72%, transparent)', border: '1px solid color-mix(in srgb, var(--onDeep) 55%, transparent)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', cursor: 'pointer', fontFamily: font, fontWeight: 700, fontSize: 17, color: 'var(--onDeep)', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
               {label}
             </button>
           ))}

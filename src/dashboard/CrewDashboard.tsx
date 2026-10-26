@@ -16,7 +16,7 @@ export type NightMode = 'auto' | 'dag' | 'natt';
 
 // Nattfarger: rødt på svart, samme variabler som resten av appen
 export const NIGHT_VARS: Record<string, string> = {
-  '--deep': '#070303', '--deep2': '#140707', '--onDeep': '#d4513f', '--onDeepDim': 'rgba(212,81,63,0.55)',
+  '--deep': '#070303', '--deep2': '#140707', '--onDeep': '#d4513f', '--onDeepDim': 'rgba(212,81,63,0.72)',
   '--accentOnDeep': '#e36450', '--accent2': '#8f3226', '--warn': '#c4472f', '--bad': '#c4472f',
   '--alertBg': 'rgba(212,81,63,0.14)', '--alertFg': '#e36450',
 };
@@ -28,7 +28,7 @@ const KULING = 10.8; // liten kuling fra 10,8 m/s
 function Tile({ label, value, sub, icon }: { label: string; value: React.ReactNode; sub?: string; icon?: IconName }) {
   return (
     <div style={{ minWidth: 0, padding: '8px 10px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', textAlign: 'center' }}>
-      {icon && <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 3 }}><Icon name={icon} size={15} color="var(--onDeepDim)" stroke={1.8} /></div>}
+      {icon && <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 3 }}><Icon name={icon} size={15} color="var(--onDeep)" stroke={1.8} /></div>}
       <Label style={{ fontSize: 9 }}>{label}</Label>
       <div style={{ marginTop: 3, fontFamily: font, fontWeight: 700, fontSize: 19, color: 'var(--onDeep)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
       {sub && <div style={{ fontFamily: font, fontSize: 11, color: 'var(--onDeepDim)', marginTop: 1, lineHeight: 1.3 }}>{sub}</div>}
