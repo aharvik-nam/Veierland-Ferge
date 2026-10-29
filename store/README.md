@@ -128,7 +128,7 @@ ferge,ferje,veierland,tenvik,tangen,engø,rutetider,båt,tønsberg,færder,nøtt
 
 **Kategori**: Reise (primær), Navigasjon (sekundær) · **Aldersgrense**: 4+ · **Opphavsrett**: `2026 Andreas Harvik`
 
-**Støtte-URL**: `https://jutoya.veierland.org/support.html`
+**Støtte-URL**: `https://harvik.no/ferry/`
 **Personvern-URL**: `https://jutoya.veierland.org/personvern.html`
 **Markedsførings-URL** (valgfri): `https://jutoya.veierland.org`
 
