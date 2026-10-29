@@ -45,7 +45,7 @@ Appen bygges i skyen med GitHub Actions, så du trenger ingen Mac.
 
 ### 6. Fyll ut butikksiden og send inn
 I App Store Connect → appen → **iOS App 1.0**:
-- **Screenshots** (iPhone 6,9"): de seks bildene i `store/app-store/`
+- **Screenshots** (iPhone 6,9"): de seks bildene i `store/app-store/`. Ber App Store Connect om 1206 × 2622 (6,3"), bruk `store/app-store-6.3/`
 - **Screenshots** (iPad 13"): de fire bildene i `store/app-store-ipad/`
 - **Tekster**: se «Butikktekster» lenger ned
 - **Build**: velg bygget fra TestFlight
