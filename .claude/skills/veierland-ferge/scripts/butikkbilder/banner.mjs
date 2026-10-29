@@ -5,13 +5,15 @@ import { execSync } from 'child_process'; import { pathToFileURL } from 'url'; c
 const dir = '/tmp/claude-0/-home-user-Veierland-Ferge/5bd34bfe-20e6-5eff-a905-f5787719428c/scratchpad/store4';
 const fonts = '/home/user/Veierland-Ferge/node_modules/@fontsource';
 // [navn, bredde, høyde, iPad-høyde, telefon-høyde, overskrift] i % av høyden
-const sizes = [['header', 5244, 2950, 50, 64, 13, 4.4], ['header-bred', 3840, 1646, 64, 80, 14, 4.4], ['sokeresultat', 3840, 2560, 42, 54, 11, 3.8]];
+// Header: iPhone viser bare midten (ca. halve bredden), så enhetene står midt i bildet og det er ingen tekst
+const sizes = [['header', 5244, 2950, 44, 54, 13, 4.4, true], ['header-bred', 3840, 1646, 64, 80, 14, 4.4, true], ['sokeresultat', 3840, 2560, 42, 54, 11, 3.8, false]];
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
-for (const [name, W, H, ipadH, phoneH, h1, tag] of sizes) {
+for (const [name, W, H, ipadH, phoneH, h1, tag, center] of sizes) {
   const u = H / 100; // 1 enhet = 1 % av høyden
   const right = 7 * u, ipadW = ipadH * u * 2752 / 2064, phoneW = phoneH * u * 1320 / 2868, overlap = 14 * u;
   const ipadTop = (H - ipadH * u) / 2 + 2 * u, phoneTop = (H - phoneH * u) / 2;
-  const phoneLeft = W - right - ipadW - phoneW + overlap, textLeft = 9 * u, textW = phoneLeft - textLeft - 6 * u;
+  const groupW = ipadW + phoneW - overlap, groupLeft = (W - groupW) / 2;
+  const phoneLeft = center ? groupLeft : W - right - ipadW - phoneW + overlap, textLeft = 9 * u, textW = phoneLeft - textLeft - 6 * u;
   const html = `<html><head><meta charset="utf-8"><style>
   @font-face { font-family: SG; src: url(file://${fonts}/space-grotesk/files/space-grotesk-latin-500-normal.woff2); font-weight: 500; }
   @font-face { font-family: IS; src: url(file://${fonts}/instrument-serif/files/instrument-serif-latin-400-normal.woff2); }
@@ -27,12 +29,12 @@ for (const [name, W, H, ipadH, phoneH, h1, tag] of sizes) {
   .accent { color: #F2875F; }
   .dev { position: absolute; overflow: hidden; box-shadow: 0 ${2 * u}px ${6 * u}px rgba(0,0,0,.5), 0 0 0 ${0.55 * u}px rgba(255,255,255,.16); }
   .dev img { display: block; width: 100%; }
-  .ipad { width: ${ipadW}px; right: ${right}px; top: ${ipadTop}px; border-radius: ${2.2 * u}px; }
+  .ipad { width: ${ipadW}px; right: ${center ? groupLeft : right}px; top: ${ipadTop}px; border-radius: ${2.2 * u}px; }
   .phone { width: ${phoneW}px; left: ${phoneLeft}px; top: ${phoneTop}px; border-radius: ${phoneW * 0.085}px; }
   </style></head><body>
   <div class="wave"></div><div class="wave b"></div>
-  <div class="text"><div class="eyebrow">Tenvik · Veierland · Engø</div><h1>Veierland Ferge</h1>
-  <p>Neste avgang, hele rutetabellen${tag > 4 ? '<br>' : ' '}og <span class="accent">ferga live</span> på kartet.</p></div>
+  ${center ? '' : `<div class="text"><div class="eyebrow">Tenvik · Veierland · Engø</div><h1>Veierland Ferge</h1>
+  <p>Neste avgang, hele rutetabellen${tag > 4 ? '<br>' : ' '}og <span class="accent">ferga live</span> på kartet.</p></div>`}
   <div class="dev ipad"><img src="file://${dir}/raw/ipad-2-ferge.png"></div>
   <div class="dev phone"><img src="file://${dir}/raw/ios-1-hjem.png"></div>
   </body></html>`;
