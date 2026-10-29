@@ -65,7 +65,7 @@ export function dateLine(d: Date): string {
 }
 
 // showTimes=false: uten feltene «Gikk fra / Ankommer» (tidene står likevel ved kaiene i kartet), så kartet får mer plass
-export function MapCard({ vesselsKey, vesselsDefault = false, showTimes = true, style }: { vesselsKey: string; vesselsDefault?: boolean; showTimes?: boolean; style?: React.CSSProperties }) {
+export function MapCard({ vesselsKey, vesselsDefault = false, showTimes = true, follow = false, style }: { vesselsKey: string; vesselsDefault?: boolean; showTimes?: boolean; follow?: boolean; style?: React.CSSProperties }) {
   const pos = useFerryPosition();
   const now = getOsloDate();
   const humla = isMaintenancePeriod(now);
@@ -78,6 +78,9 @@ export function MapCard({ vesselsKey, vesselsDefault = false, showTimes = true, 
   const others = useVessels(showOthers);
   const age = pos ? ageLabel(pos.time) : null;
   const moving = pos?.sog != null && pos.sog >= 1.5;
+  const [zoom, setZoom] = useState(1.0);
+  const zoomIn = () => setZoom(z => Math.max(0.5, +(z - 0.15).toFixed(2)));
+  const zoomOut = () => setZoom(z => Math.min(1.4, +(z + 0.15).toFixed(2)));
   // Kartboksens proporsjoner, så utsnittet kan sentreres på ruta
   const box = useRef<HTMLDivElement>(null);
   const [aspect, setAspect] = useState<number | undefined>();
@@ -105,9 +108,18 @@ export function MapCard({ vesselsKey, vesselsDefault = false, showTimes = true, 
       {showTimes && <TimeCells times={times} style={{ marginBottom: 10 }} />}
       <div style={{ position: 'relative', flex: 1, minHeight: 160, borderRadius: 'var(--radSm)', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
         <div ref={box} style={{ position: 'absolute', inset: 0 }}>
-          <MapSvg fill aspect={aspect} pos={pos} trail={track?.trail} tags={new Map(times.map(c => [c.stop, c.tag]))} humla={humla} vessels={visible} />
+          <MapSvg fill aspect={aspect} pos={pos} trail={track?.trail} tags={new Map(times.map(c => [c.stop, c.tag]))} humla={humla} vessels={visible} zoom={zoom} follow={follow} />
         </div>
         <VesselToggle on={showOthers} count={visible.length} error={others.error} onToggle={() => setShowOthers(v => !v)} />
+        {/* Zoom-knapper nede til høyre */}
+        <div style={{ position: 'absolute', right: 8, bottom: 32, display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {[{ label: '+', fn: zoomIn }, { label: '−', fn: zoomOut }].map(({ label, fn }) => (
+            <button key={label} onClick={fn} aria-label={label === '+' ? 'Zoom inn' : 'Zoom ut'}
+              style={{ width: 28, height: 28, borderRadius: 7, background: 'color-mix(in srgb, var(--deep) 72%, transparent)', border: '1px solid color-mix(in srgb, var(--onDeep) 55%, transparent)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', cursor: 'pointer', fontFamily: font, fontWeight: 700, fontSize: 17, color: 'var(--onDeep)', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
+              {label}
+            </button>
+          ))}
+        </div>
         <div style={{ position: 'absolute', right: 6, bottom: 6, padding: '2px 7px', borderRadius: 6, background: 'color-mix(in srgb, var(--deep) 70%, transparent)', fontFamily: font, fontSize: 9.5, color: 'var(--onDeepDim)' }}>© OpenStreetMap-bidragsytere · AIS: BarentsWatch</div>
       </div>
     </Card>
