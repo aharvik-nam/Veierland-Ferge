@@ -95,7 +95,7 @@ Hele oppskriften, butikktekster, URL-er og skjermbilder står i `store/README.md
 
 - **App Store**:
   - Bygget kommer i TestFlight.
-  - Brukeren fyller ut butikksiden: bilder fra `store/app-store/`, tekster, «Data Not Collected», 4+, personvern-URL `https://jutoya.veierland.org/personvern.html` og support-URL `https://harvik.no/ferry/`.
+  - Brukeren fyller ut butikksiden: bilder fra `store/app-store/`, tekster, «Data Not Collected», 4+, personvern-URL `https://harvik.no/ferry/personvern.html` og support-URL `https://harvik.no/ferry/`.
   - Deretter velger brukeren bygget og trykker Add for Review.
 - **Google Play** (personlig konto):
   - Først en lukket test med minst 12 testere i 14 dager. Først da kan brukeren søke om produksjonstilgang.

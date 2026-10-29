@@ -24,7 +24,7 @@
 <body>
 <header>
   <h1>Personvern</h1>
-  <p>Veierland Ferge · sist oppdatert 18. oktober 2026</p>
+  <p>Veierland Ferge · sist oppdatert 29. oktober 2026</p>
 </header>
 <main>
   <div class="box"><strong>Kort fortalt:</strong> Appen samler ikke inn personopplysninger. Den har ingen innlogging, ingen reklame og ingen sporing, og den ber ikke om tilgang til posisjon, kontakter, kamera eller annet på telefonen.</div>
@@ -45,13 +45,14 @@
   <h2>Hva appen henter fra internett</h2>
   <p>For å vise oppdatert informasjon henter appen data fra disse tjenestene. Som ved all bruk av internett ser tjenesten IP-adressen til telefonen din når den svarer, men appen sender ingen opplysninger om deg.</p>
   <ul>
-    <li><strong>veierland-ferge.vercel.app</strong> (driftet hos Vercel): rutetider og fergens posisjon. Vercel kan lagre IP-adresse i tekniske logger en kort periode for drift og sikkerhet.</li>
+    <li><strong>veierland-ferge.vercel.app</strong> (driftet hos Vercel): rutetider, fergens posisjon, andre båter i området, punktlighet, vær, sjø, farevarsler og vannstand. Vercel kan lagre IP-adresse i tekniske logger en kort periode for drift og sikkerhet.</li>
     <li><strong>Meteorologisk institutt</strong> (api.met.no): værvarselet for Tenvik.</li>
-    <li>Fergens posisjon kommer fra <strong>BarentsWatch/Kystverket</strong> via vår server. Telefonen din kontakter ikke BarentsWatch direkte.</li>
+    <li><strong>Google Firebase</strong> (Firestore): meldinger fra appens administrator, for eksempel om innstilte turer. Appen leser bare meldingene og sender ingenting.</li>
+    <li>Fergens og andre båters posisjon kommer fra <strong>BarentsWatch/Kystverket</strong>, vær, sjø og farevarsler fra <strong>Meteorologisk institutt</strong> og vannstand fra <strong>Kartverket</strong>, via vår server. Telefonen din kontakter ikke disse tjenestene direkte, bortsett fra værvarselet over.</li>
   </ul>
 
   <h2>Når du forlater appen</h2>
-  <p>Hvis du trykker på kortet med fergens posisjon, åpnes Google Maps. Hvis du trykker «Ring fergen», åpnes telefonappen. Da gjelder vilkårene til Google eller teleoperatøren din.</p>
+  <p>Hvis du trykker på «Google Maps» i kartet, åpnes Google Maps. Hvis du trykker «Ring fergen», åpnes telefonappen. Da gjelder vilkårene til Google eller teleoperatøren din.</p>
 
   <h2>Nettsiden</h2>
   <p>Nettversjonen på veierland-ferge.vercel.app bruker Vercel Web Analytics for anonym besøksstatistikk uten informasjonskapsler (cookies). Dette gjelder ikke appen fra App Store eller Google Play.</p>

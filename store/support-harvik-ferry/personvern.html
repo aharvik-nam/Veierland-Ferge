@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Personvern — Veierland Ferge</title>
+<meta name="theme-color" content="#07313C">
+<style>
+  :root { --deep:#07313C; --deep2:#0E5365; --onDeep:#EAF6F2; --onDeepDim:rgba(234,246,242,.65); --surface:#FBF6EA; --ink:#15302E; --inkDim:#5E6E69; --line:rgba(21,48,46,.12); --accent:#E2613B; }
+  * { box-sizing: border-box; }
+  body { margin:0; font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--ink); background:var(--surface); -webkit-font-smoothing:antialiased; }
+  header { background:linear-gradient(160deg,var(--deep),var(--deep2)); color:var(--onDeep); padding: calc(env(safe-area-inset-top,0px) + 28px) 20px 28px; }
+  header p { margin:6px 0 0; color:var(--onDeepDim); font-size:14px; }
+  h1 { margin:0; font-size:28px; line-height:1.15; font-weight:700; }
+  main { max-width:720px; margin:0 auto; padding:8px 20px calc(env(safe-area-inset-bottom,0px) + 40px); }
+  h2 { font-size:18px; margin:28px 0 6px; }
+  ul { padding-left:20px; margin:6px 0; }
+  li { margin:4px 0; }
+  a { color:var(--accent); }
+  .box { margin-top:20px; padding:14px 16px; border-radius:14px; background:#fff; border:1px solid var(--line); }
+  footer { margin-top:32px; padding-top:16px; border-top:1px solid var(--line); font-size:13px; color:var(--inkDim); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Personvern</h1>
+  <p>Veierland Ferge · sist oppdatert 29. oktober 2026</p>
+</header>
+<main>
+  <div class="box"><strong>Kort fortalt:</strong> Appen samler ikke inn personopplysninger. Den har ingen innlogging, ingen reklame og ingen sporing, og den ber ikke om tilgang til posisjon, kontakter, kamera eller annet på telefonen.</div>
+
+  <h2>Hvem står bak</h2>
+  <p>Veierland Ferge er en uoffisiell app laget av privatperson Andreas Harvik. Appen er ikke tilknyttet Jutøya AS eller Veierland Velforening. Spørsmål om personvern kan sendes til <a href="mailto:aharvik@gmail.com">aharvik@gmail.com</a>.</p>
+
+  <h2>Hva som lagres på telefonen</h2>
+  <p>Disse opplysningene lagres bare lokalt på telefonen din og sendes ikke til noen:</p>
+  <ul>
+    <li>Strekningen du sist valgte (for eksempel Tenvik → Tangen)</li>
+    <li>Innstillinger som fargetema og om animasjoner er på</li>
+    <li>Om du har lukket varsler, og om du har sett introduksjonen</li>
+    <li>En kopi av rutetidene, slik at appen virker uten nett</li>
+  </ul>
+  <p>Du kan slette alt ved å avinstallere appen.</p>
+
+  <h2>Hva appen henter fra internett</h2>
+  <p>For å vise oppdatert informasjon henter appen data fra disse tjenestene. Som ved all bruk av internett ser tjenesten IP-adressen til telefonen din når den svarer, men appen sender ingen opplysninger om deg.</p>
+  <ul>
+    <li><strong>veierland-ferge.vercel.app</strong> (driftet hos Vercel): rutetider, fergens posisjon, andre båter i området, punktlighet, vær, sjø, farevarsler og vannstand. Vercel kan lagre IP-adresse i tekniske logger en kort periode for drift og sikkerhet.</li>
+    <li><strong>Meteorologisk institutt</strong> (api.met.no): værvarselet for Tenvik.</li>
+    <li><strong>Google Firebase</strong> (Firestore): meldinger fra appens administrator, for eksempel om innstilte turer. Appen leser bare meldingene og sender ingenting.</li>
+    <li>Fergens og andre båters posisjon kommer fra <strong>BarentsWatch/Kystverket</strong>, vær, sjø og farevarsler fra <strong>Meteorologisk institutt</strong> og vannstand fra <strong>Kartverket</strong>, via vår server. Telefonen din kontakter ikke disse tjenestene direkte, bortsett fra værvarselet over.</li>
+  </ul>
+
+  <h2>Når du forlater appen</h2>
+  <p>Hvis du trykker på «Google Maps» i kartet, åpnes Google Maps. Hvis du trykker «Ring fergen», åpnes telefonappen. Da gjelder vilkårene til Google eller teleoperatøren din.</p>
+
+  <h2>Nettsiden</h2>
+  <p>Nettversjonen på veierland-ferge.vercel.app bruker Vercel Web Analytics for anonym besøksstatistikk uten informasjonskapsler (cookies). Dette gjelder ikke appen fra App Store eller Google Play.</p>
+
+  <h2>Barn</h2>
+  <p>Appen samler ikke inn opplysninger om noen, heller ikke barn.</p>
+
+  <h2>Dine rettigheter</h2>
+  <p>Siden appen ikke lagrer personopplysninger om deg hos oss, finnes det ingen opplysninger å gi innsyn i eller slette. Har du spørsmål, kontakt <a href="mailto:aharvik@gmail.com">aharvik@gmail.com</a>. Du kan også klage til <a href="https://www.datatilsynet.no">Datatilsynet</a>.</p>
+
+  <h2>Endringer</h2>
+  <p>Hvis appen endres slik at den behandler personopplysninger, oppdateres denne siden før endringen tas i bruk.</p>
+
+  <footer>Veierland Ferge · <a href="https://harvik.no/ferry/">Kontakt og hjelp</a></footer>
+</main>
+</body>
+</html>

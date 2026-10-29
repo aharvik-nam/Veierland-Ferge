@@ -85,7 +85,7 @@ Når den er ferdig (ca. 5 min): åpne kjøringen og last ned **android-aab-…**
 ### 6. Fyll ut butikksiden og appinnhold (mens testen pågår)
 - **Hovedoppføring i butikken**: tekstene lenger ned, ikon `play-icon-512.png`, banner `play-feature-graphic.png` og telefonbildene `play-1…5`.
 - **Appinnhold**:
-  - Personvernregler: `https://jutoya.veierland.org/personvern.html`
+  - Personvernregler: `https://harvik.no/ferry/personvern.html`
   - Annonser: Nei · Apptilgang: alt er tilgjengelig uten innlogging
   - Innholdsvurdering: fyll ut spørreskjemaet (svar nei på alt) → «Alle»
   - Målgruppe: 13 år og eldre
@@ -129,7 +129,7 @@ ferge,ferje,veierland,tenvik,tangen,engø,rutetider,båt,tønsberg,færder,nøtt
 **Kategori**: Reise (primær), Navigasjon (sekundær) · **Aldersgrense**: 4+ · **Opphavsrett**: `2026 Andreas Harvik`
 
 **Støtte-URL**: `https://harvik.no/ferry/`
-**Personvern-URL**: `https://jutoya.veierland.org/personvern.html`
+**Personvern-URL**: `https://harvik.no/ferry/personvern.html`
 **Markedsførings-URL** (valgfri): `https://jutoya.veierland.org`
 
 **Merknad til App Review** (engelsk):
