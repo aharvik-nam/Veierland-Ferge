@@ -123,6 +123,7 @@ Brukeren har bestemt hva som er viktigst på hver side.
   - «Neste anløp» (`upcomingCalls` i `src/mapTimes.ts`) viser rundturene lagt etter hverandre. Det første anløpet har beregnet ankomst og hvor mye ferga er etter ruta. Engø-anløp på røde turer og hele bestillingsturer er merket «ved bestilling».
   - Vind har retning, vindkast og søyler for de neste 8 timene. Søylene blir røde fra liten kuling.
   - Fliser for bølger, sjøtemperatur, vannstand, sikt, nedbør og sol.
+  - Fargeskala fra grønn (normalt) til rød (ekstremt) på flisene, vindtallet og vindstolpene, med nivå 0–6 fra `src/dashboard/severity.ts`. Grensene står kommentert der: vind etter Beaufort (rød ved storm, mørk rød ved orkan), bølger, nedbør, tåke, vannstand over middelvann og sjøtemperaturens avvik fra månedsnormalen. Et aktivt farevarsel fra MET (vind/kuling, stormflo, regn) gir minst gult, oransje eller rødt nivå. I nattmodus blir skalaen røde nyanser (`--sev0`–`--sev6` i `NIGHT_VARS`).
   - Farevarsler fra MET står midt i toppen, og en klokke står øverst til venstre.
   - Nattmodus (rødt på svart, så nattsynet bevares) er Auto etter solen, Natt eller Dag. Den velges med knappen øverst til høyre.
   - Skjermen holdes på der nettleseren støtter det (Wake Lock). På en iPad som skal stå fremme, bør Autolås likevel settes til «Aldri».

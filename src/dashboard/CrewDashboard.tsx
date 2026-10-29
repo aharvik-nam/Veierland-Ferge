@@ -6,6 +6,7 @@ import { stopsMap, ferryName, fmtCountdown, isMaintenancePeriod } from '../ferry
 import { upcomingCalls, hhmm } from '../mapTimes';
 import { compass, osloHm, sunTimes, yrSymbolToCode, type Conditions } from './conditions';
 import { Card, MapCard, AlertPill, activeAlerts, useNow, useWakeLock, useWindowSize, dateLine, font } from './parts';
+import { LEVEL_NIGHT, LEVEL_TEXT, levelColor, windLevel, waveLevel, rainLevel, fogLevel, waterLevel, seaTempLevel, seaTempNormal, alertLevel, type Level } from './severity';
 import type { StopId } from '../types';
 
 // Fergedisplay for mannskapet. Det viktigste: hvor ferga er (stort kart), de neste anløpene, vind og vær,
@@ -19,15 +20,20 @@ export const NIGHT_VARS: Record<string, string> = {
   '--deep': '#070303', '--deep2': '#140707', '--onDeep': '#d4513f', '--onDeepDim': 'rgba(212,81,63,0.72)',
   '--accentOnDeep': '#e36450', '--accent2': '#8f3226', '--warn': '#c4472f', '--bad': '#c4472f',
   '--alertBg': 'rgba(212,81,63,0.14)', '--alertFg': '#e36450',
+  // fargeskalaen for vær og sjø blir røde nyanser, fra dempet (normalt) til klart (ekstremt)
+  ...Object.fromEntries(LEVEL_NIGHT.map((c, i) => [`--sev${i}`, c])),
 };
 
 const BEAUFORT: [number, string][] = [[0.3, 'stille'], [1.6, 'flau vind'], [3.4, 'svak vind'], [5.5, 'lett bris'], [8, 'laber bris'], [10.8, 'frisk bris'], [13.9, 'liten kuling'], [17.2, 'stiv kuling'], [20.8, 'sterk kuling'], [24.5, 'liten storm'], [28.5, 'full storm'], [32.7, 'sterk storm']];
 const beaufort = (ms: number) => BEAUFORT.find(([limit]) => ms < limit)?.[1] ?? 'orkan';
-const KULING = 10.8; // liten kuling fra 10,8 m/s
 
-function Tile({ label, value, sub, icon }: { label: string; value: React.ReactNode; sub?: string; icon?: IconName }) {
+// level: fargen fra grønn (normalt) til rød (ekstremt), som en stripe øverst og en svak tone i flisa
+function Tile({ label, value, sub, icon, level }: { label: string; value: React.ReactNode; sub?: string; icon?: IconName; level?: Level | null }) {
+  const c = level != null ? levelColor(level) : null;
   return (
-    <div style={{ minWidth: 0, padding: '8px 10px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', textAlign: 'center' }}>
+    <div title={level != null ? `${label}: ${LEVEL_TEXT[level]}` : undefined} style={{ minWidth: 0, padding: '8px 10px', borderRadius: 12, textAlign: 'center',
+      background: c ? `color-mix(in srgb, ${c} ${level! >= 2 ? 20 : 9}%, transparent)` : 'rgba(255,255,255,0.05)',
+      boxShadow: c ? `inset 0 4px 0 ${c}` : undefined }}>
       {icon && <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 3 }}><Icon name={icon} size={15} color="var(--onDeep)" stroke={1.8} /></div>}
       <Label style={{ fontSize: 9 }}>{label}</Label>
       <div style={{ marginTop: 3, fontFamily: font, fontWeight: 700, fontSize: 19, color: 'var(--onDeep)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
@@ -101,6 +107,9 @@ export function CrewDashboard({ conditions, active, night, mode, onMode }: {
   const modeLabel = { auto: 'Auto', dag: 'Dag', natt: 'Natt' }[mode];
   const wp = weatherProps(yrSymbolToCode(wx?.now.symbol));
   const fog = wx?.now.fog;
+  const windAlert = alertLevel(alerts, 'wind');
+  const max = (a: Level | null, b: Level): Level | null => a == null ? null : Math.max(a, b) as Level;
+  const seaNormal = Math.round(seaTempNormal(now));
 
   const wind = (
     <Card>
@@ -117,7 +126,7 @@ export function CrewDashboard({ conditions, active, night, mode, onMode }: {
               <path d="M0,-21 L9,11 L0,5 L-9,11 Z" fill="var(--onDeep)" transform={`rotate(${(wx.now.dir ?? 0) + 180})`} />
             </svg>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontFamily: font, fontWeight: 700, fontSize: 50, lineHeight: 1, color: (wx.now.wind ?? 0) >= KULING ? 'color-mix(in srgb, var(--bad) 45%, white)' : 'var(--onDeep)' }}>
+              <div style={{ fontFamily: font, fontWeight: 700, fontSize: 50, lineHeight: 1, color: windLevel(wx.now.wind ?? 0) >= 2 || windAlert >= 2 ? levelColor(Math.max(windLevel(wx.now.wind ?? 0), windAlert) as Level) : 'var(--onDeep)' }}>
                 {Math.round(wx.now.wind ?? 0)}<span style={{ fontSize: 17, fontWeight: 600, color: 'var(--onDeepDim)' }}> m/s fra {compass(wx.now.dir)}</span>
               </div>
               <div style={{ fontFamily: font, fontWeight: 600, fontSize: 14, color: 'var(--onDeepDim)', marginTop: 6 }}>
@@ -132,16 +141,15 @@ export function CrewDashboard({ conditions, active, night, mode, onMode }: {
                 <div key={x.time} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', fontFamily: font }}>
                   <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--onDeep)', marginBottom: 2 }}>{Math.round(x.wind ?? 0)}</span>
                   <div style={{ width: '100%', height: gustH, background: 'color-mix(in srgb, var(--accentOnDeep) 55%, transparent)', borderRadius: '4px 4px 0 0' }} />
-                  <div style={{ width: '100%', height: windH, background: (x.wind ?? 0) >= KULING ? 'var(--bad)' : 'var(--accent2)', borderRadius: gustH ? 0 : '4px 4px 0 0' }} />
+                  <div style={{ width: '100%', height: windH, background: levelColor(windLevel(x.wind ?? 0)), borderRadius: gustH ? 0 : '4px 4px 0 0' }} />
                   <span style={{ fontSize: 10.5, color: 'var(--onDeepDim)', marginTop: 4 }}>{osloHm(x.time).slice(0, 2)}</span>
                 </div>
               );
             })}
           </div>
           <div style={{ display: 'flex', gap: 14, marginTop: 6, fontFamily: font, fontSize: 10.5, color: 'var(--onDeepDim)' }}>
-            <span><span style={{ display: 'inline-block', width: 9, height: 9, borderRadius: 2, background: 'var(--accent2)', marginRight: 5 }} />vind</span>
+            <span><span style={{ display: 'inline-block', width: 22, height: 9, borderRadius: 2, background: `linear-gradient(90deg, ${levelColor(0)}, ${levelColor(2)}, ${levelColor(5)})`, marginRight: 5 }} />vind (grønn normalt, rød storm)</span>
             <span><span style={{ display: 'inline-block', width: 9, height: 9, borderRadius: 2, background: 'color-mix(in srgb, var(--accentOnDeep) 55%, transparent)', marginRight: 5 }} />vindkast</span>
-            {hours.some(x => (x.wind ?? 0) >= KULING) && <span><span style={{ display: 'inline-block', width: 9, height: 9, borderRadius: 2, background: 'var(--bad)', marginRight: 5 }} />kuling (fra 11 m/s)</span>}
           </div>
         </>
       ) : <div style={{ marginTop: 12, fontFamily: font, color: 'var(--onDeepDim)' }}>Henter vær …</div>}
@@ -150,11 +158,11 @@ export function CrewDashboard({ conditions, active, night, mode, onMode }: {
 
   const sea = (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 8 }}>
-      <Tile icon="wave" label="Bølger" value={ocean?.waveHeight != null ? `${ocean.waveHeight.toFixed(1).replace('.', ',')} m` : '–'} sub={ocean?.waveFrom != null ? `fra ${compass(ocean.waveFrom)}` : undefined} />
-      <Tile icon="thermometer" label="Sjøtemp." value={ocean?.seaTemp != null ? `${Math.round(ocean.seaTemp)} °C` : '–'} />
-      <Tile icon="tide" label="Vannstand" value={water ? `${water.cm > 0 ? '+' : ''}${water.cm} cm` : '–'} sub={water?.trend} />
-      <Tile icon="fog" label="Sikt" value={fog == null ? '–' : fog >= 60 ? 'Tåke' : fog >= 25 ? 'Mulig tåke' : 'God'} />
-      <Tile icon="rain" label="Nedbør" value={wx?.now.precip != null ? `${wx.now.precip.toString().replace('.', ',')} mm` : '–'} sub="neste time" />
+      <Tile icon="wave" label="Bølger" level={ocean?.waveHeight != null ? waveLevel(ocean.waveHeight) : null} value={ocean?.waveHeight != null ? `${ocean.waveHeight.toFixed(1).replace('.', ',')} m` : '–'} sub={ocean?.waveFrom != null ? `fra ${compass(ocean.waveFrom)}` : undefined} />
+      <Tile icon="thermometer" label="Sjøtemp." level={ocean?.seaTemp != null ? seaTempLevel(ocean.seaTemp, now) : null} value={ocean?.seaTemp != null ? `${Math.round(ocean.seaTemp)} °C` : '–'} sub={`normalt ${seaNormal} °C`} />
+      <Tile icon="tide" label="Vannstand" level={max(water ? waterLevel(water.cm) : null, alertLevel(alerts, 'water'))} value={water ? `${water.cm > 0 ? '+' : ''}${water.cm} cm` : '–'} sub={water?.trend} />
+      <Tile icon="fog" label="Sikt" level={fog != null ? fogLevel(fog) : null} value={fog == null ? '–' : fog >= 95 ? 'Tett tåke' : fog >= 60 ? 'Tåke' : fog >= 25 ? 'Mulig tåke' : 'God'} />
+      <Tile icon="rain" label="Nedbør" level={max(wx?.now.precip != null ? rainLevel(wx.now.precip) : null, alertLevel(alerts, 'rain'))} value={wx?.now.precip != null ? `${wx.now.precip.toString().replace('.', ',')} mm` : '–'} sub="neste time" />
       <Tile icon="sun" label={sunNext.label} value={osloHm(sunNext.t)} />
     </div>
   );
