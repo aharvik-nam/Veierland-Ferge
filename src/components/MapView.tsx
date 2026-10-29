@@ -69,8 +69,9 @@ export function TimeCells({ times, style }: { times: TimeCell[]; style?: React.C
 }
 
 // Ruta Tenvik–Engø med plass til navnene; et beskåret kart sentreres på den.
-// x1 er 4450 (ikke 3900) for å inkludere Nøtterøy-labelen som strekker seg til ~x=4450.
-const ROUTE_BOX = { x0: 650, x1: 4450, y0: 900, y1: 4250 };
+// Navn og tid står til høyre for kaiene, så boksen går fra Engø-kaia (x≈930) til kartets østkant,
+// der tiden ved Tenvik («ca. 10:01») og Nøtterøy-etiketten slutter.
+const ROUTE_BOX = { x0: 800, x1: 4508, y0: 900, y1: 4250 };
 
 // Utsnitt med boksens proporsjoner (bredde/høyde), sentrert på ruta og innenfor kartet.
 // zoom < 1 = zoomer inn (viser mindre av kartet), zoom > 1 = zoomer ut (viser mer).
@@ -155,16 +156,16 @@ export function MapSvg({ pos, trail = [], tags, highlight = null, humla, vessels
       {QUAYS.map(s => {
         const p = toMap(stopCoords[s].lat, stopCoords[s].lng);
         const dim = humla && s === 'vestgarden'; // ingen avganger fra Vestgården mens Humla seiler
-        const right = s !== 'tenvik';
+        // Navn og tid står alltid til høyre for kaia. Ferga kommer inn fra vest, så da krasjer de ikke med ruta og fergepila.
         return (
           <g key={s} opacity={dim ? 0.6 : 1}>
             {s === highlight && <circle cx={p.x} cy={p.y} r={95} fill="none" stroke="var(--accent2)" strokeWidth={2.5} vectorEffect="non-scaling-stroke" />}
             <circle cx={p.x} cy={p.y} r={52} fill="var(--deep)" stroke="var(--onDeep)" strokeWidth={2} vectorEffect="non-scaling-stroke" />
-            <text x={p.x + (right ? 120 : -120)} y={p.y + 50} textAnchor={right ? 'start' : 'end'} fontSize={150} fontWeight={700} fill="var(--onDeep)" {...halo}>
+            <text x={p.x + 120} y={p.y + 50} fontSize={150} fontWeight={700} fill="var(--onDeep)" {...halo}>
               {stopsMap[s]}
             </text>
             {tags?.has(s) && (
-              <text x={p.x + (right ? 120 : -120)} y={p.y + 205} textAnchor={right ? 'start' : 'end'} fontSize={125} fontWeight={700} fill="var(--accentOnDeep)" {...halo} style={{ fontVariantNumeric: 'tabular-nums' }}>
+              <text x={p.x + 120} y={p.y + 205} fontSize={125} fontWeight={700} fill="var(--accentOnDeep)" {...halo} style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {tags.get(s)}
               </text>
             )}
