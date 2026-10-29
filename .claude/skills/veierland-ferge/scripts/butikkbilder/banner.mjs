@@ -5,8 +5,8 @@ import { execSync } from 'child_process'; import { pathToFileURL } from 'url'; c
 const dir = '/tmp/claude-0/-home-user-Veierland-Ferge/5bd34bfe-20e6-5eff-a905-f5787719428c/scratchpad/store4';
 const fonts = '/home/user/Veierland-Ferge/node_modules/@fontsource';
 // [navn, bredde, høyde, iPad-høyde, telefon-høyde, overskrift] i % av høyden
-// Header: iPhone viser bare midten (ca. halve bredden), så enhetene står midt i bildet og det er ingen tekst
-const sizes = [['header', 5244, 2950, 44, 54, 13, 4.4, true], ['header-bred', 3840, 1646, 64, 80, 14, 4.4, true], ['sokeresultat', 3840, 2560, 42, 54, 11, 3.8, false]];
+// iPhone viser bare midten av bildene, så enhetene står midt i bildet og det er ingen tekst
+const sizes = [['header', 5244, 2950, 44, 54, 13, 4.4, true], ['header-bred', 3840, 1646, 64, 80, 14, 4.4, true], ['sokeresultat', 3840, 2560, 52, 66, 11, 3.8, true]];
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 for (const [name, W, H, ipadH, phoneH, h1, tag, center] of sizes) {
   const u = H / 100; // 1 enhet = 1 % av høyden
