@@ -119,11 +119,11 @@ Da havner nye bygg som utkast under **Intern testing**, klare til å rulles ut.
 **Undertittel** (maks 30): `Rutetider og ferga live`
 
 **Kampanjetekst** (maks 170):
-> Neste ferge mellom Tenvik og Veierland med nedtelling, hele rutetabellen og hvor ferga er akkurat nå. Oppdateres automatisk når rutene endres.
+> Neste ferge mellom Tenvik og Veierland med nedtelling, hele rutetabellen og ferga live på kartet. På iPad får du alt på én skjerm.
 
 **Nøkkelord** (maks 100):
 ```
-ferge,ferje,veierland,tenvik,tangen,engø,rutetider,båt,tønsberg,færder,nøtterøy,avgang,sandefjord
+ferge,ferje,veierland,tenvik,tangen,engø,rutetider,båt,tønsberg,færder,nøtterøy,avgang,ais,jutøya
 ```
 
 **Kategori**: Reise (primær), Navigasjon (sekundær) · **Aldersgrense**: 4+ · **Opphavsrett**: `2026 Andreas Harvik`
@@ -133,7 +133,7 @@ ferge,ferje,veierland,tenvik,tangen,engø,rutetider,båt,tønsberg,færder,nøtt
 **Markedsførings-URL** (valgfri): `https://jutoya.veierland.org`
 
 **Merknad til App Review** (engelsk):
-> Unofficial timetable app for the passenger ferry between Tenvik and the island of Veierland in Norway. No login is required and all features are available immediately. Timetables come from the local community website veierland.org and are updated from our server without app updates. The live ferry position comes from the Norwegian Coastal Administration's AIS service (BarentsWatch) via our own server; the "Ferga nå" card only appears while the ferry's AIS signal is available. The app collects no personal data and contains no ads.
+> Unofficial timetable app for the passenger ferry between Tenvik and the island of Veierland in Norway. No login is required and all features are available immediately. Timetables are built into the app and can be updated from our server without app updates. The live ferry position comes from the Norwegian Coastal Administration's AIS service (BarentsWatch) via our own server; the "Ferga nå" card only appears while the ferry's AIS signal is available. On iPad the app shows two dashboards (Passasjer and Ferge) that you can swipe between. The app collects no personal data and contains no ads.
 
 ### Google Play
 
@@ -147,19 +147,25 @@ ferge,ferje,veierland,tenvik,tangen,engø,rutetider,båt,tønsberg,færder,nøtt
 ### Beskrivelse (begge butikkene)
 
 ```
-Veierland Ferge viser når neste ferge går mellom Tenvik, Tangen og Engø – med nedtelling, de neste avgangene og hvor ferga er akkurat nå.
+Veierland Ferge viser når neste ferge går mellom Tenvik, Vestgården, Tangen og Engø – med nedtelling, de neste avgangene og hvor ferga er akkurat nå.
 
 • Neste avgang med en gang: klokkeslett, nedtelling og når du er fremme
-• Se hvor ferga er: fergens posisjon live, og om den rekker frem til avgangen din
+• Ferga live på kartet: posisjon, fart og når den er ved neste kai
+• Se andre båter i området på kartet
 • Alle dagens avganger – og planlegg turen for i morgen eller en annen dag
 • Hele rutetabellen til og fra Veierland for hverdag, lørdag og søndag
+• Punktlighet: hvor ofte avgangene har gått i rute de siste dagene
 • Bussforbindelser til og fra Tønsberg
 • Tydelig merking av avganger som må bestilles, med ringeknapp til fergen
 • Appen husker strekningen din
 • Velg fargetema – også mørk modus
 • Virker uten nett, og rutetidene oppdateres automatisk når de endres
 
-Appen er uoffisiell og ikke tilknyttet Jutøya AS eller Veierland Velforening. Rutetidene er hentet fra veierland.org, og ved tvil gjelder fergens egne oppslag. Fergens posisjon kommer fra BarentsWatch (Kystverket) og værvarselet fra Meteorologisk institutt.
+På iPad får du alt på én skjerm, med to visninger du sveiper mellom:
+• Passasjer: velg fra og til, og se avgangene og ferga på kartet ved siden av
+• Ferge: fergedisplay med posisjon, neste anløp, vind, bølger, vannstand og farevarsler – og nattmodus med rødt lys
+
+Appen er uoffisiell og ikke tilknyttet Jutøya AS eller Veierland Velforening. Ved tvil gjelder fergens egne oppslag. Fergens posisjon kommer fra BarentsWatch (Kystverket), vær, sjø og farevarsler fra Meteorologisk institutt og vannstand fra Kartverket.
 
 Appen samler ikke inn personopplysninger, har ingen reklame og krever ingen innlogging.
 ```
