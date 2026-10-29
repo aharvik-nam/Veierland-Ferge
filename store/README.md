@@ -3,7 +3,7 @@
 Alt du trenger for å publisere appen: butikktekster, bilder og en steg-for-steg-oppskrift.
 Appen bygges i skyen med GitHub Actions, så du trenger ingen Mac.
 
-- Bilder til App Store: `store/app-store/` (iPhone 6,9", 1320 × 2868)
+- Bilder til App Store: `store/app-store/` (iPhone 6,9", 1320 × 2868) og `store/app-store-ipad/` (iPad 13", 2752 × 2064, liggende)
 - Bilder til Google Play: `store/google-play/` (telefon 1080 × 1920, ikon 512 × 512, banner 1024 × 500)
 
 ---
@@ -45,7 +45,8 @@ Appen bygges i skyen med GitHub Actions, så du trenger ingen Mac.
 
 ### 6. Fyll ut butikksiden og send inn
 I App Store Connect → appen → **iOS App 1.0**:
-- **Screenshots** (iPhone 6,9"): de fem bildene i `store/app-store/`
+- **Screenshots** (iPhone 6,9"): de seks bildene i `store/app-store/`
+- **Screenshots** (iPad 13"): de fire bildene i `store/app-store-ipad/`
 - **Tekster**: se «Butikktekster» lenger ned
 - **Build**: velg bygget fra TestFlight
 - **App Information**: kategori, personvern-URL, aldersgrense (svar «None»/«Nei» på alt → 4+)

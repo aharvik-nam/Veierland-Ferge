@@ -100,5 +100,5 @@ Hele oppskriften, butikktekster, URL-er og skjermbilder står i `store/README.md
 - **Google Play** (personlig konto):
   - Først en lukket test med minst 12 testere i 14 dager. Først da kan brukeren søke om produksjonstilgang.
   - Bilder og ikon ligger i `store/google-play/`.
-- **Nye skjermbilder til butikkene**: iPhone 1320 × 2868, Play-telefon 1080 × 1920, Play-banner 1024 × 500 og ikon 512 × 512. Ta dem fra det bygde nettstedet med Playwright, som i `scripts/skjermbilder.mjs`, med riktig størrelse og `deviceScaleFactor`.
+- **Nye skjermbilder til butikkene**: iPhone 1320 × 2868, Play-telefon 1080 × 1920, Play-banner 1024 × 500 og ikon 512 × 512. iPad 13" 2752 × 2064. App Store-bildene (iPhone og iPad, med overskrift) lages med `scripts/butikkbilder/ta-bilder.mjs` og `sett-sammen.mjs` (bruk i toppen av filene). Play-bildene (1080 × 1920) er eldre og viser ikke kartet ennå; de kan lages på samme måte med visning 412 × 760.
 - **Ny versjon av selve appen** (ikke bare rutetider): øk `version` i `package.json`, kjør workflowen og send inn den nye versjonen i begge butikkene.
